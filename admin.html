@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal &bull; Bank Core Management</title>
+  <meta name="description" content="Professional banking admin dashboard for account operations, lifecycle control, and real-time ledger management.">
+
+  <!-- Typography: Google Fonts Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Admin Dark Theme Stylesheet -->
+  <link rel="stylesheet" href="css/admin-dark.css" th:href="@{/css/admin-dark.css}">
+</head>
+<body>
+  <div class="admin-layout">
+
+    <!-- ====================================================================
+         Top Admin Navigation Bar
+         ==================================================================== -->
+    <header class="admin-navbar">
+      <div class="admin-nav-inner">
+        <!-- Brand & System Role -->
+        <div class="admin-brand">
+          <div class="brand-badge-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
+          </div>
+          <span class="brand-title">Nexus<span style="color: #60a5fa; font-weight: 400;">Core</span></span>
+          <span class="brand-role-tag">Admin Console</span>
+        </div>
+
+        <!-- Admin Profile & Session Actions -->
+        <div class="admin-user-profile">
+          <div class="admin-meta-info">
+            <div class="admin-avatar" th:text="${adminInitials ?: 'AD'}">AD</div>
+            <div class="admin-credentials">
+              <span class="admin-name" th:text="${adminUsername ?: 'System Administrator'}">System Administrator</span>
+              <span class="admin-role">Superuser &bull; Security Level 5</span>
+            </div>
+          </div>
+
+          <!-- Spring Security / Standard SSR Logout Form -->
+          <form action="/logout" th:action="@{/logout}" method="POST" style="margin: 0;">
+            <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
+            <button type="submit" class="btn-admin-logout" title="Sign out of Admin Portal">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span>Sign Out</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <!-- ====================================================================
+         Main Admin Content Area
+         ==================================================================== -->
+    <main class="admin-container">
+
+      <!-- Admin Page Title & Live Status Indicator -->
+      <section class="admin-page-header">
+        <div class="page-header-text">
+          <h1>Bank Accounts & Ledger Management</h1>
+          <p>Real-time customer account directory, compliance controls, and lifecycle actions.</p>
+        </div>
+        <div class="system-badge-live">
+          <span class="live-pulse-dot"></span>
+          <span>Core Banking Engine &bull; Online</span>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           Flash Message Banners (Thymeleaf Model Attributes)
+           e.g. redirectAttributes.addFlashAttribute("successMessage", "...")
+           ================================================================== -->
+      <section class="admin-flash-stack" aria-label="System Notifications">
+        
+        <!-- Success Alert -->
+        <div class="admin-alert admin-alert-success" th:if="${successMessage != null}" id="adminSuccessAlert">
+          <div class="alert-body">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span th:text="${successMessage}">Operation successful: Account has been registered with initial balance allocated.</span>
+          </div>
+          <button type="button" class="alert-dismiss-btn" aria-label="Close notification">&times;</button>
+        </div>
+
+        <!-- Error Alert -->
+        <div class="admin-alert admin-alert-danger" th:if="${errorMessage != null}" style="display: none;" id="adminErrorAlert">
+          <div class="alert-body">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span th:text="${errorMessage}">Operation failed: Could not perform the requested account update.</span>
+          </div>
+          <button type="button" class="alert-dismiss-btn" aria-label="Close notification">&times;</button>
+        </div>
+
+      </section>
+
+      <!-- ==================================================================
+           Executive KPI Metrics
+           ================================================================== -->
+      <section class="admin-kpi-grid" aria-label="Key Performance Indicators">
+        
+        <div class="kpi-card">
+          <div class="kpi-details">
+            <span class="kpi-label">Total Vault Liquidity</span>
+            <span class="kpi-value" th:text="${totalLiquidityFormatted ?: '$28,492,610.80'}">$28,492,610.80</span>
+            <span class="kpi-subtext highlight-green">&uarr; +4.2% capital reserves</span>
+          </div>
+          <div class="kpi-icon-bubble">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-details">
+            <span class="kpi-label">Total Active Accounts</span>
+            <span class="kpi-value" th:text="${activeAccountsCount ?: '1,428'}">1,428</span>
+            <span class="kpi-subtext">Verified KYC Tier 1/2</span>
+          </div>
+          <div class="kpi-icon-bubble">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-details">
+            <span class="kpi-label">Blocked / Restricted</span>
+            <span class="kpi-value" style="color: #f87171;" th:text="${blockedAccountsCount ?: '7'}">7</span>
+            <span class="kpi-subtext">Compliance & AML audits</span>
+          </div>
+          <div class="kpi-icon-bubble" style="color: #ef4444;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+            </svg>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-details">
+            <span class="kpi-label">Accounts Opened Today</span>
+            <span class="kpi-value" style="color: #60a5fa;" th:text="${newAccountsToday ?: '+24'}">+24</span>
+            <span class="kpi-subtext">Automated onboarding</span>
+          </div>
+          <div class="kpi-icon-bubble" style="color: #3b82f6;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <line x1="20" y1="8" x2="20" y2="14"></line>
+              <line x1="23" y1="11" x2="17" y2="11"></line>
+            </svg>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================================================================
+           SECTION: Create Account Form
+           Standard HTML <form action="/admin/accounts/create" method="POST">
+           NO AJAX / fetch - Standard MVC form submission
+           ================================================================== -->
+      <section class="card-section" aria-labelledby="createAccountHeading">
+        <div class="card-section-header">
+          <div class="card-header-titles">
+            <div class="header-accent-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </div>
+            <div>
+              <h2 id="createAccountHeading">Create Bank Account</h2>
+              <p>Provision a new customer checking/savings account into the core banking system.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Standard HTML Form -->
+        <form action="/admin/accounts/create" th:action="@{/admin/accounts/create}" method="POST" id="createAccountForm" class="create-account-form-body">
+          
+          <!-- Spring Security CSRF Token Hook -->
+          <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
+
+          <div class="form-grid-three-col">
+            
+            <!-- 1. Customer Name Field -->
+            <div class="admin-form-group">
+              <label for="customerName" class="admin-form-label">
+                <span>Customer Full Name<span class="required-star">*</span></span>
+              </label>
+              <div class="admin-input-wrapper">
+                <input 
+                  type="text" 
+                  id="customerName" 
+                  name="customerName" 
+                  class="admin-form-control" 
+                  placeholder="e.g. Jonathan R. Vance" 
+                  required 
+                  autocomplete="off"
+                  maxlength="100"
+                >
+              </div>
+            </div>
+
+            <!-- 2. Initial Balance Field -->
+            <div class="admin-form-group">
+              <label for="initialBalance" class="admin-form-label">
+                <span>Initial Balance<span class="required-star">*</span></span>
+              </label>
+              <div class="admin-input-wrapper">
+                <span class="admin-input-prefix" id="currencyPrefix">$</span>
+                <input 
+                  type="number" 
+                  id="initialBalance" 
+                  name="initialBalance" 
+                  class="admin-form-control has-prefix" 
+                  step="0.01" 
+                  min="0.00" 
+                  max="1000000000.00" 
+                  required 
+                  placeholder="1000.00"
+                  autocomplete="off"
+                >
+              </div>
+            </div>
+
+            <!-- 3. Currency Field -->
+            <div class="admin-form-group">
+              <label for="currencySelect" class="admin-form-label">
+                <span>Base Currency<span class="required-star">*</span></span>
+              </label>
+              <select id="currencySelect" name="currency" class="admin-form-control" required>
+                <option value="USD" selected>USD - US Dollar ($)</option>
+                <option value="EUR">EUR - Euro (€)</option>
+                <option value="GBP">GBP - British Pound (£)</option>
+                <option value="JPY">JPY - Japanese Yen (¥)</option>
+                <option value="CAD">CAD - Canadian Dollar ($)</option>
+                <option value="CHF">CHF - Swiss Franc (Fr.)</option>
+              </select>
+            </div>
+
+          </div>
+
+          <!-- Form Actions Row (Reset & Submit) -->
+          <div class="form-action-row">
+            <button type="reset" class="btn-secondary-reset">Clear Fields</button>
+            <button type="submit" id="submitCreateAccountBtn" class="btn-primary-submit">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              <span>Create Account</span>
+            </button>
+          </div>
+
+        </form>
+      </section>
+
+      <!-- ==================================================================
+           SECTION: Main Data Table (Bank Accounts)
+           Semantic HTML <table> listing bank accounts with Actions
+           ================================================================== -->
+      <section class="card-section" aria-labelledby="accountsTableHeading">
+        
+        <!-- Table Toolbar: Search & Status Filters -->
+        <div class="table-toolbar">
+          <div class="card-header-titles">
+            <h2 id="accountsTableHeading" style="font-size: 1.15rem; font-weight: 700; color: #fff;">Bank Accounts Directory</h2>
+          </div>
+
+          <!-- Instant client-side search input (Pure DOM filter, NO fetch) -->
+          <div class="search-box-wrap">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input 
+              type="text" 
+              id="adminSearchInput" 
+              class="admin-search-input" 
+              placeholder="Search by ID or customer name..." 
+              autocomplete="off"
+            >
+          </div>
+
+          <!-- Status Filter Tabs (Pure DOM filter) -->
+          <div class="table-filter-tabs" role="tablist" aria-label="Account Status Filter">
+            <button type="button" class="filter-tab active" data-status="all">All (5)</button>
+            <button type="button" class="filter-tab" data-status="ACTIVE">Active (3)</button>
+            <button type="button" class="filter-tab" data-status="BLOCKED">Blocked (1)</button>
+            <button type="button" class="filter-tab" data-status="PENDING">Pending (1)</button>
+          </div>
+        </div>
+
+        <!-- The Responsive Semantic Table -->
+        <div class="admin-table-responsive">
+          <table class="admin-data-table">
+            <thead>
+              <tr>
+                <th scope="col">Account ID</th>
+                <th scope="col">Customer Name</th>
+                <th scope="col" style="text-align: right;">Balance</th>
+                <th scope="col" style="text-align: center;">Status</th>
+                <th scope="col" style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- ========================================================
+                   SERVER-SIDE TEMPLATE ENGINE LOOP:
+                   If using Thymeleaf in Spring Boot, bind dynamic list with:
+                   
+                   <tr th:each="account : ${accounts}" th:attr="data-status=${account.status}">
+                     <td>
+                       <span class="acc-id-badge" th:text="${account.id}">AC-84920</span>
+                     </td>
+                     <td>
+                       <div class="customer-cell">
+                         <div class="customer-avatar-initials" th:text="${#strings.substring(account.customerName, 0, 2)}">AW</div>
+                         <div class="customer-info">
+                           <span class="customer-full-name" th:text="${account.customerName}">Alexander Wright</span>
+                           <span class="customer-type-meta" th:text="${account.accountType ?: 'Retail Checking'}">Retail Checking</span>
+                         </div>
+                       </div>
+                     </td>
+                     <td style="text-align: right;">
+                       <div class="balance-cell">
+                         <span class="balance-num-formatted" 
+                               th:text="${(account.currency == 'EUR' ? '€' : (account.currency == 'GBP' ? '£' : '$')) + #numbers.formatDecimal(account.balance, 1, 'COMMA', 2, 'POINT')}">
+                           $124,580.45
+                         </span>
+                         <span class="currency-tag-inline" th:text="${account.currency}">USD</span>
+                       </div>
+                     </td>
+                     <td style="text-align: center;">
+                       <span class="status-pill" 
+                             th:classappend="${account.status == 'ACTIVE' ? 'status-active' : (account.status == 'BLOCKED' ? 'status-blocked' : 'status-pending')}">
+                         <span class="status-dot-static"></span>
+                         <span th:text="${account.status}">ACTIVE</span>
+                       </span>
+                     </td>
+                     <td style="text-align: right;">
+                       <div class="table-actions-cell" style="justify-content: flex-end;">
+                         
+                         <!-- Action 1: View Link (<a>) -->
+                         <a th:href="@{/admin/accounts/{id}(id=${account.id})}" href="/admin/accounts/details" class="action-btn action-view">
+                           View
+                         </a>
+
+                         <!-- Action 2: Block/Unblock Mini Form (POST) -->
+                         <form th:if="${account.status != 'BLOCKED'}" 
+                               th:action="@{/admin/accounts/{id}/block(id=${account.id})}" 
+                               action="/admin/accounts/block" 
+                               method="POST" 
+                               class="inline-action-form">
+                           <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="csrf-token" />
+                           <button type="submit" class="action-btn action-block">Block</button>
+                         </form>
+                         <form th:if="${account.status == 'BLOCKED'}" 
+                               th:action="@{/admin/accounts/{id}/unblock(id=${account.id})}" 
+                               action="/admin/accounts/unblock" 
+                               method="POST" 
+                               class="inline-action-form">
+                           <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="csrf-token" />
+                           <button type="submit" class="action-btn action-unblock">Unblock</button>
+                         </form>
+
+                         <!-- Action 3: Delete Mini Form (POST) -->
+                         <form th:action="@{/admin/accounts/{id}/delete(id=${account.id})}" 
+                               action="/admin/accounts/delete" 
+                               method="POST" 
+                               class="inline-action-form" 
+                               onsubmit="return confirm('Are you sure you want to permanently delete this account?');">
+                           <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="csrf-token" />
+                           <button type="submit" class="action-btn action-delete">Delete</button>
+                         </form>
+                       </div>
+                     </td>
+                   </tr>
+                   ======================================================== -->
+
+              <!-- STATIC MOCK ROWS: Standalone preview & designer inspection -->
+              <!-- Row 1: Active Account -->
+              <tr data-status="ACTIVE">
+                <td>
+                  <span class="acc-id-badge">AC-84920</span>
+                </td>
+                <td>
+                  <div class="customer-cell">
+                    <div class="customer-avatar-initials">AW</div>
+                    <div class="customer-info">
+                      <span class="customer-full-name">Alexander Wright</span>
+                      <span class="customer-type-meta">Retail Checking &bull; Individual</span>
+                    </div>
+                  </div>
+                </td>
+                <td style="text-align: right;">
+                  <div class="balance-cell">
+                    <span class="balance-num-formatted">$124,580.45</span>
+                    <span class="currency-tag-inline">USD</span>
+                  </div>
+                </td>
+                <td style="text-align: center;">
+                  <span class="status-pill status-active">
+                    <span class="status-dot-static"></span>
+                    <span>ACTIVE</span>
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <div class="table-actions-cell" style="justify-content: flex-end;">
+                    <!-- Standard Link (<a>) for Details -->
+                    <a href="/admin/accounts/AC-84920" class="action-btn action-view">View</a>
+
+                    <!-- Mini Form (POST) for Block -->
+                    <form action="/admin/accounts/AC-84920/block" method="POST" class="inline-action-form">
+                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
+                      <button type="submit" class="action-btn action-block" title="Suspend account transactions">Block</button>
+                    </form>
+
+                    <!-- Mini Form (POST) for Delete -->
+                    <form action="/admin/accounts/AC-84920/delete" method="POST" class="inline-action-form" onsubmit="return confirm('Are you sure you want to permanently delete account AC-84920? This action cannot be reversed.');">
+                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
+                      <button type="submit" class="action-btn action-delete" title="Permanently delete account">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Row 2: Active Account (Corporate) -->
+              <tr data-status="ACTIVE">
+                <td>
+                  <span class="acc-id-badge">AC-99318</span>
+                </td>
+                <td>
+                  <div class="customer-cell">
+                    <div class="customer-avatar-initials" style="background: linear-gradient(135deg, #1d4ed8, #4338ca);">SC</div>
+                    <div class="customer-info">
+                      <span class="customer-full-name">Sophia Chen</span>
+                      <span class="customer-type-meta">Corporate Treasury &bull; Global Tech Ltd</span>
+                    </div>
+                  </div>
+                </td>
+                <td style="text-align: right;">
+                  <div class="balance-cell">
+                    <span class="balance-num-formatted">€2,840,195.00</span>
+                    <span class="currency-tag-inline">EUR</span>
+                  </div>
+                </td>
+                <td style="text-align: center;">
+                  <span class="status-pill status-active">
+                    <span class="status-dot-static"></span>
+                    <span>ACTIVE</span>
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <div class="table-actions-cell" style="justify-content: flex-end;">
+                    <a href="/admin/accounts/AC-99318" class="action-btn action-view">View</a>
+                    
+                    <form action="/admin/accounts/AC-99318/block" method="POST" class="inline-action-form">
+                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
+                      <button type="submit" class="action-btn action-block">Block</button>
+                    </form>
+
+                    <form action="/admin/accounts/AC-99318/delete" method="POST" class="inline-action-form" onsubmit="return confirm('Are you sure you want to permanently delete account AC-99318?');">
+                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
+                      <button type="submit" class="action-btn action-delete">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Row 3: Blocked Account -->
+              <tr data-status="BLOCKED">
+                <td>
+                  <span class="acc-id-badge" style="color: #f87171; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1);">AC-71042</span>
+                </td>
+                <td>
+                  <div class="customer-cell">
+                    <div class="customer-avatar-initials" style="background: linear-gradient(135deg, #7f1d1d, #991b1b);">MV</div>
+                    <div class="customer-info">
+                      <span class="customer-full-name">Marcus Vance</span>
+                      <span class="customer-type-meta">High-Yield Savings &bull; Flagged AML</span>
+                    </div>
+                  </div>
+                </td>
+                <td style="text-align: right;">
+                  <div class="balance-cell">
+                    <span class="balance-num-formatted">$9,410.20</span>
+                    <span class="currency-tag-inline">USD</span>
+                  </div>
+                </td>
+                <td style="text-align: center;">
+                  <span class="status-pill status-blocked">
+                    <span class="status-dot-static"></span>
+                    <span>BLOCKED</span>
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <div class="table-actions-cell" style="justify-content: flex-end;">
+                    <a href="/admin/accounts/AC-71042" class="action-btn action-view">View</a>
+
+                    <!-- Mini Form (POST) for Unblock -->
+                    <form action="/admin/accounts/AC-71042/unblock" method="POST" class="inline-action-form">
+                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
+                      <button type="submit" class="action-btn action-unblock" title="Restore account permissions">Unblock</button>
+                    </form>
+
+                    <form action="/admin/accounts/AC-71042/delete" method="POST" class="inline-action-form" onsubmit="return confirm('Are you sure you want to permanently delete account AC-71042?');">
+                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
+                      <button type="submit" class="action-btn action-delete">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Row 4: Pending Review Account -->
+              <tr data-status="PENDING">
+                <td>
+                  <span class="acc-id-badge" style="color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.1);">AC-66381</span>
+                </td>
+                <td>
+                  <div class="customer-cell">
+                    <div class="customer-avatar-initials" style="background: linear-gradient(135deg, #78350f, #92400e);">EP</div>
+                    <div class="customer-info">
+                      <span class="customer-full-name">Elena Rostova</span>
+                      <span class="customer-type-meta">Cross-Border Escrow &bull; Pending KYC</span>
+                    </div>
+                  </div>
+                </td>
+                <td style="text-align: right;">
+                  <div class="balance-cell">
+                    <span class="balance-num-formatted">£54,000.00</span>
+                    <span class="currency-tag-inline">GBP</span>
+                  </div>
+                </td>
+                <td style="text-align: center;">
+                  <span class="status-pill status-pending">
+                    <span class="status-dot-static"></span>
+                    <span>PENDING</span>
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <div class="table-actions-cell" style="justify-content: flex-end;">
+                    <a href="/admin/accounts/AC-66381" class="action-btn action-view">View</a>
+
+                    <form action="/admin/accounts/AC-66381/block" method="POST" class="inline-action-form">
+                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
+                      <button type="submit" class="action-btn action-block">Block</button>
+                    </form>
+
+                    <form action="/admin/accounts/AC-66381/delete" method="POST" class="inline-action-form" onsubmit="return confirm('Are you sure you want to permanently delete account AC-66381?');">
+                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
+                      <button type="submit" class="action-btn action-delete">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Row 5: Active Account -->
+              <tr data-status="ACTIVE">
+                <td>
+                  <span class="acc-id-badge">AC-55102</span>
+                </td>
+                <td>
+                  <div class="customer-cell">
+                    <div class="customer-avatar-initials" style="background: linear-gradient(135deg, #065f46, #047857);">DK</div>
+                    <div class="customer-info">
+                      <span class="customer-full-name">David Kim</span>
+                      <span class="customer-type-meta">Retail Checking &bull; Premium Tier</span>
+                    </div>
+                  </div>
+                </td>
+                <td style="text-align: right;">
+                  <div class="balance-cell">
+                    <span class="balance-num-formatted">$41,920.80</span>
+                    <span class="currency-tag-inline">USD</span>
+                  </div>
+                </td>
+                <td style="text-align: center;">
+                  <span class="status-pill status-active">
+                    <span class="status-dot-static"></span>
+                    <span>ACTIVE</span>
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <div class="table-actions-cell" style="justify-content: flex-end;">
+                    <a href="/admin/accounts/AC-55102" class="action-btn action-view">View</a>
+
+                    <form action="/admin/accounts/AC-55102/block" method="POST" class="inline-action-form">
+                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
+                      <button type="submit" class="action-btn action-block">Block</button>
+                    </form>
+
+                    <form action="/admin/accounts/AC-55102/delete" method="POST" class="inline-action-form" onsubmit="return confirm('Are you sure you want to permanently delete account AC-55102?');">
+                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
+                      <button type="submit" class="action-btn action-delete">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table Footer / Standard Server-Side Pagination Links -->
+        <div class="table-footer">
+          <div>Showing <strong style="color: #fff;">1 - 5</strong> of <strong style="color: #fff;">1,428</strong> accounts</div>
+          <div class="pagination-links">
+            <a href="?page=1" class="page-link-btn active">1</a>
+            <a href="?page=2" class="page-link-btn">2</a>
+            <a href="?page=3" class="page-link-btn">3</a>
+            <a href="?page=2" class="page-link-btn">&raquo;</a>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Admin Footer -->
+    <footer class="admin-footer">
+      <div>&copy; 2026 NexusBank Core Management Infrastructure &bull; Strictly Confidential &bull; Authorized Personnel Only</div>
+    </footer>
+
+  </div>
+
+  <!-- Minimal Vanilla JavaScript for client-side search/filters & currency sync (NO fetch) -->
+  <script src="js/admin.js" th:src="@{/js/admin.js}"></script>
+</body>
+</html>

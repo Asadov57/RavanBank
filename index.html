@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Dashboard | Nexus Neo-Bank</title>
+  <meta name="description" content="Modern Neo-Bank customer dashboard for account management, deposits, withdrawals, and transaction tracking.">
+  
+  <!-- Modern Typography: Google Fonts Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet (Linked for standalone preview & Spring Boot static resources: th:href="@{/css/styles.css}") -->
+  <link rel="stylesheet" href="css/styles.css" th:href="@{/css/styles.css}">
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- ====================================================================
+         Top Navigation Bar
+         ==================================================================== -->
+    <header class="top-navbar">
+      <div class="nav-inner">
+        <!-- Brand / Logo -->
+        <div class="brand-wrapper">
+          <div class="brand-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 21h18"></path>
+              <path d="M5 21V9l7-5 7 5v12"></path>
+              <path d="M9 10h.01"></path>
+              <path d="M15 10h.01"></path>
+              <path d="M9 14h.01"></path>
+              <path d="M15 14h.01"></path>
+            </svg>
+          </div>
+          <span class="brand-name">Nexus<span style="font-weight: 400; opacity: 0.85;">Bank</span></span>
+          <span class="brand-badge">Retail</span>
+        </div>
+
+        <!-- Customer Profile & Session Actions -->
+        <div class="nav-user-meta">
+          <div class="account-pill">
+            <div class="avatar-badge" th:text="${#strings.substring(customerName ?: 'Alexander Wright', 0, 2)}">AW</div>
+            <div class="user-text-info">
+              <span class="user-name" th:text="${customerName ?: 'Alexander Wright'}">Alexander Wright</span>
+              <span class="user-id" th:text="'ID: ' + (${customerId ?: 'NB-84920'})">ID: NB-84920</span>
+            </div>
+          </div>
+
+          <!-- Spring Security Logout Form Hook -->
+          <form action="/logout" th:action="@{/logout}" method="POST" style="display: inline;">
+            <!-- Spring Security CSRF Token Placeholder -->
+            <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="mock-csrf" />
+            <button type="submit" class="logout-btn" title="Sign out of account">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span>Logout</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <!-- ====================================================================
+         Main Dashboard Content Area
+         ==================================================================== -->
+    <main class="dashboard-main">
+
+      <!-- ==================================================================
+           Server-Side Flash Message Banners (Thymeleaf Model Attributes)
+           e.g. redirectAttributes.addFlashAttribute("successMessage", "...")
+           ================================================================== -->
+      <section class="flash-message-container" aria-label="Notifications">
+        
+        <!-- Success Alert (Shown when successMessage is present) -->
+        <div class="alert-banner alert-success" th:if="${successMessage != null}" id="successAlert">
+          <div class="alert-content">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span th:text="${successMessage}">Transaction completed successfully! Your account balance has been updated.</span>
+          </div>
+          <button type="button" class="alert-close" aria-label="Dismiss alert">&times;</button>
+        </div>
+
+        <!-- Error Alert (Shown when errorMessage is present) -->
+        <!-- Thymeleaf sample: <div class="alert-banner alert-danger" th:if="${errorMessage != null}"> -->
+        <div class="alert-banner alert-danger" th:if="${errorMessage != null}" style="display: none;" id="errorAlert">
+          <div class="alert-content">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span th:text="${errorMessage}">Transaction failed. Insufficient funds or invalid amount entered.</span>
+          </div>
+          <button type="button" class="alert-close" aria-label="Dismiss alert">&times;</button>
+        </div>
+
+      </section>
+
+      <!-- Dashboard Greeting & Account Status Header -->
+      <section class="dashboard-header">
+        <div class="header-title-area">
+          <h1>Account Overview</h1>
+          <p>Welcome back, <strong th:text="${customerName ?: 'Alexander'}">Alexander</strong>. Here is your current financial standing.</p>
+        </div>
+        <div class="header-actions-area">
+          <div class="status-badge" title="FDIC Insured up to $250,000">
+            <span class="status-dot"></span>
+            <span>Account Active &bull; Verified Tier 1</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           SECTION 1: Total Balance & Quick Metrics
+           ================================================================== -->
+      <section class="overview-grid" aria-label="Balance Overview">
+        
+        <!-- Primary Balance Hero Card -->
+        <div class="balance-card">
+          <div class="balance-card-header">
+            <div class="balance-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <line x1="2" y1="10" x2="22" y2="10"></line>
+              </svg>
+              <span>Total Available Balance</span>
+            </div>
+            <div class="currency-badge">USD &bull; CHECKING</div>
+          </div>
+
+          <div class="balance-amount-wrap">
+            <span class="balance-currency-symbol">$</span>
+            <!-- Formatted via Thymeleaf #numbers.formatDecimal if present, fallback to static mock -->
+            <span class="balance-number" th:text="${#numbers.formatDecimal(account != null ? account.balance : 124580.45, 1, 'COMMA', 2, 'POINT')}">124,580.45</span>
+          </div>
+
+          <div class="balance-card-footer">
+            <div class="account-num-group">
+              <span class="account-num-label">Account:</span>
+              <span class="account-number" th:text="${account != null ? account.maskedAccountNumber : '•••• 4892'}">&bull;&bull;&bull;&bull; 4892</span>
+              <button type="button" class="copy-btn" id="copyAccountBtn" data-account-number="402891824892" title="Copy full account number">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span>Copy</span>
+              </button>
+            </div>
+            <div class="card-network">
+              <svg width="24" height="16" viewBox="0 0 32 20" fill="none">
+                <circle cx="11" cy="10" r="9" fill="#EA001B" fill-opacity="0.85"/>
+                <circle cx="21" cy="10" r="9" fill="#F79E1B" fill-opacity="0.85"/>
+              </svg>
+              <span>VISA DEBIT</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Metrics Overview -->
+        <div class="metrics-column">
+          <!-- Metric: Inflow / Deposits -->
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-title">Monthly Deposits</span>
+              <span class="metric-value" th:text="${'+$' + #numbers.formatDecimal(monthlyDepositTotal ?: 18240.00, 1, 'COMMA', 2, 'POINT')}">+$18,240.00</span>
+              <div class="metric-trend positive">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                  <polyline points="17 6 23 6 23 12"></polyline>
+                </svg>
+                <span>+12.4% from last month</span>
+              </div>
+            </div>
+            <div class="metric-icon-wrap deposit-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"></line>
+                <polyline points="5 12 12 5 19 12"></polyline>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Metric: Outflow / Withdrawals -->
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-title">Monthly Withdrawals</span>
+              <span class="metric-value" th:text="${'-$' + #numbers.formatDecimal(monthlyWithdrawTotal ?: 6420.50, 1, 'COMMA', 2, 'POINT')}">-$6,420.50</span>
+              <div class="metric-trend negative">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                  <polyline points="17 18 23 18 23 12"></polyline>
+                </svg>
+                <span>Within safe budget limits</span>
+              </div>
+            </div>
+            <div class="metric-icon-wrap withdraw-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <polyline points="19 12 12 19 5 12"></polyline>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================================================================
+           SECTION 2: Account Actions (Forms - Deposit & Withdraw)
+           Two distinct standard HTML <form> elements with standard HTTP POST
+           ================================================================== -->
+      <section aria-labelledby="quickActionsHeading">
+        <div class="section-title-wrap">
+          <h2 id="quickActionsHeading" class="section-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            Manage Funds
+          </h2>
+          <p class="section-subtitle">Perform instant deposits or withdrawals directly to and from your checking account.</p>
+        </div>
+
+        <div class="actions-grid">
+
+          <!-- ==============================================================
+               FORM 1: Deposit Funds Form
+               Standard HTML form submitting via POST to /account/deposit
+               ============================================================== -->
+          <div class="action-card deposit-card">
+            <div class="card-badge-header">
+              <div class="action-badge-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+              </div>
+              <div class="action-card-headings">
+                <h2>Deposit Funds</h2>
+                <p>Add capital instantly to your primary account</p>
+              </div>
+            </div>
+
+            <!-- Standard HTTP Form: /account/deposit -->
+            <form action="/account/deposit" th:action="@{/account/deposit}" method="POST" id="depositForm" class="standard-bank-form">
+              
+              <!-- Spring Security CSRF Token Hook -->
+              <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
+
+              <!-- Deposit Amount Field -->
+              <div class="form-group">
+                <label for="depositAmount" class="form-label">
+                  <span>Deposit Amount</span>
+                  <span class="label-hint">Min. $1.00 USD</span>
+                </label>
+                <div class="input-currency-wrapper">
+                  <span class="currency-prefix">$</span>
+                  <input 
+                    type="number" 
+                    id="depositAmount" 
+                    name="amount" 
+                    class="form-input" 
+                    step="0.01" 
+                    min="1.00" 
+                    max="100000.00" 
+                    required 
+                    placeholder="0.00"
+                    autocomplete="off"
+                  >
+                </div>
+              </div>
+
+              <!-- Quick Preset Amount Chips (Client-Side Helper) -->
+              <div class="form-group">
+                <span class="form-label">Quick Presets</span>
+                <div class="preset-chips-wrap">
+                  <button type="button" class="preset-chip-btn" data-target="depositAmount" data-amount="50.00">+$50</button>
+                  <button type="button" class="preset-chip-btn" data-target="depositAmount" data-amount="100.00">+$100</button>
+                  <button type="button" class="preset-chip-btn" data-target="depositAmount" data-amount="500.00">+$500</button>
+                  <button type="button" class="preset-chip-btn" data-target="depositAmount" data-amount="1000.00">+$1,000</button>
+                  <button type="button" class="preset-chip-btn" data-target="depositAmount" data-amount="5000.00">+$5,000</button>
+                </div>
+              </div>
+
+              <!-- Optional Reference / Memo Field -->
+              <div class="form-group">
+                <label for="depositDescription" class="form-label">
+                  <span>Memo / Reference</span>
+                  <span class="label-hint">Optional</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="depositDescription" 
+                  name="description" 
+                  class="form-input text-field" 
+                  placeholder="e.g. Salary, Client payment, Savings" 
+                  maxlength="60"
+                >
+              </div>
+
+              <!-- Submit Button -->
+              <button type="submit" id="submitDepositBtn" class="form-submit-btn deposit-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Confirm Deposit</span>
+              </button>
+
+              <div class="form-security-footnote">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <span>Instant 256-bit encrypted transfer</span>
+              </div>
+            </form>
+          </div>
+
+          <!-- ==============================================================
+               FORM 2: Withdraw Funds Form
+               Standard HTML form submitting via POST to /account/withdraw
+               ============================================================== -->
+          <div class="action-card withdraw-card">
+            <div class="card-badge-header">
+              <div class="action-badge-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              </div>
+              <div class="action-card-headings">
+                <h2>Withdraw Funds</h2>
+                <p>Transfer funds out to external bank or payout</p>
+              </div>
+            </div>
+
+            <!-- Standard HTTP Form: /account/withdraw -->
+            <form action="/account/withdraw" th:action="@{/account/withdraw}" method="POST" id="withdrawForm" class="standard-bank-form">
+              
+              <!-- Spring Security CSRF Token Hook -->
+              <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
+
+              <!-- Withdraw Amount Field -->
+              <div class="form-group">
+                <label for="withdrawAmount" class="form-label">
+                  <span>Withdrawal Amount</span>
+                  <span class="label-hint">Max limit: $25,000/day</span>
+                </label>
+                <div class="input-currency-wrapper">
+                  <span class="currency-prefix">$</span>
+                  <input 
+                    type="number" 
+                    id="withdrawAmount" 
+                    name="amount" 
+                    class="form-input" 
+                    step="0.01" 
+                    min="1.00" 
+                    max="25000.00" 
+                    required 
+                    placeholder="0.00"
+                    autocomplete="off"
+                  >
+                </div>
+              </div>
+
+              <!-- Quick Preset Amount Chips (Client-Side Helper) -->
+              <div class="form-group">
+                <span class="form-label">Quick Presets</span>
+                <div class="preset-chips-wrap">
+                  <button type="button" class="preset-chip-btn" data-target="withdrawAmount" data-amount="50.00">$50</button>
+                  <button type="button" class="preset-chip-btn" data-target="withdrawAmount" data-amount="100.00">$100</button>
+                  <button type="button" class="preset-chip-btn" data-target="withdrawAmount" data-amount="250.00">$250</button>
+                  <button type="button" class="preset-chip-btn" data-target="withdrawAmount" data-amount="500.00">$500</button>
+                  <button type="button" class="preset-chip-btn" data-target="withdrawAmount" data-amount="1000.00">$1,000</button>
+                </div>
+              </div>
+
+              <!-- Optional Memo / Destination Field -->
+              <div class="form-group">
+                <label for="withdrawDescription" class="form-label">
+                  <span>Reason / Memo</span>
+                  <span class="label-hint">Optional</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="withdrawDescription" 
+                  name="description" 
+                  class="form-input text-field" 
+                  placeholder="e.g. Rent, Bill settlement, Personal" 
+                  maxlength="60"
+                >
+              </div>
+
+              <!-- Submit Button -->
+              <button type="submit" id="submitWithdrawBtn" class="form-submit-btn withdraw-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <polyline points="19 12 12 19 5 12"></polyline>
+                </svg>
+                <span>Confirm Withdrawal</span>
+              </button>
+
+              <div class="form-security-footnote">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M12 6v6l4 2"></path>
+                </svg>
+                <span>Zero fees &bull; Instant settlement available</span>
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           SECTION 3: Recent Transactions
+           Responsive data table designed for Thymeleaf iteration (th:each)
+           ================================================================== -->
+      <section class="transactions-card" aria-labelledby="txHeading">
+        <div class="transactions-card-header">
+          <div class="section-title-wrap" style="margin-bottom: 0;">
+            <h2 id="txHeading" class="section-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              Recent Transactions
+            </h2>
+            <p class="section-subtitle">Real-time ledger of your incoming deposits and debit withdrawals.</p>
+          </div>
+
+          <!-- UI Filter Toggle (Vanilla JS toggle without REST/fetch calls) -->
+          <div class="table-filter-pills" role="tablist" aria-label="Transaction Filter">
+            <button type="button" class="filter-pill active" data-filter="all">All</button>
+            <button type="button" class="filter-pill" data-filter="DEPOSIT">Deposits</button>
+            <button type="button" class="filter-pill" data-filter="WITHDRAWAL">Withdrawals</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="transactions-table">
+            <thead>
+              <tr>
+                <th>Description / Reference</th>
+                <th>Type</th>
+                <th>Date & Time</th>
+                <th>Status</th>
+                <th style="text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- ==========================================================
+                   THYMELEAF LOOP TEMPLATE INSTRUCTION:
+                   To bind dynamic transactions from Spring Boot Model, uncomment:
+                   
+                   <tr th:each="tx : ${transactions}" th:attr="data-type=${tx.type}">
+                     <td>
+                       <div class="tx-entity-group">
+                         <div class="tx-icon-badge" th:classappend="${tx.type == 'DEPOSIT' ? 'credit' : 'debit'}">
+                           <svg th:if="${tx.type == 'DEPOSIT'}" ...></svg>
+                           <svg th:if="${tx.type == 'WITHDRAWAL'}" ...></svg>
+                         </div>
+                         <div class="tx-details">
+                           <span class="tx-title" th:text="${tx.description}">Direct Deposit</span>
+                           <span class="tx-ref" th:text="'Ref: #' + ${tx.referenceNumber}">Ref: #TX-901</span>
+                         </div>
+                       </div>
+                     </td>
+                     <td>
+                       <span class="tx-type-tag" th:classappend="${tx.type == 'DEPOSIT' ? 'deposit' : 'withdraw'}" th:text="${tx.type}">DEPOSIT</span>
+                     </td>
+                     <td>
+                       <span class="tx-date" th:text="${#temporals.format(tx.timestamp, 'MMM dd, yyyy')}">Oct 08, 2026</span>
+                       <span class="tx-date-time" th:text="${#temporals.format(tx.timestamp, 'hh:mm a')}">10:45 AM</span>
+                     </td>
+                     <td>
+                       <span class="tx-status-badge completed">
+                         <span class="status-dot"></span>
+                         <span th:text="${tx.status}">Completed</span>
+                       </span>
+                     </td>
+                     <td style="text-align: right;">
+                       <span class="tx-amount" th:classappend="${tx.type == 'DEPOSIT' ? 'positive' : 'negative'}"
+                             th:text="${(tx.type == 'DEPOSIT' ? '+$' : '-$') + #numbers.formatDecimal(tx.amount, 1, 'COMMA', 2, 'POINT')}">
+                         +$5,200.00
+                       </span>
+                     </td>
+                   </tr>
+                   ========================================================== -->
+
+              <!-- STATIC MOCK ROWS (Thymeleaf renders these when no server loop is present, or replace with th:each) -->
+              <tr data-type="DEPOSIT">
+                <td>
+                  <div class="tx-entity-group">
+                    <div class="tx-icon-badge credit">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="19" x2="12" y2="5"></line>
+                        <polyline points="5 12 12 5 19 12"></polyline>
+                      </svg>
+                    </div>
+                    <div class="tx-details">
+                      <span class="tx-title">Employer Payroll &bull; Stripe Payout</span>
+                      <span class="tx-ref">Ref: #TX-99482-PAY</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="tx-type-tag deposit">Deposit</span>
+                </td>
+                <td>
+                  <span class="tx-date">Oct 08, 2026</span>
+                  <span class="tx-date-time">09:15 AM</span>
+                </td>
+                <td>
+                  <span class="tx-status-badge completed">
+                    <span class="status-dot"></span>
+                    <span>Completed</span>
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <span class="tx-amount positive">+$4,850.00</span>
+                </td>
+              </tr>
+
+              <tr data-type="WITHDRAWAL">
+                <td>
+                  <div class="tx-entity-group">
+                    <div class="tx-icon-badge debit">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <polyline points="19 12 12 19 5 12"></polyline>
+                      </svg>
+                    </div>
+                    <div class="tx-details">
+                      <span class="tx-title">AWS Cloud Hosting &bull; Recurring</span>
+                      <span class="tx-ref">Ref: #TX-99321-BIL</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="tx-type-tag withdraw">Withdrawal</span>
+                </td>
+                <td>
+                  <span class="tx-date">Oct 07, 2026</span>
+                  <span class="tx-date-time">04:30 PM</span>
+                </td>
+                <td>
+                  <span class="tx-status-badge completed">
+                    <span class="status-dot"></span>
+                    <span>Completed</span>
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <span class="tx-amount negative">-$342.18</span>
+                </td>
+              </tr>
+
+              <tr data-type="DEPOSIT">
+                <td>
+                  <div class="tx-entity-group">
+                    <div class="tx-icon-badge credit">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="19" x2="12" y2="5"></line>
+                        <polyline points="5 12 12 5 19 12"></polyline>
+                      </svg>
+                    </div>
+                    <div class="tx-details">
+                      <span class="tx-title">Wire Transfer &bull; Client Retainer</span>
+                      <span class="tx-ref">Ref: #TX-98710-WRE</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="tx-type-tag deposit">Deposit</span>
+                </td>
+                <td>
+                  <span class="tx-date">Oct 05, 2026</span>
+                  <span class="tx-date-time">11:04 AM</span>
+                </td>
+                <td>
+                  <span class="tx-status-badge completed">
+                    <span class="status-dot"></span>
+                    <span>Completed</span>
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <span class="tx-amount positive">+$12,500.00</span>
+                </td>
+              </tr>
+
+              <tr data-type="WITHDRAWAL">
+                <td>
+                  <div class="tx-entity-group">
+                    <div class="tx-icon-badge debit">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <polyline points="19 12 12 19 5 12"></polyline>
+                      </svg>
+                    </div>
+                    <div class="tx-details">
+                      <span class="tx-title">ATM Cash Withdrawal &bull; Manhattan #4</span>
+                      <span class="tx-ref">Ref: #TX-98440-ATM</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="tx-type-tag withdraw">Withdrawal</span>
+                </td>
+                <td>
+                  <span class="tx-date">Oct 04, 2026</span>
+                  <span class="tx-date-time">02:18 PM</span>
+                </td>
+                <td>
+                  <span class="tx-status-badge completed">
+                    <span class="status-dot"></span>
+                    <span>Completed</span>
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <span class="tx-amount negative">-$500.00</span>
+                </td>
+              </tr>
+
+              <tr data-type="WITHDRAWAL">
+                <td>
+                  <div class="tx-entity-group">
+                    <div class="tx-icon-badge debit">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <polyline points="19 12 12 19 5 12"></polyline>
+                      </svg>
+                    </div>
+                    <div class="tx-details">
+                      <span class="tx-title">Apple Store &bull; Equipment Purchase</span>
+                      <span class="tx-ref">Ref: #TX-97992-POS</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="tx-type-tag withdraw">Withdrawal</span>
+                </td>
+                <td>
+                  <span class="tx-date">Oct 02, 2026</span>
+                  <span class="tx-date-time">05:42 PM</span>
+                </td>
+                <td>
+                  <span class="tx-status-badge completed">
+                    <span class="status-dot"></span>
+                    <span>Completed</span>
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <span class="tx-amount negative">-$1,899.00</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ====================================================================
+         Footer Section
+         ==================================================================== -->
+    <footer class="app-footer">
+      <div class="footer-inner">
+        <div>&copy; 2026 Nexus Neo-Bank Financial Technologies N.A. Member FDIC. Equal Housing Lender.</div>
+        <div style="display: flex; gap: 1rem;">
+          <a href="#" style="text-decoration: underline;">Security & Privacy</a>
+          <a href="#" style="text-decoration: underline;">Terms of Service</a>
+          <a href="#" style="text-decoration: underline;">Support Hotline</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Minimal Vanilla JavaScript (Toggles & Presets only, no fetch) -->
+  <script src="js/dashboard.js" th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>
