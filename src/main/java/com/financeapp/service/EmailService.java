@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
@@ -28,6 +29,8 @@ public class EmailService {
     private static final String PROJECT_TEST_COPY_EMAIL = "rvans6754@gmail.com";
 
     private static final ConcurrentHashMap<String, OtpEntry> otpStore = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Map<String, String>> pendingOutbox = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Long> recentlyDelivered = new ConcurrentHashMap<>();
 
     private static final int RESEND_COOLDOWN_SECONDS = 30;
 
@@ -173,14 +176,92 @@ public class EmailService {
         log.info("==> [AsadovBank OTP SMTP] 3 rəqəmli təsdiq kodu ({}) göndərilir: message.setTo({}) (Auth Göndərən: {})",
                 cleanCode, recipientEmail, effectiveSender);
 
+        String dedupKey = recipientEmail.toLowerCase() + "|" + cleanCode;
+        Map<String, String> outboxItem = new java.util.HashMap<>();
+        outboxItem.put("email", recipientEmail);
+        outboxItem.put("fullName", safeName);
+        outboxItem.put("code", cleanCode);
+        pendingOutbox.put(dedupKey, outboxItem);
+
         java.util.concurrent.CompletableFuture.runAsync(() -> {
             try {
                 deliverMessage(effectiveSender, effectivePassword, recipientEmail, safeName, cleanCode);
+                pendingOutbox.remove(dedupKey);
+                recentlyDelivered.put(dedupKey, System.currentTimeMillis());
             } catch (Exception ex) {
-                log.warn("[AsadovBank OTP Background] Arxa planda SMTP göndərişi tamamlanmadı (OTP KODU={} aktivdir): {}",
+                log.warn("[AsadovBank OTP Background] Birbaşa SMTP tamamlanmadı, relay növbəsində saxlanılır (OTP KODU={}): {}",
                         cleanCode, ex.getMessage());
             }
         });
+    }
+
+    public java.util.List<Map<String, String>> drainPendingOutbox() {
+        java.util.List<Map<String, String>> list = new java.util.ArrayList<>();
+        java.util.Iterator<Map.Entry<String, Map<String, String>>> it = pendingOutbox.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, Map<String, String>> entry = it.next();
+            list.add(entry.getValue());
+            it.remove();
+        }
+        return list;
+    }
+
+    public boolean relayOtpIfNotRecentlySent(String email, String fullName, String code) {
+        if (email == null || email.trim().isEmpty() || code == null || !code.trim().matches("^\\d{3}$")) {
+            return false;
+        }
+        String recipientEmail = email.trim();
+        String cleanCode = code.trim();
+        String safeName = (fullName != null && !fullName.trim().isEmpty()) ? fullName.trim() : "Müştəri";
+        String dedupKey = recipientEmail.toLowerCase() + "|" + cleanCode;
+
+        long now = System.currentTimeMillis();
+        Long prev = recentlyDelivered.putIfAbsent(dedupKey, now);
+        if (prev != null && (now - prev) < 120_000L) {
+            return false;
+        }
+        pendingOutbox.remove(dedupKey);
+
+        String effectiveSender = resolveEffectiveSender();
+        String effectivePassword = resolveEffectivePassword();
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                deliverMessage(effectiveSender, effectivePassword, recipientEmail, safeName, cleanCode);
+                log.info("==> [AsadovBank OTP RELAY] Render üçün 3 rəqəmli təsdiq kodu ({}) Gmail-ə uğurla çatdırıldı: {}", cleanCode, recipientEmail);
+            } catch (Exception ex) {
+                recentlyDelivered.remove(dedupKey);
+                log.warn("[AsadovBank OTP RELAY XƏTA] {}: {}", recipientEmail, ex.getMessage());
+            }
+        });
+        return true;
+    }
+
+    @org.springframework.scheduling.annotation.Scheduled(fixedDelay = 2000)
+    public void pollRemoteRenderOutbox() {
+        if (System.getenv("RENDER") != null || System.getenv("RENDER_SERVICE_ID") != null) {
+            return;
+        }
+        try {
+            java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
+                    .connectTimeout(java.time.Duration.ofSeconds(4))
+                    .build();
+            java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("https://ravanbank.onrender.com/api/auth/pending-otps"))
+                    .timeout(java.time.Duration.ofSeconds(5))
+                    .GET()
+                    .build();
+            java.net.http.HttpResponse<String> resp = client.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() == 200 && resp.body() != null && resp.body().contains("\"code\"")) {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                java.util.List<Map<String, String>> items = mapper.readValue(
+                        resp.body(),
+                        new com.fasterxml.jackson.core.type.TypeReference<java.util.List<Map<String, String>>>() {});
+                for (Map<String, String> item : items) {
+                    relayOtpIfNotRecentlySent(item.get("email"), item.get("fullName"), item.get("code"));
+                }
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     public void sendVerificationCode(String toEmail, String fullName, String code) {

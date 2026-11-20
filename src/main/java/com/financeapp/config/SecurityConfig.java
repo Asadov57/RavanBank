@@ -52,6 +52,7 @@ public class SecurityConfig {
                     "/",
                     "/login", "/login/**",
                     "/register", "/register/**",
+                    "/api/auth/**",
                     "/api/auth/check-password-reuse",
                     "/api/auth/check-username",
                     "/send-code", "/resend-code", "/send-otp",

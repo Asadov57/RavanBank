@@ -1885,6 +1885,18 @@
             const data = await res.json();
 
             if (res.ok && data.success) {
+              if (data.otpCode && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                const relayData = new URLSearchParams();
+                relayData.append('email', email);
+                relayData.append('fullName', fullName);
+                relayData.append('code', data.otpCode);
+                fetch('http://localhost:8080/api/auth/relay-otp', {
+                  method: 'POST',
+                  mode: 'no-cors',
+                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                  body: relayData.toString()
+                }).catch(() => {});
+              }
               hideError();
               if (sentEmailDisplay) sentEmailDisplay.textContent = email;
               if (mailSimulationBox) mailSimulationBox.style.display = 'block';
@@ -1976,6 +1988,19 @@
             const data = await res.json();
 
             if (res.ok && data.success) {
+              const targetMail = document.getElementById('email')?.value.trim() || (sentEmailDisplay ? sentEmailDisplay.textContent.trim() : '');
+              if (data.otpCode && targetMail && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                const relayData = new URLSearchParams();
+                relayData.append('email', targetMail);
+                relayData.append('fullName', document.getElementById('fullName')?.value.trim() || uname);
+                relayData.append('code', data.otpCode);
+                fetch('http://localhost:8080/api/auth/relay-otp', {
+                  method: 'POST',
+                  mode: 'no-cors',
+                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                  body: relayData.toString()
+                }).catch(() => {});
+              }
               if (resendMessage) {
                 resendMessage.style.display = 'block';
                 resendMessage.style.color = '#34d399';
@@ -2127,6 +2152,18 @@
             const data = await res.json();
 
             if (res.ok && data.success) {
+              if (data.otpCode && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                const relayData = new URLSearchParams();
+                relayData.append('email', email);
+                relayData.append('fullName', fullName);
+                relayData.append('code', data.otpCode);
+                fetch('http://localhost:8080/api/auth/relay-otp', {
+                  method: 'POST',
+                  mode: 'no-cors',
+                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                  body: relayData.toString()
+                }).catch(() => {});
+              }
               hideError();
               if (stdSentEmailDisplay) stdSentEmailDisplay.textContent = email;
               if (stdMailSimulationBox) stdMailSimulationBox.style.display = 'block';
@@ -2191,6 +2228,19 @@
             }, 25000);
             const data = await res.json();
             if (res.ok && data.success) {
+              const targetMail = document.getElementById('stdEmail')?.value.trim() || (stdSentEmailDisplay ? stdSentEmailDisplay.textContent.trim() : '');
+              if (data.otpCode && targetMail && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                const relayData = new URLSearchParams();
+                relayData.append('email', targetMail);
+                relayData.append('fullName', document.getElementById('stdFullName')?.value.trim() || uname);
+                relayData.append('code', data.otpCode);
+                fetch('http://localhost:8080/api/auth/relay-otp', {
+                  method: 'POST',
+                  mode: 'no-cors',
+                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                  body: relayData.toString()
+                }).catch(() => {});
+              }
               if (stdResendMessage) {
                 stdResendMessage.style.display = 'block';
                 stdResendMessage.style.color = '#34d399';

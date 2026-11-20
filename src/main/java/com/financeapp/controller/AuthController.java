@@ -229,6 +229,8 @@ public class AuthController {
 
             response.put("success", true);
             response.put("email", targetEmail);
+            response.put("fullName", fullName != null ? fullName.trim() : "Müştəri");
+            response.put("otpCode", code);
             response.put("accountType", resolvedAccountType);
             response.put("message", "3 rəqəmli təsdiq kodu Gmail ünvanınıza göndərildi: " + targetEmail);
             response.put("username", username.trim());
@@ -294,14 +296,16 @@ public class AuthController {
                 return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(response);
             }
 
+            String newCode;
             if (username != null && !username.trim().isEmpty()) {
-                userService.resendVerificationCode(username.trim());
+                newCode = userService.resendVerificationCode(username.trim());
             } else {
-                String code = emailService.prepareOtpCode(identifier);
-                emailService.sendOtpCode(identifier, "Müştəri", code);
+                newCode = emailService.prepareOtpCode(identifier);
+                emailService.sendOtpCode(identifier, "Müştəri", newCode);
             }
 
             response.put("success", true);
+            response.put("otpCode", newCode);
             response.put("message", "Yeni 3 rəqəmli təsdiq kodu Gmail ünvanınıza göndərildi.");
             response.put("cooldownSeconds", 30);
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
@@ -624,6 +628,26 @@ public class AuthController {
             result.put("message", "Bu şifrə unikaldır və istifadə edilə bilər.");
         }
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping(value = "/api/auth/pending-otps", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<java.util.List<Map<String, String>>> getPendingOtps() {
+        return ResponseEntity.ok(emailService.drainPendingOutbox());
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping(value = "/api/auth/relay-otp", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> relayOtp(
+            @RequestParam("email") String email,
+            @RequestParam(value = "fullName", required = false) String fullName,
+            @RequestParam("code") String code) {
+        boolean queued = emailService.relayOtpIfNotRecentlySent(email, fullName, code);
+        Map<String, Object> res = new HashMap<>();
+        res.put("success", true);
+        res.put("relayed", queued);
+        return ResponseEntity.ok(res);
     }
 
     private boolean isLoggedIn(Authentication auth) {
