@@ -173,7 +173,14 @@ public class EmailService {
         log.info("==> [AsadovBank OTP SMTP] 3 rəqəmli təsdiq kodu ({}) göndərilir: message.setTo({}) (Auth Göndərən: {})",
                 cleanCode, recipientEmail, effectiveSender);
 
-        deliverMessage(effectiveSender, effectivePassword, recipientEmail, safeName, cleanCode);
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                deliverMessage(effectiveSender, effectivePassword, recipientEmail, safeName, cleanCode);
+            } catch (Exception ex) {
+                log.warn("[AsadovBank OTP Background] Arxa planda SMTP göndərişi tamamlanmadı (OTP KODU={} aktivdir): {}",
+                        cleanCode, ex.getMessage());
+            }
+        });
     }
 
     public void sendVerificationCode(String toEmail, String fullName, String code) {

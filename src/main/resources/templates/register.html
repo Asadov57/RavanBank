@@ -1284,14 +1284,15 @@
         }
       }
 
-      async function fetchWithTimeout(url, options = {}, timeoutMs = 5000) {
+      async function fetchWithTimeout(url, options = {}, timeoutMs = 20000) {
+        const resolvedUrl = (url && url.startsWith('/')) ? (window.location.origin + url) : url;
         const controller = new AbortController();
         const timerId = setTimeout(() => controller.abort(), timeoutMs);
         try {
-          return await fetch(url, { ...options, signal: controller.signal });
+          return await fetch(resolvedUrl, { credentials: 'same-origin', ...options, signal: controller.signal });
         } catch (err) {
           if (err && err.name === 'AbortError') {
-            throw new Error('Sorğu vaxtı bitdi (5 saniyə). Zəhmət olmasa yenidən cəhd edin.');
+            throw new Error('Sorğu vaxtı bitdi (' + Math.round(timeoutMs / 1000) + ' saniyə). Zəhmət olmasa yenidən cəhd edin.');
           }
           throw err;
         } finally {
@@ -1305,7 +1306,7 @@
       async function checkUsernameExistsOnServer(usernameVal) {
         if (!usernameVal || usernameVal.trim().length === 0) return false;
         try {
-          const res = await fetchWithTimeout('/api/auth/check-username?username=' + encodeURIComponent(usernameVal.trim()), {}, 5000);
+          const res = await fetchWithTimeout('/api/auth/check-username?username=' + encodeURIComponent(usernameVal.trim()), {}, 15000);
           if (res.ok) {
             const data = await res.json();
             return !!data.exists;
@@ -1379,7 +1380,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: params.toString()
-          }, 5000);
+          }, 15000);
           if (res.ok) {
             const data = await res.json();
             return data && data.reused === true;
@@ -1879,7 +1880,7 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
               body: formData.toString()
-            }, 15000);
+            }, 25000);
 
             const data = await res.json();
 
@@ -1971,7 +1972,7 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
               body: formData.toString()
-            }, 15000);
+            }, 25000);
             const data = await res.json();
 
             if (res.ok && data.success) {
@@ -2122,7 +2123,7 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
               body: formData.toString()
-            }, 15000);
+            }, 25000);
             const data = await res.json();
 
             if (res.ok && data.success) {
@@ -2187,7 +2188,7 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
               body: formData.toString()
-            }, 15000);
+            }, 25000);
             const data = await res.json();
             if (res.ok && data.success) {
               if (stdResendMessage) {

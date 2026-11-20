@@ -26,6 +26,8 @@ public class PendingAccountCleanupService {
     public static final long WARNING_THRESHOLD_MINUTES = 30;
     public static final long DELETE_THRESHOLD_MINUTES = 60;
 
+    private final Set<Long> releasedArchivedIds = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -85,6 +87,9 @@ public class PendingAccountCleanupService {
 
             boolean anyPurged = false;
             for (ArchivedAccount arch : archivedList) {
+                if (arch.getId() != null && releasedArchivedIds.contains(arch.getId())) {
+                    continue;
+                }
                 String accNum = arch.getAccountNumber() != null ? arch.getAccountNumber().trim() : "";
                 String uname = arch.getUsername() != null ? arch.getUsername().trim() : "";
                 String rawPwd = arch.getRawPassword() != null ? arch.getRawPassword().trim() : "";
@@ -104,23 +109,22 @@ public class PendingAccountCleanupService {
                 }
 
                 if (!uname.isEmpty() && !"N/A".equalsIgnoreCase(uname)) {
-                    entityManager.createNativeQuery(
-                                    "DELETE FROM password_history WHERE lower(username) = lower(:u)")
-                            .setParameter("u", uname)
-                            .executeUpdate();
-                    if (!rawPwd.isEmpty()) {
-                        entityManager.createNativeQuery(
-                                        "DELETE FROM password_history WHERE raw_password = :p")
-                                .setParameter("p", rawPwd)
-                                .executeUpdate();
-                    }
-
                     Number remAcc = (Number) entityManager.createNativeQuery(
                                     "SELECT count(*) FROM account a JOIN users u ON a.user_id = u.id WHERE lower(u.username) = lower(:u)")
                             .setParameter("u", uname)
                             .getSingleResult();
 
                     if (remAcc == null || remAcc.longValue() == 0L) {
+                        entityManager.createNativeQuery(
+                                        "DELETE FROM password_history WHERE lower(username) = lower(:u)")
+                                .setParameter("u", uname)
+                                .executeUpdate();
+                        if (!rawPwd.isEmpty()) {
+                            entityManager.createNativeQuery(
+                                            "DELETE FROM password_history WHERE raw_password = :p")
+                                    .setParameter("p", rawPwd)
+                                    .executeUpdate();
+                        }
                         entityManager.createNativeQuery(
                                         "DELETE FROM security_registrations WHERE lower(username) = lower(:u)")
                                 .setParameter("u", uname)
@@ -142,6 +146,9 @@ public class PendingAccountCleanupService {
                             log.info("[AsadovBank Archive] Arxivləşdirilmiş istifadəçi və şifrəsi tam azad edildi: @{}", uname);
                         }
                     }
+                }
+                if (arch.getId() != null) {
+                    releasedArchivedIds.add(arch.getId());
                 }
             }
 
