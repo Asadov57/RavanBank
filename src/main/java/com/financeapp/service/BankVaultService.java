@@ -11,7 +11,9 @@ public interface BankVaultService {
     BankVault getOrCreateVault();
     VaultTransaction recordDeposit(BigDecimal amount, String customerName, String accountNumber, String note);
     VaultTransaction recordWithdrawal(BigDecimal amount, String customerName, String accountNumber, String note);
+    VaultTransaction recordWithdrawal(BigDecimal eurAmount, BigDecimal originalAmount, String currency, String customerName, String accountNumber, String note);
     VaultTransaction recordVaultInflow(BigDecimal amount, String source, String note);
+    VaultTransaction recordVaultInflow(BigDecimal eurAmount, BigDecimal originalAmount, String currency, String source, String note);
     VaultTransaction recordTransferOut(BigDecimal amount, BigDecimal commissionFee, String senderName, String senderAccount, String recipientName, String recipientAccount, String note);
     VaultTransaction recordCommissionRevenue(BigDecimal commissionAmount, BigDecimal grossAmount, String senderInfo, String recipientInfo);
     VaultTransaction issueCustomerCredit(String accountNumber, BigDecimal amount, BigDecimal interestRate, String note);

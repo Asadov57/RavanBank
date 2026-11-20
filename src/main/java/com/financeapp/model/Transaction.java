@@ -13,6 +13,8 @@ public class Transaction {
     private Long id;
 
     private BigDecimal amount;
+    @Column(length = 10)
+    private String currency;
     private String description;
     private String type;
     private String referenceNumber;
@@ -49,6 +51,17 @@ public class Transaction {
 
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
+
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
+
+    public String getCurrencySymbol() {
+        String cur = this.currency;
+        if ((cur == null || cur.trim().isEmpty()) && this.account != null && this.account.getCurrency() != null) {
+            cur = this.account.getCurrency();
+        }
+        return com.financeapp.service.CurrencyConverter.symbol(cur != null ? cur : "AZN");
+    }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

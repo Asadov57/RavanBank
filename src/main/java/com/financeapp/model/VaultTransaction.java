@@ -15,6 +15,12 @@ public class VaultTransaction {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
+    @Column(name = "original_amount", precision = 19, scale = 2)
+    private BigDecimal originalAmount;
+
+    @Column(name = "currency", length = 10)
+    private String currency;
+
     @Column(nullable = false)
     private String type;
 
@@ -50,6 +56,20 @@ public class VaultTransaction {
 
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
+
+    public BigDecimal getOriginalAmount() { return originalAmount; }
+    public void setOriginalAmount(BigDecimal originalAmount) { this.originalAmount = originalAmount; }
+
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
+
+    public BigDecimal getDisplayAmount() {
+        return originalAmount != null ? originalAmount : amount;
+    }
+
+    public String getCurrencySymbol() {
+        return com.financeapp.service.CurrencyConverter.symbol(currency != null && !currency.isBlank() ? currency : "EUR");
+    }
 
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }

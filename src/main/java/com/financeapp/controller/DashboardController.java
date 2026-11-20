@@ -92,13 +92,26 @@ public class DashboardController {
         List<AccountResponse> accounts = accountService.getAllAccounts(canonicalUsername);
         com.financeapp.model.Account resolvedDashAccount = resolveOrCreatePrimaryAccount(user, java.util.Optional.empty());
 
+        String dashCurrency = "AZN";
         if (!accounts.isEmpty()) {
             AccountResponse primary = accounts.get(0);
-            if (resolvedDashAccount != null && resolvedDashAccount.getBalance() != null) {
-                primary.setBalance(resolvedDashAccount.getBalance());
+            if (resolvedDashAccount != null) {
+                if (resolvedDashAccount.getBalance() != null) {
+                    primary.setBalance(resolvedDashAccount.getBalance());
+                }
+                if (resolvedDashAccount.getCurrency() != null && !resolvedDashAccount.getCurrency().isBlank()) {
+                    primary.setCurrency(resolvedDashAccount.getCurrency());
+                }
+            }
+            if (primary.getCurrency() != null && !primary.getCurrency().isBlank()) {
+                dashCurrency = com.financeapp.service.CurrencyConverter.normalize(primary.getCurrency());
             }
             model.addAttribute("account", primary);
+        } else if (resolvedDashAccount != null) {
+            dashCurrency = com.financeapp.service.CurrencyConverter.normalize(resolvedDashAccount.getCurrency());
         }
+        model.addAttribute("accountCurrency", dashCurrency);
+        model.addAttribute("accountCurrencySymbol", com.financeapp.service.CurrencyConverter.symbol(dashCurrency));
         model.addAttribute("customerId", "@" + canonicalUsername);
 
         model.addAttribute("accounts", accounts);
@@ -108,10 +121,12 @@ public class DashboardController {
         BigDecimal monthlyWithdrawTotal = BigDecimal.ZERO;
 
         for (com.financeapp.model.Transaction tx : transactions) {
+            String txCur = tx.getCurrency() != null && !tx.getCurrency().isBlank() ? tx.getCurrency() : dashCurrency;
+            BigDecimal converted = com.financeapp.service.CurrencyConverter.convert(tx.getAmount(), txCur, dashCurrency);
             if ("DEPOSIT".equalsIgnoreCase(tx.getType())) {
-                monthlyDepositTotal = monthlyDepositTotal.add(tx.getAmount());
+                monthlyDepositTotal = monthlyDepositTotal.add(converted);
             } else if ("WITHDRAWAL".equalsIgnoreCase(tx.getType())) {
-                monthlyWithdrawTotal = monthlyWithdrawTotal.add(tx.getAmount());
+                monthlyWithdrawTotal = monthlyWithdrawTotal.add(converted);
             }
         }
 
@@ -243,8 +258,13 @@ public class DashboardController {
         AccountResponse primary = null;
         if (!accounts.isEmpty()) {
             primary = accounts.get(0);
-            if (resolvedAccount != null && resolvedAccount.getBalance() != null) {
-                primary.setBalance(resolvedAccount.getBalance());
+            if (resolvedAccount != null) {
+                if (resolvedAccount.getBalance() != null) {
+                    primary.setBalance(resolvedAccount.getBalance());
+                }
+                if (resolvedAccount.getCurrency() != null && !resolvedAccount.getCurrency().isBlank()) {
+                    primary.setCurrency(resolvedAccount.getCurrency());
+                }
             }
         } else if (resolvedAccount != null) {
             primary = new AccountResponse(resolvedAccount.getId(), resolvedAccount.getAccountNumber(),
@@ -257,21 +277,29 @@ public class DashboardController {
             String accNum = emp.getAccountNumber() != null && !emp.getAccountNumber().isEmpty()
                     ? emp.getAccountNumber()
                     : com.financeapp.service.impl.AccountServiceImpl.generate16DigitCardNumber();
-            primary = new AccountResponse(emp.getId(), accNum, emp.getBalance() != null ? emp.getBalance() : BigDecimal.ZERO, "EUR", com.financeapp.enums.AccountStatus.ACTIVE);
+            primary = new AccountResponse(emp.getId(), accNum, emp.getBalance() != null ? emp.getBalance() : BigDecimal.ZERO, emp.getSalaryCurrency(), com.financeapp.enums.AccountStatus.ACTIVE);
             primary.setAccountType("CHECKING");
             primary.setCustomerName(displayName);
             primary.setUsername(canonicalUsername);
         }
+
+        String cardCurrency = (primary != null && primary.getCurrency() != null && !primary.getCurrency().isBlank())
+                ? com.financeapp.service.CurrencyConverter.normalize(primary.getCurrency())
+                : "AZN";
+        model.addAttribute("accountCurrency", cardCurrency);
+        model.addAttribute("accountCurrencySymbol", com.financeapp.service.CurrencyConverter.symbol(cardCurrency));
 
         List<com.financeapp.model.Transaction> transactions = loadMergedTransactions(user, resolvedAccount);
         BigDecimal monthlyDepositTotal = BigDecimal.ZERO;
         BigDecimal monthlyWithdrawTotal = BigDecimal.ZERO;
 
         for (com.financeapp.model.Transaction tx : transactions) {
+            String txCur = tx.getCurrency() != null && !tx.getCurrency().isBlank() ? tx.getCurrency() : cardCurrency;
+            BigDecimal converted = com.financeapp.service.CurrencyConverter.convert(tx.getAmount(), txCur, cardCurrency);
             if ("DEPOSIT".equalsIgnoreCase(tx.getType())) {
-                monthlyDepositTotal = monthlyDepositTotal.add(tx.getAmount());
+                monthlyDepositTotal = monthlyDepositTotal.add(converted);
             } else if ("WITHDRAWAL".equalsIgnoreCase(tx.getType())) {
-                monthlyWithdrawTotal = monthlyWithdrawTotal.add(tx.getAmount());
+                monthlyWithdrawTotal = monthlyWithdrawTotal.add(converted);
             }
         }
 

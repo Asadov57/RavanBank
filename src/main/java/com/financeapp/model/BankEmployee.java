@@ -62,6 +62,9 @@ public class BankEmployee {
     @Column(precision = 19, scale = 2)
     private BigDecimal salary;
 
+    @Column(name = "salary_currency", length = 10)
+    private String salaryCurrency = "AZN";
+
     @Column(name = "last_salary_paid_at")
     private LocalDateTime lastSalaryPaidAt;
 
@@ -159,6 +162,9 @@ public class BankEmployee {
 
     public BigDecimal getSalary() { return salary; }
     public void setSalary(BigDecimal salary) { this.salary = salary; }
+
+    public String getSalaryCurrency() { return salaryCurrency != null && !salaryCurrency.isBlank() ? salaryCurrency : "AZN"; }
+    public void setSalaryCurrency(String salaryCurrency) { this.salaryCurrency = salaryCurrency; }
 
     public LocalDateTime getLastSalaryPaidAt() { return lastSalaryPaidAt; }
     public void setLastSalaryPaidAt(LocalDateTime lastSalaryPaidAt) { this.lastSalaryPaidAt = lastSalaryPaidAt; }

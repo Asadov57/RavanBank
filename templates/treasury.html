@@ -268,7 +268,7 @@
                 <option value="" disabled selected>-- Müştəri hesabını seçin --</option>
                 <option th:each="acc : ${allAccounts}"
                         th:value="${acc.accountNumber}"
-                        th:text="${(acc.customerName ?: 'Müştəri') + ' • ' + acc.accountNumber + ' (Balans: €' + acc.balance + ')'}">
+                        th:text="${(acc.customerName ?: 'Müştəri') + ' • ' + acc.accountNumber + ' (Balans: ' + (acc.currency == 'EUR' ? '€' : (acc.currency == 'USD' ? '$' : '₼')) + #numbers.formatDecimal(acc.balance ?: 0, 1, 'COMMA', 2, 'POINT') + ' ' + (acc.currency ?: 'AZN') + ')'}">
                 </option>
               </select>
             </div>
@@ -279,14 +279,14 @@
                   Valyuta
                 </label>
                 <select name="currency" id="treasuryCreditCurrency" class="form-ctrl" onchange="updateTreasuryCreditCurrencyLabel()">
-                  <option value="AZN">AZN (₼)</option>
+                  <option value="AZN" selected>AZN (₼)</option>
                   <option value="USD">USD ($)</option>
-                  <option value="EUR" selected>EUR (€)</option>
+                  <option value="EUR">EUR (€)</option>
                 </select>
               </div>
               <div>
                 <label id="treasuryCreditAmountLabel" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 4px;">
-                  Məbləğ (€) <span style="color: #f87171;">*</span>
+                  Məbləğ (₼) <span style="color: #f87171;">*</span>
                 </label>
                 <input type="number" name="amount" class="form-ctrl" step="0.01" min="1" placeholder="1000.00" required>
               </div>
@@ -340,7 +340,7 @@
                 <td style="color: #fff; font-weight: 600;" th:text="${tx.sourceOrRecipient ?: 'Bank Əməliyyatı'}">Maaş / Kredit</td>
                 <td><code style="color: #818cf8; font-size: 0.75rem;" th:text="${tx.category ?: 'ÜMUMİ'}">KAPİTAL</code></td>
                 <td style="text-align: right; font-weight: 700;" th:styleappend="${tx.transactionType == 'INFLOW' ? 'color: #34d399;' : 'color: #f87171;'}"
-                    th:text="${(tx.transactionType == 'INFLOW' ? '+' : '-') + '€' + #numbers.formatDecimal(tx.amount, 1, 'COMMA', 2, 'POINT')}">€0.00</td>
+                    th:text="${(tx.transactionType == 'INFLOW' ? '+' : '-') + tx.currencySymbol + #numbers.formatDecimal(tx.displayAmount, 1, 'COMMA', 2, 'POINT')}">₼0.00</td>
                 <td style="text-align: right; color: #38bdf8; font-weight: 600;" th:text="${'€' + #numbers.formatDecimal(tx.runningBalance ?: 0, 1, 'COMMA', 2, 'POINT')}">€0.00</td>
               </tr>
               <tr th:if="${#lists.isEmpty(vaultTransactions)}">
@@ -377,9 +377,14 @@
               <td th:text="${loan.termMonths + ' ay'}">12 ay</td>
               <td style="color: #94a3b8;" th:text="${loan.adminNote ?: 'Security tərəfindən təsdiqlənib'}">Qeyd</td>
               <td style="text-align: right;">
-                <form th:action="@{/admin/treasury/loans/approve}" method="POST" style="display: inline;">
+                <form th:action="@{/admin/treasury/loans/approve}" method="POST" style="display: inline-flex; gap: 6px; align-items: center;">
                   <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
                   <input type="hidden" name="loanId" th:value="${loan.id}" />
+                  <select name="currency" class="form-ctrl" style="width: 92px; padding: 6px 6px;">
+                    <option value="AZN" selected>AZN (₼)</option>
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                  </select>
                   <button type="submit" class="btn btn-green">💰 Krediti Rəsmiləşdir &amp; Məbləği Ayır</button>
                 </form>
                 <form th:action="@{/admin/treasury/loans/reject}" method="POST" style="display: inline;">
@@ -439,7 +444,7 @@
               <th>ID &amp; Vəzifə</th>
               <th>Bank Kartı</th>
               <th>Son Ödəniş</th>
-              <th style="text-align: right;">Maaş (€) &amp; Ödəniş</th>
+              <th style="text-align: right;">Maaş &amp; Ödəniş</th>
             </tr>
           </thead>
           <tbody>
@@ -463,9 +468,9 @@
                 <form th:action="@{/admin/treasury/pay-salary/{id}(id=${emp.id})}" method="POST" style="display: inline-flex; gap: 6px; align-items: center;">
                   <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
                   <select name="currency" class="form-ctrl" style="width: 92px; padding: 7px 6px;">
-                    <option value="AZN">AZN (₼)</option>
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR" selected>EUR (€)</option>
+                    <option value="AZN" th:selected="${emp.salaryCurrency == null or emp.salaryCurrency == 'AZN'}">AZN (₼)</option>
+                    <option value="USD" th:selected="${emp.salaryCurrency == 'USD'}">USD ($)</option>
+                    <option value="EUR" th:selected="${emp.salaryCurrency == 'EUR'}">EUR (€)</option>
                   </select>
                   <input type="number" name="amount" step="0.01" min="1" th:value="${emp.salary != null and emp.salary > 0 ? emp.salary : 1500.00}" class="form-ctrl" style="width: 95px;" />
                   <button type="submit" class="btn btn-gold">💰 Maaşı Ödə</button>

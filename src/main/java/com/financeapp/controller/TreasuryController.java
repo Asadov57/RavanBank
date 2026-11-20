@@ -46,6 +46,7 @@ public class TreasuryController {
     private final AuditLogService auditLogService;
     private final AccountService accountService;
     private final com.financeapp.service.PanelLockoutService panelLockoutService;
+    private final org.springframework.cache.CacheManager cacheManager;
 
     public TreasuryController(BankVaultService bankVaultService,
                               LoanApplicationRepository loanApplicationRepository,
@@ -58,7 +59,8 @@ public class TreasuryController {
                               PanelMessageRepository panelMessageRepository,
                               AuditLogService auditLogService,
                               AccountService accountService,
-                              com.financeapp.service.PanelLockoutService panelLockoutService) {
+                              com.financeapp.service.PanelLockoutService panelLockoutService,
+                              org.springframework.cache.CacheManager cacheManager) {
         this.bankVaultService = bankVaultService;
         this.loanApplicationRepository = loanApplicationRepository;
         this.customerInquiryRepository = customerInquiryRepository;
@@ -71,6 +73,17 @@ public class TreasuryController {
         this.auditLogService = auditLogService;
         this.accountService = accountService;
         this.panelLockoutService = panelLockoutService;
+        this.cacheManager = cacheManager;
+    }
+
+    private void evictAccountCaches() {
+        if (cacheManager == null) return;
+        for (String cacheName : List.of("accounts", "accountById", "accountByNumber", "adminAccounts", "accountsByStatus")) {
+            var cache = cacheManager.getCache(cacheName);
+            if (cache != null) {
+                cache.clear();
+            }
+        }
     }
 
     private boolean isTreasuryAuthenticated(HttpSession session) {
@@ -261,7 +274,7 @@ public class TreasuryController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ROLE_ADMIN', 'EMPLOYEE', 'ROLE_EMPLOYEE')")
     public String issueCreditFromTreasury(@RequestParam("accountNumber") String accountNumber,
                                           @RequestParam("amount") BigDecimal amount,
-                                          @RequestParam(value = "currency", defaultValue = "EUR") String currency,
+                                          @RequestParam(value = "currency", defaultValue = "AZN") String currency,
                                           @RequestParam(value = "interestRate", required = false, defaultValue = "12.0") BigDecimal interestRate,
                                           @RequestParam(value = "note", required = false) String note,
                                           HttpSession session,
@@ -273,7 +286,6 @@ public class TreasuryController {
         try {
             String normCur = com.financeapp.service.CurrencyConverter.normalize(currency);
             String sym = com.financeapp.service.CurrencyConverter.symbol(normCur);
-            BigDecimal eurAmount = com.financeapp.service.CurrencyConverter.convert(amount, normCur, "EUR");
             BigDecimal rate = (interestRate != null && interestRate.compareTo(BigDecimal.ZERO) >= 0)
                     ? interestRate : new BigDecimal("12.0");
             BigDecimal interestAmount = amount.multiply(rate)
@@ -281,15 +293,16 @@ public class TreasuryController {
             BigDecimal totalRepayment = amount.add(interestAmount);
 
             bankVaultService.issueCustomerCredit(accountNumber, amount, normCur, rate, note);
+            evictAccountCaches();
 
             String actor = principal != null ? principal.getName() : "Xəzinədar";
             auditLogService.logAction(actor, "TREASURY_ISSUE_CREDIT", "ACCOUNT", accountNumber,
-                    String.format("Xəzinədar tərəfindən kredit/likvidlik ayrıldı: %s %s (€%s), Hesab: %s",
-                            amount, normCur, eurAmount, accountNumber));
+                    String.format("Xəzinədar tərəfindən kredit/likvidlik ayrıldı: %s%,.2f %s, Hesab: %s",
+                            sym, amount, normCur, accountNumber));
 
             redirectAttributes.addFlashAttribute("successMessage",
-                    String.format("Xəzinədən vəsait köçürüldü: %s%,.2f %s (€%,.2f ekvivalenti) | Faiz: %s%% (%s%,.2f) | Ümumi Geri Ödəniş: %s%,.2f (Hesab: %s)",
-                            sym, amount, normCur, eurAmount, rate, sym, interestAmount, sym, totalRepayment, accountNumber));
+                    String.format("Xəzinədən vəsait köçürüldü: %s%,.2f %s | Faiz: %s%% (%s%,.2f) | Ümumi Geri Ödəniş: %s%,.2f (Hesab: %s)",
+                            sym, amount, normCur, rate, sym, interestAmount, sym, totalRepayment, accountNumber));
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Kredit verilməsi xətası: " + e.getMessage());
         }
@@ -299,7 +312,7 @@ public class TreasuryController {
     @PostMapping("/vault/inflow")
     @PreAuthorize("hasAnyRole('ADMIN', 'ROLE_ADMIN', 'EMPLOYEE', 'ROLE_EMPLOYEE')")
     public String addTreasuryInflow(@RequestParam("amount") BigDecimal amount,
-                                    @RequestParam(value = "currency", defaultValue = "EUR") String currency,
+                                    @RequestParam(value = "currency", defaultValue = "AZN") String currency,
                                     @RequestParam("source") String source,
                                     @RequestParam(value = "category", defaultValue = "CORPORATE_TRANSFER") String category,
                                     HttpSession session,
@@ -311,10 +324,11 @@ public class TreasuryController {
         try {
             String actor = principal != null ? principal.getName() : "Xəzinədar";
             String normCur = com.financeapp.service.CurrencyConverter.normalize(currency);
+            String sym = com.financeapp.service.CurrencyConverter.symbol(normCur);
             BigDecimal eurAmount = com.financeapp.service.CurrencyConverter.convert(amount, normCur, "EUR");
-            bankVaultService.recordVaultInflow(eurAmount, source, category + " (" + amount + " " + normCur + ") — " + actor);
+            bankVaultService.recordVaultInflow(eurAmount, amount, normCur, source, category + " (" + sym + amount + " " + normCur + ") — " + actor);
             redirectAttributes.addFlashAttribute("successMessage",
-                    String.format("%,.2f %s (€%,.2f ekvivalenti) məbləğində vəsait Xəzinəyə (%s) uğurla daxil edildi.", amount, normCur, eurAmount, category));
+                    String.format("%s%,.2f %s məbləğində vəsait Xəzinəyə (%s) uğurla daxil edildi.", sym, amount, normCur, category));
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Xəzinə əməliyyatı xətası: " + e.getMessage());
         }
@@ -325,7 +339,7 @@ public class TreasuryController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ROLE_ADMIN', 'EMPLOYEE', 'ROLE_EMPLOYEE')")
     public String payEmployeeSalaryFromTreasury(@PathVariable("id") Long id,
                                                 @RequestParam(value = "amount", required = false) BigDecimal customAmount,
-                                                @RequestParam(value = "currency", defaultValue = "EUR") String currency,
+                                                @RequestParam(value = "currency", defaultValue = "AZN") String currency,
                                                 HttpSession session,
                                                 Principal principal,
                                                 RedirectAttributes redirectAttributes) {
@@ -340,41 +354,61 @@ public class TreasuryController {
                     : (emp.getSalary() != null && emp.getSalary().compareTo(BigDecimal.ZERO) > 0
                     ? emp.getSalary() : new BigDecimal("1500.00"));
             String normCur = com.financeapp.service.CurrencyConverter.normalize(currency);
+            String sym = com.financeapp.service.CurrencyConverter.symbol(normCur);
             BigDecimal eurPayAmt = com.financeapp.service.CurrencyConverter.convert(payAmt, normCur, "EUR");
 
             String actor = principal != null ? principal.getName() : "Xəzinədar";
-            bankVaultService.recordWithdrawal(eurPayAmt,
+            bankVaultService.recordWithdrawal(eurPayAmt, payAmt, normCur,
                     emp.getFullName(),
                     emp.getEmployeeId() != null ? emp.getEmployeeId() : emp.getUsername(),
-                    "Maaş Ödənişi (" + payAmt + " " + normCur + ", Xəzinədar: " + actor + ")");
+                    "Maaş Ödənişi (" + sym + payAmt + " " + normCur + ", Xəzinədar: " + actor + ")");
 
-            emp.setSalary(eurPayAmt);
+            emp.setSalary(payAmt);
+            emp.setSalaryCurrency(normCur);
             emp.setLastSalaryPaidAt(LocalDateTime.now());
             User empUser = userRepository.findFirstByUsernameIgnoreCase(emp.getUsername()).orElse(null);
             if (empUser != null) {
                 Account empAcc = accountRepository.findFirstByUser(empUser).orElse(null);
-                if (empAcc != null) {
-                    String accCur = empAcc.getCurrency() != null && !empAcc.getCurrency().trim().isEmpty()
-                            ? com.financeapp.service.CurrencyConverter.normalize(empAcc.getCurrency()) : "EUR";
-                    BigDecimal creditAmt = com.financeapp.service.CurrencyConverter.convert(payAmt, normCur, accCur);
-                    BigDecimal currentBal = empAcc.getBalance() != null ? empAcc.getBalance() : BigDecimal.ZERO;
-                    empAcc.setBalance(currentBal.add(creditAmt));
-                    accountRepository.save(empAcc);
-                    emp.setBalance(empAcc.getBalance());
-
-                    Transaction tx = new Transaction();
-                    tx.setAccount(empAcc);
-                    tx.setAmount(creditAmt);
-                    tx.setType("DEPOSIT");
-                    tx.setDescription("Xəzinədar Maaş Ödənişi (" + emp.getEmployeeId() + ": " + payAmt + " " + normCur + ")");
-                    tx.setTimestamp(LocalDateTime.now());
-                    transactionRepository.save(tx);
+                if (empAcc == null) {
+                    empAcc = new Account();
+                    empAcc.setAccountNumber(emp.getAccountNumber() != null && !emp.getAccountNumber().isBlank()
+                            ? emp.getAccountNumber()
+                            : com.financeapp.service.impl.AccountServiceImpl.generate16DigitCardNumber());
+                    empAcc.setBalance(BigDecimal.ZERO);
+                    empAcc.setCurrency(normCur);
+                    empAcc.setAccountType("SALARY");
+                    empAcc.setStatus(AccountStatus.ACTIVE);
+                    empAcc.setUser(empUser);
                 }
+                String oldCur = empAcc.getCurrency() != null && !empAcc.getCurrency().trim().isEmpty()
+                        ? com.financeapp.service.CurrencyConverter.normalize(empAcc.getCurrency()) : normCur;
+                BigDecimal currentBal = empAcc.getBalance() != null ? empAcc.getBalance() : BigDecimal.ZERO;
+                if (!oldCur.equals(normCur) && currentBal.compareTo(BigDecimal.ZERO) > 0) {
+                    currentBal = com.financeapp.service.CurrencyConverter.convert(currentBal, oldCur, normCur);
+                }
+                // Seçilən valyuta (AZN, USD, EUR) birbaşa işçinin hesab valyutası və məbləği kimi köçürülür
+                empAcc.setCurrency(normCur);
+                empAcc.setBalance(currentBal.add(payAmt));
+                accountRepository.saveAndFlush(empAcc);
+                evictAccountCaches();
+                emp.setAccountNumber(empAcc.getAccountNumber());
+                emp.setBalance(empAcc.getBalance());
+
+                Transaction tx = new Transaction();
+                tx.setAccount(empAcc);
+                tx.setUser(empUser);
+                tx.setAmount(payAmt);
+                tx.setCurrency(normCur);
+                tx.setType("DEPOSIT");
+                tx.setReferenceNumber("TX-" + java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase() + "-SAL");
+                tx.setDescription("Xəzinədar Maaş Ödənişi (" + emp.getEmployeeId() + ": " + sym + payAmt + " " + normCur + ")");
+                tx.setTimestamp(LocalDateTime.now());
+                transactionRepository.save(tx);
             }
             bankEmployeeRepository.save(emp);
 
             redirectAttributes.addFlashAttribute("successMessage",
-                    String.format("%s əməkdaşına %,.2f %s (€%,.2f ekvivalenti) maaş Xəzinədən ödənildi.", emp.getFullName(), payAmt, normCur, eurPayAmt));
+                    String.format("%s əməkdaşına %s%,.2f %s maaş Xəzinədən hesabına köçürüldü.", emp.getFullName(), sym, payAmt, normCur));
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Maaş ödənişi xətası: " + e.getMessage());
         }
@@ -384,6 +418,7 @@ public class TreasuryController {
     @PostMapping("/loans/approve")
     @PreAuthorize("hasAnyRole('ADMIN', 'ROLE_ADMIN', 'EMPLOYEE', 'ROLE_EMPLOYEE')")
     public String disburseLoanFromTreasury(@RequestParam("loanId") Long loanId,
+                                             @RequestParam(value = "currency", defaultValue = "AZN") String currency,
                                              HttpSession session,
                                              Principal principal,
                                              RedirectAttributes redirectAttributes) {
@@ -397,6 +432,10 @@ public class TreasuryController {
                 redirectAttributes.addFlashAttribute("errorMessage", "Bu kredit artıq rəsmiləşdirilib.");
                 return "redirect:/admin/treasury";
             }
+
+            String normCur = com.financeapp.service.CurrencyConverter.normalize(currency);
+            String sym = com.financeapp.service.CurrencyConverter.symbol(normCur);
+            BigDecimal eurLoanAmt = com.financeapp.service.CurrencyConverter.convert(loan.getAmount(), normCur, "EUR");
 
             String actor = principal != null ? principal.getName() : "Xəzinədar";
             loan.setStatus("APPROVED");
@@ -413,24 +452,34 @@ public class TreasuryController {
                 targetAcc = accountRepository.findFirstByUser(user).orElse(null);
             }
             if (targetAcc != null) {
+                String oldCur = targetAcc.getCurrency() != null && !targetAcc.getCurrency().trim().isEmpty()
+                        ? com.financeapp.service.CurrencyConverter.normalize(targetAcc.getCurrency()) : normCur;
                 BigDecimal current = targetAcc.getBalance() != null ? targetAcc.getBalance() : BigDecimal.ZERO;
+                if (!oldCur.equals(normCur) && current.compareTo(BigDecimal.ZERO) > 0) {
+                    current = com.financeapp.service.CurrencyConverter.convert(current, oldCur, normCur);
+                }
+                targetAcc.setCurrency(normCur);
                 targetAcc.setBalance(current.add(loan.getAmount()));
                 targetAcc.setStatus(AccountStatus.ACTIVE);
-                accountRepository.save(targetAcc);
+                accountRepository.saveAndFlush(targetAcc);
+                evictAccountCaches();
 
                 Transaction tx = new Transaction();
                 tx.setAccount(targetAcc);
+                tx.setUser(targetAcc.getUser() != null ? targetAcc.getUser() : user);
                 tx.setAmount(loan.getAmount());
+                tx.setCurrency(normCur);
                 tx.setType("DEPOSIT");
-                tx.setDescription("Kredit Rəsmiləşdirilməsi (Xəzinədar)");
+                tx.setReferenceNumber("TX-" + java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase() + "-LN");
+                tx.setDescription("Kredit Rəsmiləşdirilməsi (Xəzinədar • " + sym + loan.getAmount() + " " + normCur + ")");
                 tx.setTimestamp(LocalDateTime.now());
                 transactionRepository.save(tx);
             }
 
-            bankVaultService.recordWithdrawal(loan.getAmount(),
+            bankVaultService.recordWithdrawal(eurLoanAmt, loan.getAmount(), normCur,
                     loan.getCustomerName(),
                     targetAcc != null ? targetAcc.getAccountNumber() : loan.getAccountNumber(),
-                    "Kredit Ayırması (Xəzinədar: " + actor + ")");
+                    "Kredit Ayırması (" + sym + loan.getAmount() + " " + normCur + ", Xəzinədar: " + actor + ")");
 
             customerInquiryRepository.findAll().stream()
                     .filter(i -> loan.getId().equals(i.getLoanApplicationId()))
@@ -446,17 +495,17 @@ public class TreasuryController {
                     loan.getUsername(),
                     actor,
                     "Kreditiniz Rəsmiləşdirildi",
-                    String.format("Hörmətli %s, %,.2f ₼ məbləğində kreditiniz Xəzinədar şöbəsi tərəfindən rəsmiləşdirildi və hesabınıza köçürüldü.",
-                            loan.getCustomerName(), loan.getAmount()),
+                    String.format("Hörmətli %s, %s%,.2f %s məbləğində kreditiniz Xəzinədar şöbəsi tərəfindən rəsmiləşdirildi və hesabınıza köçürüldü.",
+                            loan.getCustomerName(), sym, loan.getAmount(), normCur),
                     "SUCCESS"
             );
             customerMessageRepository.save(msg);
 
             auditLogService.logAction(actor, "TREASURY_LOAN_APPROVED", "LOAN", loanId.toString(),
-                    "Kredit Xəzinədar tərəfindən rəsmiləşdirildi: " + loan.getAmount());
+                    "Kredit Xəzinədar tərəfindən rəsmiləşdirildi: " + sym + loan.getAmount() + " " + normCur);
 
             redirectAttributes.addFlashAttribute("successMessage",
-                    String.format("Kredit (#%d) rəsmiləşdirildi və %,.2f məbləğ müştərinin hesabına köçürüldü.", loanId, loan.getAmount()));
+                    String.format("Kredit (#%d) rəsmiləşdirildi və %s%,.2f %s müştərinin hesabına köçürüldü.", loanId, sym, loan.getAmount(), normCur));
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Kredit rəsmiləşdirmə xətası: " + e.getMessage());
         }

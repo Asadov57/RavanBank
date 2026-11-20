@@ -89,34 +89,50 @@ public class BankVaultServiceImpl implements BankVaultService {
     @Override
     @Transactional
     public VaultTransaction recordVaultInflow(BigDecimal amount, String source, String note) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+        return recordVaultInflow(amount, amount, "EUR", source, note);
+    }
+
+    @Override
+    @Transactional
+    public VaultTransaction recordVaultInflow(BigDecimal eurAmount, BigDecimal originalAmount, String currency, String source, String note) {
+        if (eurAmount == null || eurAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Məbləğ müsbət olmalıdır");
         }
 
+        String normCur = com.financeapp.service.CurrencyConverter.normalize(currency);
         BankVault vault = getOrCreateVault();
-        vault.setBalance(vault.getBalance().add(amount));
+        vault.setBalance(vault.getBalance().add(eurAmount));
         bankVaultRepository.save(vault);
 
         VaultTransaction vt = new VaultTransaction(
-                amount,
+                eurAmount,
                 "INFLOW",
                 source != null && !source.trim().isEmpty() ? source.trim() : "Banka Mədaxil",
                 "VAULT_INFLOW",
                 note != null && !note.trim().isEmpty() ? note.trim() : "Mərkəzi büdcəyə vəsait mədaxil edildi",
                 vault.getBalance()
         );
+        vt.setOriginalAmount(originalAmount != null ? originalAmount : eurAmount);
+        vt.setCurrency(normCur);
         return vaultTransactionRepository.save(vt);
     }
 
     @Override
     @Transactional
     public VaultTransaction recordWithdrawal(BigDecimal amount, String customerName, String accountNumber, String note) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+        return recordWithdrawal(amount, amount, "EUR", customerName, accountNumber, note);
+    }
+
+    @Override
+    @Transactional
+    public VaultTransaction recordWithdrawal(BigDecimal eurAmount, BigDecimal originalAmount, String currency, String customerName, String accountNumber, String note) {
+        if (eurAmount == null || eurAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Çıxarış məbləği müsbət olmalıdır");
         }
 
+        String normCur = com.financeapp.service.CurrencyConverter.normalize(currency);
         BankVault vault = getOrCreateVault();
-        vault.setBalance(vault.getBalance().subtract(amount));
+        vault.setBalance(vault.getBalance().subtract(eurAmount));
         bankVaultRepository.save(vault);
 
         String source = "Müştəri Çıxarışı • " + (customerName != null && !customerName.trim().isEmpty() ? customerName.trim() : "Müştəri")
@@ -124,13 +140,15 @@ public class BankVaultServiceImpl implements BankVaultService {
         String memo = (note != null && !note.trim().isEmpty()) ? note.trim() : "Bankdan vəsait çıxarıldı";
 
         VaultTransaction vt = new VaultTransaction(
-                amount,
+                eurAmount,
                 "OUTFLOW",
                 source,
                 "CUSTOMER_WITHDRAWAL",
                 memo,
                 vault.getBalance()
         );
+        vt.setOriginalAmount(originalAmount != null ? originalAmount : eurAmount);
+        vt.setCurrency(normCur);
         return vaultTransactionRepository.save(vt);
     }
 
@@ -235,35 +253,41 @@ public class BankVaultServiceImpl implements BankVaultService {
                 .or(() -> accountRepository.findByAccountNumber(cleanAcc.replaceAll("\\s+", "")))
                 .orElseThrow(() -> new RuntimeException("Hesab tapılmadı: " + accountNumber));
 
-        String accCur = account.getCurrency() != null && !account.getCurrency().trim().isEmpty()
-                ? com.financeapp.service.CurrencyConverter.normalize(account.getCurrency()) : "EUR";
-        BigDecimal accountCreditAmount = com.financeapp.service.CurrencyConverter.convert(inputAmount, normCur, accCur);
+        String oldCur = account.getCurrency() != null && !account.getCurrency().trim().isEmpty()
+                ? com.financeapp.service.CurrencyConverter.normalize(account.getCurrency()) : normCur;
+        BigDecimal currentBal = account.getBalance() != null ? account.getBalance() : BigDecimal.ZERO;
+        if (!oldCur.equals(normCur) && currentBal.compareTo(BigDecimal.ZERO) > 0) {
+            currentBal = com.financeapp.service.CurrencyConverter.convert(currentBal, oldCur, normCur);
+        }
 
         vault.setBalance(vault.getBalance().subtract(vaultEurAmount));
         bankVaultRepository.save(vault);
 
-        account.setBalance(account.getBalance().add(accountCreditAmount));
+        // Xəzinədardan hansı valyuta seçilibsə (AZN, USD, EUR), hesab həmin valyuta ilə mədaxil olunur
+        account.setCurrency(normCur);
+        account.setBalance(currentBal.add(inputAmount));
         accountRepository.saveAndFlush(account);
         syncEmployeeBalance(account);
 
         String customerName = account.getUser() != null ? account.getUser().getUsername() : account.getAccountNumber();
-        String memo = String.format("Bank Krediti • Təsdiqləndi (%s %s -> %s %s, Faiz: %s%%, Faiz Məbləği: %s %s, Geri Ödəniş: %s %s)%s",
-                inputAmount, normCur, accountCreditAmount, accCur,
+        String memo = String.format("Bank Krediti • Təsdiqləndi (%s %s, Faiz: %s%%, Faiz Məbləği: %s %s, Geri Ödəniş: %s %s)%s",
+                inputAmount, normCur,
                 rate, interestAmount, normCur, totalRepayment, normCur,
                 (note != null && !note.trim().isEmpty() ? " - " + note.trim() : ""));
         String ref = "TX-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase() + "-CRD";
         Transaction customerTx = new Transaction(
-                accountCreditAmount,
+                inputAmount,
                 memo,
                 "DEPOSIT",
                 ref,
                 account,
                 account.getUser()
         );
+        customerTx.setCurrency(normCur);
         transactionRepository.save(customerTx);
 
-        String vaultNote = String.format("Kredit: %s %s (€%s), Faiz: %s%% (+%s %s), Toplam: %s %s%s",
-                inputAmount, normCur, vaultEurAmount, rate, interestAmount, normCur, totalRepayment, normCur,
+        String vaultNote = String.format("Kredit: %s %s, Faiz: %s%% (+%s %s), Toplam: %s %s%s",
+                inputAmount, normCur, rate, interestAmount, normCur, totalRepayment, normCur,
                 (note != null && !note.trim().isEmpty() ? " | Qeyd: " + note.trim() : ""));
 
         VaultTransaction vt = new VaultTransaction(
@@ -274,6 +298,8 @@ public class BankVaultServiceImpl implements BankVaultService {
                 vaultNote,
                 vault.getBalance()
         );
+        vt.setOriginalAmount(inputAmount);
+        vt.setCurrency(normCur);
         return vaultTransactionRepository.save(vt);
     }
 
