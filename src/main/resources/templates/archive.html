@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RavanArxiv — Məxfi Arxiv Bölməsi | AsadovBank</title>
+  <meta name="description" content="AsadovBank Silinmiş və Arxivləşdirilmiş Hesablar Paneli">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" th:href="@{/css/styles.css}" href="/css/styles.css">
+  <link rel="stylesheet" th:href="@{/css/admin-dark.css}" href="/css/admin-dark.css">
+
+  <style>
+    :root {
+      --cyber-bg: #070b14;
+      --cyber-card: rgba(15, 23, 42, 0.88);
+      --cyber-border: rgba(168, 85, 247, 0.3);
+      --cyber-purple: #a855f7;
+      --cyber-indigo: #6366f1;
+      --cyber-cyan: #38bdf8;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #2e1065 0%, #070b14 75%);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: #f1f5f9;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    .archive-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem 4rem 2rem;
+    }
+
+    .archive-navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1.15rem 1.75rem;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid var(--cyber-border);
+      border-radius: 18px;
+      backdrop-filter: blur(20px);
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.6), 0 0 25px rgba(168, 85, 247, 0.15);
+    }
+
+    .archive-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .archive-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #7c3aed, #ec4899);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 25px rgba(168, 85, 247, 0.45);
+    }
+
+    .archive-table-wrap {
+      background: var(--cyber-card);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.5);
+    }
+
+    .archive-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .archive-table th {
+      background: rgba(30, 27, 75, 0.85);
+      color: #cbd5e1;
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+    }
+
+    .archive-table td {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+      vertical-align: middle;
+    }
+
+    .archive-table tr:hover {
+      background: rgba(168, 85, 247, 0.04);
+    }
+
+    .masked-pwd-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 4px 10px;
+    }
+
+    .masked-pwd-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      letter-spacing: 2px;
+      color: #a855f7;
+    }
+
+    .pwd-reveal-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #94a3b8;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      transition: color 0.2s;
+    }
+
+    .pwd-reveal-btn:hover {
+      color: #fff;
+    }
+
+    .auth-overlay {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 480px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1.5px solid rgba(168, 85, 247, 0.45);
+      border-radius: 24px;
+      padding: 2.75rem 2.25rem;
+      box-shadow: 0 25px 65px rgba(0,0,0,0.8), 0 0 35px rgba(168, 85, 247, 0.25);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="archive-container auth-overlay" th:if="${needsArchiveAuth}">
+    <div class="auth-box">
+      <div style="width: 68px; height: 68px; border-radius: 18px; background: linear-gradient(135deg, #7c3aed, #ec4899); margin: 0 auto 1.25rem auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(168, 85, 247, 0.45);">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+          <polyline points="21 8 21 21 3 21 3 8"></polyline>
+          <rect x="1" y="3" width="22" height="5"></rect>
+          <line x1="10" y1="12" x2="14" y2="12"></line>
+        </svg>
+      </div>
+
+      <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;">RavanArxiv Məxfi Girişi</h1>
+      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1.75rem; line-height: 1.45;">
+        Silinmiş və arxivləşdirilmiş bank hesablarını görmək üçün <strong>"RavanArxiv"</strong> məxfi giriş kodunu daxil edin.
+      </p>
+
+      <div th:if="${errorMessage}" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; padding: 10px 14px; border-radius: 10px; font-size: 0.88rem; margin-bottom: 1.25rem;" th:text="${errorMessage}">
+        Xəta baş verdi!
+      </div>
+      <div th:if="${successMessage}" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #6ee7b7; padding: 10px 14px; border-radius: 10px; font-size: 0.88rem; margin-bottom: 1.25rem;" th:text="${successMessage}">
+        Uğurlu əməliyyat!
+      </div>
+
+      <form th:action="@{/admin/archive/verify}" method="POST" autocomplete="off">
+        <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
+
+        <div style="margin-bottom: 1.25rem; text-align: left;">
+          <label for="archiveCodeInput" style="display: block; font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">
+            Məxfi Arxiv Kodu
+          </label>
+          <div style="position: relative;">
+            <input 
+              type="password" 
+              id="archiveCodeInput" 
+              name="archiveCode" 
+              class="form-control" 
+              placeholder="" 
+              required 
+              autocomplete="new-password"
+              style="width: 100%; box-sizing: border-box; background: rgba(2, 6, 23, 0.7); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 10px; padding: 12px 42px 12px 14px; color: #fff; font-size: 1rem; font-family: inherit; outline: none;"
+            >
+            <button 
+              type="button" 
+              id="toggleArchiveCodeBtn" 
+              title="Kodu göstər / gizlət"
+              style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94a3b8; padding: 4px;"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          style="width: 100%; background: linear-gradient(135deg, #7c3aed, #ec4899); color: #fff; border: none; font-weight: 800; font-size: 1rem; padding: 13px; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 18px rgba(124, 58, 237, 0.45); margin-bottom: 1.15rem;"
+        >
+          Arxiv Girişini Təsdiqlə &rarr;
+        </button>
+
+        <a th:href="@{/admin/security}" style="color: #94a3b8; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+          <span>&larr; Təhlükəsizlik Panelinə Qayıt</span>
+        </a>
+      </form>
+    </div>
+  </div>
+
+  <div class="archive-container" th:if="${!needsArchiveAuth}">
+
+    <header class="archive-navbar">
+      <div class="archive-brand">
+        <div class="archive-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+            <polyline points="21 8 21 21 3 21 3 8"></polyline>
+            <rect x="1" y="3" width="22" height="5"></rect>
+            <line x1="10" y1="12" x2="14" y2="12"></line>
+          </svg>
+        </div>
+        <div>
+          <div style="font-size: 1.25rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 10px;">
+            <span>RavanArxiv</span>
+            <span style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); padding: 2px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">
+              MƏXFİ ARXİV BAZASI
+            </span>
+          </div>
+          <span style="font-size: 0.8rem; color: #94a3b8;">Silinmiş və qapalı bank hesablarının təhlükəsiz arxiv qeydləri</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <a th:href="@{/admin/security}" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 6px;">
+          <span>&larr; Təhlükəsizlik Mərkəzi</span>
+        </a>
+
+        <form th:action="@{/admin/archive/logout}" method="POST" style="margin: 0;">
+          <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="mock-token" />
+          <button type="submit" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
+            Arxivdən Çıxış
+          </button>
+        </form>
+      </div>
+    </header>
+
+    <div th:if="${successMessage}" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #6ee7b7; padding: 12px 18px; border-radius: 12px; font-size: 0.9rem; margin-bottom: 1.5rem;" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; padding: 12px 18px; border-radius: 12px; font-size: 0.9rem; margin-bottom: 1.5rem;" th:text="${errorMessage}"></div>
+
+    <div class="archive-table-wrap">
+      <table class="archive-table">
+        <thead>
+          <tr>
+            <th style="width: 50px;">#</th>
+            <th>Arxiv Tarixi</th>
+            <th>Silinən Kart / Hesab No</th>
+            <th>Müştəri Adı</th>
+            <th>İstifadəçi Adı</th>
+            <th>Əlaqə (Gmail)</th>
+            <th>Məxfi Şifrə Qutusu</th>
+            <th>Son Balans</th>
+            <th>Silinmə Səbəbi & İcraçı</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="arch, stat : ${archivedAccounts}">
+            <td style="color: #64748b; font-weight: 700;" th:text="${stat.count}">1</td>
+            <td style="color: #94a3b8; font-size: 0.82rem; white-space: nowrap;"
+                th:text="${arch.archivedAt != null ? #temporals.format(arch.archivedAt, 'dd.MM.yyyy HH:mm') : '—'}">03.11.2026 21:00</td>
+            <td>
+              <span style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #f43f5e;" th:text="${arch.accountNumber}">4098 7056 1234 5678</span>
+            </td>
+            <td>
+              <strong style="color: #fff;" th:text="${arch.fullName ?: 'N/A'}">Ad Soyad</strong>
+            </td>
+            <td>
+              <span style="color: #60a5fa; font-family: 'JetBrains Mono', monospace;" th:text="'@' + ${arch.username}">@user</span>
+            </td>
+            <td>
+              <span style="color: #38bdf8; font-size: 0.85rem;" th:text="${arch.email ?: 'N/A'}">user@gmail.com</span>
+            </td>
+            <td>
+
+              <div class="masked-pwd-box">
+                <span class="masked-pwd-text" id="pwdText-[[${arch.id}]]">••••••••</span>
+                <button type="button" class="pwd-reveal-btn" th:data-pwd="${arch.rawPassword}" onclick="toggleArchivePwd(this)" title="Şifrəni göstər / gizlət">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+            </td>
+            <td>
+              <strong style="color: #fbbf24; font-family: 'JetBrains Mono', monospace;"
+                      th:text="${#numbers.formatDecimal(arch.balance, 1, 'COMMA', 2, 'POINT') + ' ' + (arch.currency ?: 'AZN')}">0.00 AZN</strong>
+            </td>
+            <td>
+              <div style="font-size: 0.84rem; color: #cbd5e1;" th:text="${arch.reason}">Təhlükəsizlik paneli tərəfindən silindi</div>
+              <small style="color: #64748b; font-size: 0.75rem;" th:text="'İcraçı: ' + ${arch.archivedBy}">İcraçı: Admin</small>
+            </td>
+          </tr>
+
+          <tr th:if="${archivedAccounts == null or archivedAccounts.empty}">
+            <td colspan="9" style="text-align: center; padding: 3rem; color: #94a3b8;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.8">
+                  <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                  <rect x="1" y="3" width="22" height="5"></rect>
+                  <line x1="10" y1="12" x2="14" y2="12"></line>
+                </svg>
+                <span style="font-size: 1rem; color: #cbd5e1;">RavanArxiv bölməsində hələ ki heç bir silinmiş hesab yoxdur.</span>
+                <small style="color: #64748b;">Təhlükəsizlik panelindən silinən hesablar avtomatik olaraq bu arxivə düşəcəkdir.</small>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+
+    const toggleArchiveCodeBtn = document.getElementById('toggleArchiveCodeBtn');
+    const archiveCodeInput = document.getElementById('archiveCodeInput');
+    if (toggleArchiveCodeBtn && archiveCodeInput) {
+      toggleArchiveCodeBtn.addEventListener('click', () => {
+        const isPwd = archiveCodeInput.type === 'password';
+        archiveCodeInput.type = isPwd ? 'text' : 'password';
+      });
+    }
+
+    function toggleArchivePwd(btn) {
+      const parent = btn.parentElement;
+      const textEl = parent.querySelector('.masked-pwd-text');
+      const realPwd = btn.getAttribute('data-pwd') || '••••••••';
+      if (textEl.textContent === '••••••••') {
+        textEl.textContent = realPwd;
+        textEl.style.color = '#34d399';
+      } else {
+        textEl.textContent = '••••••••';
+        textEl.style.color = '#a855f7';
+      }
+    }
+  </script>
+  <script th:src="@{/js/no-autocomplete-stay.js}" src="/js/no-autocomplete-stay.js"></script>
+</body>
+</html>
+

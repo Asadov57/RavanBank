@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daxil Ol | AsadovBank</title>
+  <meta name="description" content="Maliyyənizi idarə etmək üçün AsadovBank hesabınıza daxil olun.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" th:href="@{/css/styles.css}" href="../static/css/styles.css">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-wrapper {
+      width: 100%;
+      max-width: 420px;
+      padding: 2rem;
+    }
+
+    .brand-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .brand-icon-lg {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #6c63ff, #3b82f6);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      box-shadow: 0 8px 32px rgba(108,99,255,0.35);
+    }
+
+    .brand-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-title span { font-weight: 400; opacity: 0.75; }
+
+    .brand-sub {
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.55);
+      margin-top: 0.35rem;
+    }
+
+    .login-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 2rem;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+    }
+
+    .card-heading {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1.5rem;
+    }
+
+    .alert-error {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: #fca5a5;
+      font-size: 0.875rem;
+      margin-bottom: 1.25rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .alert-success {
+      background: rgba(34,197,94,0.15);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: #86efac;
+      font-size: 0.875rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group { margin-bottom: 1.125rem; }
+
+    .form-label {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 0.45rem;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .form-input {
+      width: 100%;
+      background: #0f172a !important;
+      background-color: #0f172a !important;
+      border: 1px solid rgba(255,255,255,0.18) !important;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.9375rem;
+      color: #ffffff !important;
+      font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none !important;
+      caret-color: #60a5fa !important;
+      box-shadow: none !important;
+    }
+
+    .form-input::placeholder { color: rgba(255,255,255,0.4) !important; }
+
+    .form-input:hover {
+      border-color: rgba(99, 102, 241, 0.45) !important;
+      background: #0f172a !important;
+      background-color: #0f172a !important;
+    }
+
+    .form-input:focus,
+    .form-input:active,
+    .form-input:focus-visible {
+      background: #0f172a !important;
+      background-color: #0f172a !important;
+      border-color: #6366f1 !important;
+      color: #ffffff !important;
+      outline: none !important;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25) !important;
+    }
+
+    .form-input:-webkit-autofill,
+    .form-input:-webkit-autofill:hover, 
+    .form-input:-webkit-autofill:focus, 
+    .form-input:-webkit-autofill:active {
+      -webkit-text-fill-color: #ffffff !important;
+      color: #ffffff !important;
+      -webkit-box-shadow: 0 0 0px 1000px #0f172a inset !important;
+      box-shadow: 0 0 0px 1000px #0f172a inset !important;
+      background-color: #0f172a !important;
+      caret-color: #ffffff !important;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #4f46e5, #3b82f6);
+      border: none;
+      border-radius: 12px;
+      padding: 0.875rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: opacity 0.2s, transform 0.15s;
+      letter-spacing: 0.01em;
+    }
+
+    .submit-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+    .submit-btn:active { transform: translateY(0); }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+
+    <div class="brand-header">
+      <div class="brand-icon-lg">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 21h18"></path>
+          <path d="M5 21V9l7-5 7 5v12"></path>
+        </svg>
+      </div>
+      <div class="brand-title">Asadov<span>Bank</span></div>
+      <div class="brand-sub">AsadovBank Təhlükəsiz Onlayn Bankçılıq / Secure Online Banking</div>
+    </div>
+
+    <div class="login-card">
+      <div class="card-heading">Hesabınıza Daxil Olun / Sign In</div>
+
+      <div class="alert-error" th:if="${error != null or param.error != null}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span th:text="${session != null and session['SPRING_SECURITY_LAST_EXCEPTION'] != null ? session['SPRING_SECURITY_LAST_EXCEPTION'].message : 'İstifadəçi adı və ya şifrə yanlışdır / Invalid username or password.'}">İstifadəçi adı və ya şifrə yanlışdır / Invalid username or password.</span>
+      </div>
+
+      <div class="alert-success" th:if="${registered != null or param.registered != null}">
+        <span th:text="${successMessage != null ? successMessage : 'Qeydiyyat uğurla tamamlandı! Zəhmət olmasa daxil olun / Registration complete! Please sign in.'}">Qeydiyyat uğurla tamamlandı / Registration complete!</span>
+      </div>
+
+      <div class="alert-success" th:if="${logout != null or param.logout != null}">
+        Sistemdən uğurla çıxış etdiniz / Successfully signed out.
+      </div>
+
+      <div class="alert-error" th:if="${accessDenied != null or param.accessDenied != null}">
+        Giriş icazəniz yoxdur / Access denied.
+      </div>
+
+      <div class="alert-error" th:if="${errorMessage}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span th:text="${errorMessage}">Xəta baş verdi / An error occurred.</span>
+      </div>
+
+      <form th:action="@{/login}" method="POST" id="loginForm" autocomplete="off">
+
+        <div class="form-group">
+          <label for="username" class="form-label">İstifadəçi Adı / Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="form-input"
+            required
+            autocomplete="off"
+            readonly
+            onfocus="this.removeAttribute('readonly');"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Şifrə / Password</label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input"
+              required
+              autocomplete="new-password"
+              readonly
+              onfocus="this.removeAttribute('readonly');"
+              style="padding-right: 2.75rem;"
+            >
+            <button
+              type="button"
+              id="togglePasswordBtn"
+              class="password-toggle-btn"
+              title="Şifrəni Göstər / Gizlət | Show / Hide Password"
+              aria-label="Şifrəni göstər və ya gizlət"
+              tabindex="-1"
+              style="position: absolute; right: 0.75rem; background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; padding: 4px; transition: color 0.2s;"
+            >
+
+              <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+
+              <svg id="eyeOffIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="loginSubmitBtn">
+          Daxil Ol / Sign In
+        </button>
+
+        <div class="login-link" style="text-align: center; margin-top: 1.25rem; font-size: 0.9rem;">
+          <a href="/register" th:href="@{/register}" style="color: #a5b4fc; text-decoration: none; font-weight: 600;">Qeydiyyatdan keçin / Sign Up</a>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+    <div class="error-modal-overlay" id="errorModalOverlay" role="dialog" aria-modal="true" aria-labelledby="errorModalTitle">
+      <div class="error-modal">
+        <button class="error-modal-close" id="errorModalCloseBtn" aria-label="Bağla">&times;</button>
+        <div class="error-modal-icon-wrap" aria-hidden="true">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <h2 class="error-modal-title" id="errorModalTitle">Əməliyyat Uğursuz Oldu</h2>
+        <p class="error-modal-message" id="errorModalMessage">Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.</p>
+        <span class="error-modal-code" id="errorModalCode" style="display:none;"></span>
+        <div class="error-modal-actions">
+          <button class="error-modal-btn-dismiss" id="errorModalDismissBtn">Bağla</button>
+          <button class="error-modal-btn-retry" id="errorModalRetryBtn">Yenidən Cəhd Et</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/dashboard.js" th:src="@{/js/dashboard.js}"></script>
+
+    <script>
+      (function() {
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+        } catch (e) {}
+        const uEl = document.getElementById('username');
+        const pEl = document.getElementById('password');
+        if (uEl) uEl.value = '';
+        if (pEl) pEl.value = '';
+
+        const toggleBtn = document.getElementById('togglePasswordBtn');
+        const pwdInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+        const eyeOffIcon = document.getElementById('eyeOffIcon');
+        if (toggleBtn && pwdInput) {
+          toggleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const isPassword = pwdInput.type === 'password';
+            pwdInput.type = isPassword ? 'text' : 'password';
+            if (eyeIcon && eyeOffIcon) {
+              eyeIcon.style.display = isPassword ? 'none' : 'block';
+              eyeOffIcon.style.display = isPassword ? 'block' : 'none';
+            }
+          });
+        }
+      })();
+    </script>
+    <script th:src="@{/js/no-autocomplete-stay.js}" src="/js/no-autocomplete-stay.js"></script>
+</body>
+</html>

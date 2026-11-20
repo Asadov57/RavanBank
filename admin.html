@@ -3,26 +3,156 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Portal &bull; Bank Core Management</title>
-  <meta name="description" content="Professional banking admin dashboard for account operations, lifecycle control, and real-time ledger management.">
+  <title>Admin Portal &bull; Financial Flow &amp; Operations</title>
+  <meta name="description" content="Enterprise bank management console for real-time cash flow, employee management, and customer accounts.">
 
-  <!-- Typography: Google Fonts Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
-  <!-- Admin Dark Theme Stylesheet -->
   <link rel="stylesheet" href="css/admin-dark.css" th:href="@{/css/admin-dark.css}">
+  <style>
+    .kpi-clickable {
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .kpi-clickable:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+    .vault-grid-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 900px) {
+      .vault-grid-two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+    .vault-subcard {
+      background: var(--admin-bg-surface);
+      border: 1px solid var(--admin-border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+    }
+    .vault-subcard-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+    }
+    .vault-subcard-desc {
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      margin-bottom: 1.25rem;
+    }
+    .tx-tag-inflow {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .tx-tag-outflow {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .side-by-side-admin-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+      margin-top: 2rem;
+      align-items: start;
+    }
+    @media (max-width: 1100px) {
+      .side-by-side-admin-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .quota-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .quota-green {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .quota-red {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+    .btn-action-sm {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-block {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+    .btn-block:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+    .btn-unblock {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+    .btn-unblock:hover {
+      background: #10b981;
+      color: #fff;
+    }
+    .btn-salary {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+    .btn-salary:hover {
+      background: #f59e0b;
+      color: #000;
+    }
+  </style>
 </head>
-<body>
+<body th:data-error="${errorMessage}" th:data-success="${successMessage}">
   <div class="admin-layout">
 
-    <!-- ====================================================================
-         Top Admin Navigation Bar
-         ==================================================================== -->
     <header class="admin-navbar">
       <div class="admin-nav-inner">
-        <!-- Brand & System Role -->
+
         <div class="admin-brand">
           <div class="brand-badge-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
@@ -31,626 +161,517 @@
               <line x1="9" y1="21" x2="9" y2="9"></line>
             </svg>
           </div>
-          <span class="brand-title">Nexus<span style="color: #60a5fa; font-weight: 400;">Core</span></span>
-          <span class="brand-role-tag">Admin Console</span>
+          <span class="brand-title">Asadov<span style="color: #60a5fa; font-weight: 400;">Bank</span></span>
+          <span class="brand-role-tag">İnzibatçı Konsolu</span>
         </div>
 
-        <!-- Admin Profile & Session Actions -->
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <a th:href="@{/admin/inquiry}" style="background: rgba(59, 130, 246, 0.16); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); padding: 6px 14px; border-radius: 8px; text-decoration: none; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+            <span>📋 Sorğu Paneli</span>
+          </a>
+          <button type="button" onclick="openSecurityCodeModal()" style="background: rgba(244, 63, 94, 0.16); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.4); padding: 6px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+            <span>🛡️ Security Paneli</span>
+          </button>
+          <a th:href="@{/admin/treasury}" style="background: rgba(16, 185, 129, 0.16); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 6px 14px; border-radius: 8px; text-decoration: none; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+            <span>💰 Xəzinədar Paneli</span>
+          </a>
+        </div>
+
         <div class="admin-user-profile">
           <div class="admin-meta-info">
-            <div class="admin-avatar" th:text="${adminInitials ?: 'AD'}">AD</div>
-            <div class="admin-credentials">
-              <span class="admin-name" th:text="${adminUsername ?: 'System Administrator'}">System Administrator</span>
-              <span class="admin-role">Superuser &bull; Security Level 5</span>
+            <div class="admin-avatar" th:text="${adminInitials ?: 'RA'}">RA</div>
+            <div class="admin-textual">
+              <span class="admin-display-name" th:text="${adminUsername ?: 'Ravan Asadov'}">Ravan Asadov</span>
+              <span class="admin-security-level">Baş İnzibatçı</span>
             </div>
           </div>
-
-          <!-- Spring Security / Standard SSR Logout Form -->
-          <form action="/logout" th:action="@{/logout}" method="POST" style="margin: 0;">
-            <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
-            <button type="submit" class="btn-admin-logout" title="Sign out of Admin Portal">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <form th:action="@{/logout}" method="POST" class="admin-session-form">
+            <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+            <button type="submit" class="admin-btn-logout" aria-label="Sistemdən çıxış">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
                 <line x1="21" y1="12" x2="9" y2="12"></line>
               </svg>
-              <span>Sign Out</span>
+              <span>Çıxış</span>
             </button>
           </form>
         </div>
       </div>
     </header>
 
-    <!-- ====================================================================
-         Main Admin Content Area
-         ==================================================================== -->
-    <main class="admin-container">
+    <main class="admin-main-canvas" role="main">
 
-      <!-- Admin Page Title & Live Status Indicator -->
-      <section class="admin-page-header">
-        <div class="page-header-text">
-          <h1>Bank Accounts & Ledger Management</h1>
-          <p>Real-time customer account directory, compliance controls, and lifecycle actions.</p>
+      <section class="admin-view-header">
+        <div class="header-breadcrumbs">
+          <span>AsadovBank Mərkəzi</span>
+          <span class="crumb-separator">&rsaquo;</span>
+          <span class="crumb-current">Maliyyə Axını &amp; İdarəetmə</span>
         </div>
-        <div class="system-badge-live">
-          <span class="live-pulse-dot"></span>
-          <span>Core Banking Engine &bull; Online</span>
+        <div class="header-main-titles">
+          <h1>Maliyyə Axını və İdarəetmə Konsolu</h1>
+          <p>Real-vaxt pul axını nəzarəti: Gələn Vəsaitlər (Inflow), Gedən Vəsaitlər (Outflow) və Mərkəzi Xəzinə Likvidliyi.</p>
         </div>
       </section>
 
-      <!-- ==================================================================
-           Flash Message Banners (Thymeleaf Model Attributes)
-           e.g. redirectAttributes.addFlashAttribute("successMessage", "...")
-           ================================================================== -->
       <section class="admin-flash-stack" aria-label="System Notifications">
-        
-        <!-- Success Alert -->
         <div class="admin-alert admin-alert-success" th:if="${successMessage != null}" id="adminSuccessAlert">
           <div class="alert-body">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            <span th:text="${successMessage}">Operation successful: Account has been registered with initial balance allocated.</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <span th:text="${successMessage}">Əməliyyat uğurla tamamlandı.</span>
           </div>
-          <button type="button" class="alert-dismiss-btn" aria-label="Close notification">&times;</button>
+          <button type="button" class="alert-dismiss-btn" aria-label="Bildirişi bağla">&times;</button>
         </div>
 
-        <!-- Error Alert -->
-        <div class="admin-alert admin-alert-danger" th:if="${errorMessage != null}" style="display: none;" id="adminErrorAlert">
+        <div class="admin-alert admin-alert-danger" th:if="${errorMessage != null}" id="adminErrorAlert">
           <div class="alert-body">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <span th:text="${errorMessage}">Operation failed: Could not perform the requested account update.</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <span th:text="${errorMessage}">Əməliyyat zamanı xəta baş verdi.</span>
           </div>
-          <button type="button" class="alert-dismiss-btn" aria-label="Close notification">&times;</button>
+          <button type="button" class="alert-dismiss-btn" aria-label="Bildirişi bağla">&times;</button>
         </div>
-
       </section>
 
-      <!-- ==================================================================
-           Executive KPI Metrics
-           ================================================================== -->
-      <section class="admin-kpi-grid" aria-label="Key Performance Indicators">
+      <section class="admin-kpi-grid" aria-label="Əsas Göstəricilər">
         
-        <div class="kpi-card">
+
+        <div class="kpi-card kpi-clickable" id="vaultKpiCard" title="Xəzinədar Panelində Maliyyə Əməliyyatlarına Keçid" onclick="window.location.href='/admin/treasury#vaultSection'">
           <div class="kpi-details">
-            <span class="kpi-label">Total Vault Liquidity</span>
-            <span class="kpi-value" th:text="${totalLiquidityFormatted ?: '$28,492,610.80'}">$28,492,610.80</span>
-            <span class="kpi-subtext highlight-green">&uarr; +4.2% capital reserves</span>
+            <span class="kpi-label">ÜMUMİ XƏZİNƏ LİKVİDLİYİ</span>
+            <span class="kpi-value" style="color: #38bdf8;" th:text="${vaultBalanceFormatted ?: '€10,000,000,000.00'}">€10,000,000,000.00</span>
+            <span class="kpi-subtext highlight-green">&uarr; Mərkəzi Bank Ehtiyatları (EUR)</span>
           </div>
-          <div class="kpi-icon-bubble">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="1" x2="12" y2="23"></line>
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-            </svg>
+          <div class="kpi-icon-bubble" style="color: #38bdf8;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
           </div>
         </div>
 
         <div class="kpi-card">
           <div class="kpi-details">
-            <span class="kpi-label">Total Active Accounts</span>
-            <span class="kpi-value" th:text="${activeAccountsCount ?: '1,428'}">1,428</span>
-            <span class="kpi-subtext">Verified KYC Tier 1/2</span>
+            <span class="kpi-label">GƏLƏN PULLAR (GƏLİR AXINI)</span>
+            <span class="kpi-value" style="color: #34d399;" th:text="${inflowTotalFormatted ?: '€0.00'}">€0.00</span>
+            <span class="kpi-subtext" style="color: #a7f3d0;">Depozitlər, Terminallar &amp; Komissiyalar</span>
           </div>
-          <div class="kpi-icon-bubble">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
+          <div class="kpi-icon-bubble" style="color: #10b981;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
           </div>
         </div>
 
         <div class="kpi-card">
           <div class="kpi-details">
-            <span class="kpi-label">Blocked / Restricted</span>
-            <span class="kpi-value" style="color: #f87171;" th:text="${blockedAccountsCount ?: '7'}">7</span>
-            <span class="kpi-subtext">Compliance & AML audits</span>
+            <span class="kpi-label">GEDƏN PULLAR (XƏRC AXINI)</span>
+            <span class="kpi-value" style="color: #f87171;" th:text="${outflowTotalFormatted ?: '€0.00'}">€0.00</span>
+            <span class="kpi-subtext" style="color: #fca5a5;">Ödənişlər, Kreditlər &amp; Maaşlar</span>
           </div>
           <div class="kpi-icon-bubble" style="color: #ef4444;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-            </svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 14 12 9 7 14"></polyline><line x1="12" y1="9" x2="12" y2="21"></line></svg>
           </div>
         </div>
 
         <div class="kpi-card">
           <div class="kpi-details">
-            <span class="kpi-label">Accounts Opened Today</span>
-            <span class="kpi-value" style="color: #60a5fa;" th:text="${newAccountsToday ?: '+24'}">+24</span>
-            <span class="kpi-subtext">Automated onboarding</span>
+            <span class="kpi-label">AKTİV MÜŞTƏRİ HESABLARI</span>
+            <span class="kpi-value" style="color: #60a5fa;" th:text="${activeAccountsCount ?: 0}">0</span>
+            <span class="kpi-subtext">Təsdiqlənmiş Müştərilər</span>
           </div>
           <div class="kpi-icon-bubble" style="color: #3b82f6;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <line x1="20" y1="8" x2="20" y2="14"></line>
-              <line x1="23" y1="11" x2="17" y2="11"></line>
-            </svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-clickable" id="employeesNavCard" onclick="document.getElementById('employeesSection').scrollIntoView({ behavior: 'smooth', block: 'start' });" style="cursor: pointer; border-color: rgba(245, 158, 11, 0.35);">
+          <div class="kpi-details">
+            <span class="kpi-label">YÖNLƏNDİRİLMİŞ İŞÇİ PROBLEMLƏRİ</span>
+            <span class="kpi-value" style="color: #f59e0b;" th:text="${escalatedEmployeesCount ?: 0}">0</span>
+            <span class="kpi-subtext" style="color: #fcd34d;">Sorğu / Security tərəfindən göndərilən</span>
+          </div>
+          <div class="kpi-icon-bubble" style="color: #f59e0b;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
           </div>
         </div>
 
       </section>
 
-      <!-- ==================================================================
-           SECTION: Create Account Form
-           Standard HTML <form action="/admin/accounts/create" method="POST">
-           NO AJAX / fetch - Standard MVC form submission
-           ================================================================== -->
-      <section class="card-section" aria-labelledby="createAccountHeading">
-        <div class="card-section-header">
-          <div class="card-header-titles">
-            <div class="header-accent-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-            </div>
+      <div class="side-by-side-admin-grid">
+
+        <section class="card-section" id="employeesSection" aria-labelledby="employeesHeading" style="margin: 0;">
+          <div class="card-section-header" style="flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem; margin-bottom: 1.25rem;">
             <div>
-              <h2 id="createAccountHeading">Create Bank Account</h2>
-              <p>Provision a new customer checking/savings account into the core banking system.</p>
+              <h2 id="employeesHeading" style="font-size: 1.35rem; font-weight: 800; color: #f59e0b; display: flex; align-items: center; gap: 8px; margin: 0 0 4px 0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <span>Yönləndirilmiş İşçi Problemləri &amp; İcraçı Əmrlər</span>
+              </h2>
+              <p style="font-size: 0.85rem; color: #94a3b8; margin: 0;">
+                Yeni işçi təsdiqinə Sorğu və Security panelləri, maaş ödənişlərinə Xəzinədar paneli baxır. Burada yalnız problem yarandıqda yönləndirilmiş işlər göstərilir.
+              </p>
+            </div>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <span class="quota-pill" th:classappend="${(itFull ?: false) ? 'quota-red' : 'quota-green'}">
+                <span>İT Mütəxəssisi:</span>
+                <strong th:text="${(itEmployeesCount ?: 0) + '/' + (itLimit ?: 2)}">0/2</strong>
+              </span>
+              <span class="quota-pill" th:classappend="${(treasuryFull ?: false) ? 'quota-red' : 'quota-green'}">
+                <span>Xəzinədar:</span>
+                <strong th:text="${(treasuryEmployeesCount ?: 0) + '/' + (treasuryLimit ?: 2)}">0/2</strong>
+              </span>
+              <span class="quota-pill" th:classappend="${(securityFull ?: false) ? 'quota-red' : 'quota-green'}">
+                <span>Security:</span>
+                <strong th:text="${(securityEmployeesCount ?: 0) + '/' + (securityLimit ?: 2)}">0/2</strong>
+              </span>
+              <span class="quota-pill" th:classappend="${(inquiryFull ?: false) ? 'quota-red' : 'quota-green'}">
+                <span>Operator:</span>
+                <strong th:text="${(inquiryEmployeesCount ?: 0) + '/' + (inquiryLimit ?: 8)}">0/8</strong>
+              </span>
+              <span class="quota-pill" th:classappend="${(customerServiceFull ?: false) ? 'quota-red' : 'quota-green'}">
+                <span>Müştəri Xidmətləri:</span>
+                <strong th:text="${(customerServiceEmployeesCount ?: 0) + '/' + (customerServiceLimit ?: 4)}">0/4</strong>
+              </span>
+              <span class="quota-pill" th:classappend="${(hrFull ?: false) ? 'quota-red' : 'quota-green'}">
+                <span>İnsan Resursları:</span>
+                <strong th:text="${(hrEmployeesCount ?: 0) + '/' + (hrLimit ?: 2)}">0/2</strong>
+              </span>
             </div>
           </div>
-        </div>
 
-        <!-- Standard HTML Form -->
-        <form action="/admin/accounts/create" th:action="@{/admin/accounts/create}" method="POST" id="createAccountForm" class="create-account-form-body">
-          
-          <!-- Spring Security CSRF Token Hook -->
-          <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
+          <div class="admin-table-responsive" style="max-height: 440px; overflow-y: auto;">
+            <table class="admin-data-table">
+              <thead>
+                <tr>
+                  <th>Əməkdaş &amp; ID</th>
+                  <th>Vəzifə</th>
+                  <th>Yönləndirən &amp; Problem Qeydi</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Admin Qərarı</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="emp : ${escalatedEmployees}">
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(245, 158, 11, 0.2); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700;"
+                           th:text="${emp.fullName != null and #strings.length(emp.fullName) >= 2 ? #strings.substring(emp.fullName, 0, 2).toUpperCase() : 'ST'}">ST</div>
+                      <div>
+                        <strong style="color: #fff; font-size: 0.88rem; display: block;" th:text="${emp.fullName}">Əməkdaş</strong>
+                        <small style="color: #94a3b8;" th:text="${'@' + emp.username + ' • ' + emp.employeeId}">@user</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="color: #cbd5e1; font-weight: 600;" th:text="${emp.position ?: emp.department}">Vəzifə</td>
+                  <td style="max-width: 320px;">
+                    <div style="font-size: 0.76rem; color: #fbbf24; font-weight: 700;" th:text="${emp.escalatedBy ?: 'Sorğu / Security'}">Yönləndirən</div>
+                    <div style="font-size: 0.82rem; color: #e2e8f0; margin-top: 2px;" th:text="${emp.escalationNote ?: 'Admin qərarı tələb olunur'}">Qeyd</div>
+                  </td>
+                  <td>
+                    <span th:if="${emp.approvalStatus == 'SENT_TO_ADMIN'}" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 700;">ƏMR GÖZLƏYİR</span>
+                    <span th:if="${emp.approvalStatus == 'APPROVED' and emp.accountStatus == 'ACTIVE'}" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 700;">AKTİV</span>
+                    <span th:if="${emp.accountStatus == 'BLOCKED'}" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 700;">BLOKLANIB</span>
+                  </td>
+                  <td style="text-align: right;">
+                    <div style="display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
+                      <form th:if="${emp.approvalStatus == 'SENT_TO_ADMIN'}" th:action="@{/admin/employees/{id}/approve(id=${emp.id})}" method="POST" style="display: inline;">
+                        <input type="hidden" name="_csrf" th:value="${_csrf?.token}">
+                        <button type="submit" class="btn-action-sm btn-unblock">✓ Əmrlə Təsdiqlə</button>
+                      </form>
+                      <form th:if="${emp.approvalStatus == 'SENT_TO_ADMIN'}" th:action="@{/admin/employees/{id}/reject(id=${emp.id})}" method="POST" style="display: inline;">
+                        <input type="hidden" name="_csrf" th:value="${_csrf?.token}">
+                        <button type="submit" class="btn-action-sm btn-block">✕ Rədd Et</button>
+                      </form>
+                      <form th:if="${emp.accountStatus == 'ACTIVE'}" th:action="@{/admin/employees/{id}/block(id=${emp.id})}" method="POST" style="display: inline;">
+                        <input type="hidden" name="_csrf" th:value="${_csrf?.token}">
+                        <button type="submit" class="btn-action-sm btn-block" onclick="return confirm('Bu işçini bloklamaq istəyirsiniz?');">⊘ Blokla</button>
+                      </form>
+                      <form th:if="${emp.accountStatus == 'BLOCKED'}" th:action="@{/admin/employees/{id}/unblock(id=${emp.id})}" method="POST" style="display: inline;">
+                        <input type="hidden" name="_csrf" th:value="${_csrf?.token}">
+                        <button type="submit" class="btn-action-sm btn-unblock">▶ Blokdan Çıxar</button>
+                      </form>
+                      <form th:action="@{/admin/employees/{id}/resolve-escalation(id=${emp.id})}" method="POST" style="display: inline;">
+                        <input type="hidden" name="_csrf" th:value="${_csrf?.token}">
+                        <button type="submit" class="btn-action-sm" style="background: rgba(56, 189, 248, 0.16); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35);">✓ Həll Edildi (Bağla)</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(escalatedEmployees)}">
+                  <td colspan="5" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                    Sorğu və ya Security şöbəsindən yönləndirilmiş problem yoxdur.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
-          <div class="form-grid-three-col">
-            
-            <!-- 1. Customer Name Field -->
-            <div class="admin-form-group">
-              <label for="customerName" class="admin-form-label">
-                <span>Customer Full Name<span class="required-star">*</span></span>
-              </label>
-              <div class="admin-input-wrapper">
-                <input 
-                  type="text" 
-                  id="customerName" 
-                  name="customerName" 
-                  class="admin-form-control" 
-                  placeholder="e.g. Jonathan R. Vance" 
-                  required 
-                  autocomplete="off"
-                  maxlength="100"
-                >
-              </div>
+        <section class="card-section" id="corporateTransferSection" aria-labelledby="corporateTransferHeading" style="margin: 0;">
+          <div class="card-section-header" style="flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+            <div>
+              <h2 id="corporateTransferHeading" style="font-size: 1.25rem; font-weight: 800; color: #34d399; display: flex; align-items: center; gap: 8px; margin: 0 0 4px 0;">
+                <span>🏢 Şirkətlərə Özəl Pul Transferi / Yükləmə</span>
+              </h2>
+              <p style="font-size: 0.85rem; color: #94a3b8; margin: 0;">Adminin şəxsi kartı yoxdur. Buradan yalnız şirkət hesablarına birbaşa pul transferi və balans yükləməsi edə bilərsiniz.</p>
             </div>
-
-            <!-- 2. Initial Balance Field -->
-            <div class="admin-form-group">
-              <label for="initialBalance" class="admin-form-label">
-                <span>Initial Balance<span class="required-star">*</span></span>
-              </label>
-              <div class="admin-input-wrapper">
-                <span class="admin-input-prefix" id="currencyPrefix">$</span>
-                <input 
-                  type="number" 
-                  id="initialBalance" 
-                  name="initialBalance" 
-                  class="admin-form-control has-prefix" 
-                  step="0.01" 
-                  min="0.00" 
-                  max="1000000000.00" 
-                  required 
-                  placeholder="1000.00"
-                  autocomplete="off"
-                >
-              </div>
-            </div>
-
-            <!-- 3. Currency Field -->
-            <div class="admin-form-group">
-              <label for="currencySelect" class="admin-form-label">
-                <span>Base Currency<span class="required-star">*</span></span>
-              </label>
-              <select id="currencySelect" name="currency" class="admin-form-control" required>
-                <option value="USD" selected>USD - US Dollar ($)</option>
-                <option value="EUR">EUR - Euro (€)</option>
-                <option value="GBP">GBP - British Pound (£)</option>
-                <option value="JPY">JPY - Japanese Yen (¥)</option>
-                <option value="CAD">CAD - Canadian Dollar ($)</option>
-                <option value="CHF">CHF - Swiss Franc (Fr.)</option>
-              </select>
-            </div>
-
           </div>
 
-          <!-- Form Actions Row (Reset & Submit) -->
-          <div class="form-action-row">
-            <button type="reset" class="btn-secondary-reset">Clear Fields</button>
-            <button type="submit" id="submitCreateAccountBtn" class="btn-primary-submit">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                <polyline points="7 3 7 8 15 8"></polyline>
-              </svg>
-              <span>Create Account</span>
+          <form th:action="@{/admin/corporate/transfer}" method="POST" style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 12px; padding: 1rem;">
+            <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+              <div>
+                <label class="admin-form-label" style="margin-bottom: 4px; display: block;"><span>Şirkət Hesabı (IBAN / Hesab №)</span></label>
+                <input type="text" name="targetAccountNumber" class="admin-form-control" placeholder="Məs: AZ21RAVN0000..." required>
+              </div>
+              <div>
+                <label class="admin-form-label" style="margin-bottom: 4px; display: block;"><span>Şirkət Adı</span></label>
+                <input type="text" name="companyName" class="admin-form-control" placeholder="Məs: Ravan Tech MMC" required maxlength="120">
+              </div>
+              <div>
+                <label class="admin-form-label" style="margin-bottom: 4px; display: block;"><span>Valyuta</span></label>
+                <select name="currency" class="admin-form-control">
+                  <option value="EUR">EUR (€)</option>
+                  <option value="AZN">AZN (₼)</option>
+                  <option value="USD">USD ($)</option>
+                </select>
+              </div>
+              <div>
+                <label class="admin-form-label" style="margin-bottom: 4px; display: block;"><span>Məbləğ</span></label>
+                <input type="number" name="amount" step="0.01" min="1" class="admin-form-control" placeholder="5000.00" required>
+              </div>
+            </div>
+            <div style="margin-bottom: 0.75rem;">
+              <label class="admin-form-label" style="margin-bottom: 4px; display: block;"><span>Təyinat / Qeyd</span></label>
+              <input type="text" name="note" class="admin-form-control" placeholder="Korporativ balans yükləməsi" maxlength="160">
+            </div>
+            <button type="submit" style="background: linear-gradient(135deg, #059669, #0284c7); color: #ffffff; border: none; border-radius: 8px; padding: 9px 18px; font-weight: 700; cursor: pointer;">
+              <span>💸 Şirkət Hesabına Transfer Et</span>
             </button>
+          </form>
+        </section>
+
+        <section class="card-section" id="adminPanelMessagesSection" aria-labelledby="adminPanelMessagesHeading" style="margin: 0;">
+          <div class="card-section-header" style="flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+            <div>
+              <h2 id="adminPanelMessagesHeading" style="font-size: 1.25rem; font-weight: 800; color: #c084fc; display: flex; align-items: center; gap: 8px; margin: 0 0 4px 0;">
+                <span>💬 Panellərarası Daxili Mesajlaşma (Feedback)</span>
+              </h2>
+              <p style="font-size: 0.85rem; color: #94a3b8; margin: 0;">Security və ya Sorğu şöbəsinə daxili irad, təklif və ya tapşırıq mesajı göndərin, həmçinin gələn yönləndirmələrə baxın.</p>
+            </div>
           </div>
 
-        </form>
-      </section>
+          <form th:action="@{/panel-messages/send}" method="POST" autocomplete="off" style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;">
+            <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+            <input type="hidden" name="fromPanel" value="ADMIN" />
+            <input type="hidden" name="redirectTo" value="/admin#adminPanelMessagesSection" />
 
-      <!-- ==================================================================
-           SECTION: Main Data Table (Bank Accounts)
-           Semantic HTML <table> listing bank accounts with Actions
-           ================================================================== -->
-      <section class="card-section" aria-labelledby="accountsTableHeading">
-        
-        <!-- Table Toolbar: Search & Status Filters -->
-        <div class="table-toolbar">
-          <div class="card-header-titles">
-            <h2 id="accountsTableHeading" style="font-size: 1.15rem; font-weight: 700; color: #fff;">Bank Accounts Directory</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+              <div>
+                <label class="admin-form-label" style="margin-bottom: 4px; display: block;"><span>Hansı Panelə Göndərilsin</span></label>
+                <select name="toPanel" class="admin-form-control" required>
+                  <option value="SECURITY">Security Paneli (Təhlükəsizlik)</option>
+                  <option value="INQUIRY">Sorğu Paneli (Inquiry)</option>
+                  <option value="TREASURY">Xəzinədar Paneli (Treasury)</option>
+                </select>
+              </div>
+              <div>
+                <label class="admin-form-label" style="margin-bottom: 4px; display: block;"><span>Mövzu / Başlıq</span></label>
+                <input type="text" name="subject" class="admin-form-control" autocomplete="one-time-code" placeholder="Məsələn: Təcili yoxlama tapşırığı" required maxlength="140">
+              </div>
+            </div>
+
+            <div style="margin-bottom: 0.75rem;">
+              <label class="admin-form-label" style="margin-bottom: 4px; display: block;"><span>İzah / Təlimat Mesajı</span></label>
+              <textarea name="message" class="admin-form-control" rows="2" autocomplete="off" placeholder="Qarşı tərəfin nə etməli olduğunu və ya əlavə qeydinizi yazın..." required style="resize: vertical;"></textarea>
+            </div>
+
+            <button type="submit" class="admin-btn-primary" style="padding: 9px 18px; background: linear-gradient(135deg, #4f46e5, #0284c7); color: #ffffff; border: none; font-weight: 700;">
+              <span>Daxili Mesajı Göndər</span>
+            </button>
+          </form>
+
+          <div class="admin-table-responsive" style="max-height: 360px; overflow-y: auto;">
+            <table class="admin-data-table">
+              <thead>
+                <tr>
+                  <th>Tarix</th>
+                  <th>Kimdən</th>
+                  <th>Kimə</th>
+                  <th>Mövzu &amp; İzah / Təlimat</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="pm : ${panelMessages}">
+                  <td style="color: #94a3b8; font-size: 0.8rem; white-space: nowrap;" th:text="${pm.createdAt != null ? #temporals.format(pm.createdAt, 'dd.MM.yyyy HH:mm') : '—'}">-</td>
+                  <td>
+                    <span th:if="${pm.fromPanel == 'ADMIN'}" style="background: rgba(245, 158, 11, 0.18); color: #fbbf24; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Admin Panel</span>
+                    <span th:if="${pm.fromPanel == 'SECURITY'}" style="background: rgba(56, 189, 248, 0.18); color: #38bdf8; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Security Paneli</span>
+                    <span th:if="${pm.fromPanel == 'INQUIRY'}" style="background: rgba(168, 85, 247, 0.18); color: #c084fc; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Sorğu Paneli</span>
+                    <span th:if="${pm.fromPanel == 'TREASURY'}" style="background: rgba(16, 185, 129, 0.18); color: #34d399; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Xəzinədar Paneli</span>
+                    <small style="display: block; color: #64748b; margin-top: 2px;" th:text="${pm.senderUsername != null ? '@' + pm.senderUsername : ''}">@user</small>
+                  </td>
+                  <td>
+                    <span th:if="${pm.toPanel == 'ADMIN'}" style="background: rgba(245, 158, 11, 0.18); color: #fbbf24; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Admin Panel</span>
+                    <span th:if="${pm.toPanel == 'SECURITY'}" style="background: rgba(56, 189, 248, 0.18); color: #38bdf8; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Security Paneli</span>
+                    <span th:if="${pm.toPanel == 'INQUIRY'}" style="background: rgba(168, 85, 247, 0.18); color: #c084fc; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Sorğu Paneli</span>
+                    <span th:if="${pm.toPanel == 'TREASURY'}" style="background: rgba(16, 185, 129, 0.18); color: #34d399; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Xəzinədar Paneli</span>
+                  </td>
+                  <td>
+                    <strong style="color: #fff; font-size: 0.86rem; display: block;" th:text="${pm.subject}">Mövzu</strong>
+                    <div style="color: #cbd5e1; font-size: 0.82rem; white-space: pre-wrap; margin-top: 4px;" th:text="${pm.message}">Mesaj</div>
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(panelMessages)}">
+                  <td colspan="4" style="text-align: center; color: #94a3b8; padding: 2rem;">Hələ ki panellərarası daxili mesaj yoxdur.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card-section" id="adminUsersSection" aria-labelledby="adminUsersHeading" style="margin: 0;">
+          <div class="card-section-header" style="flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+            <div>
+              <h2 id="adminUsersHeading" style="font-size: 1.25rem; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 8px; margin: 0 0 4px 0;">
+                <span>🔑 İstifadəçi Hesabları və Parollar</span>
+              </h2>
+              <p style="font-size: 0.85rem; color: #94a3b8; margin: 0;">Hesabların parolları təhlükəsizlik məqsədilə yalnız Admin Paneldə görünür.</p>
+            </div>
           </div>
 
-          <!-- Instant client-side search input (Pure DOM filter, NO fetch) -->
-          <div class="search-box-wrap">
-            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input 
-              type="text" 
-              id="adminSearchInput" 
-              class="admin-search-input" 
-              placeholder="Search by ID or customer name..." 
-              autocomplete="off"
-            >
+          <div class="admin-table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="admin-data-table">
+              <thead>
+                <tr>
+                  <th>Ad Soyad</th>
+                  <th>İstifadəçi Adı</th>
+                  <th>E-poçt</th>
+                  <th>Rol</th>
+                  <th>Parol</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="u : ${adminUsers}">
+                  <td style="color: #fff; font-weight: 600;" th:text="${u.fullName ?: u.username}">Ad Soyad</td>
+                  <td><code style="color: #818cf8;" th:text="${'@' + u.username}">@user</code></td>
+                  <td style="color: #94a3b8; font-size: 0.82rem;" th:text="${u.email ?: '—'}">email</td>
+                  <td><span style="background: rgba(56, 189, 248, 0.14); color: #38bdf8; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;" th:text="${u.role}">ROLE_USER</span></td>
+                  <td>
+                    <div style="display: inline-flex; align-items: center; gap: 6px;">
+                      <code class="admin-pwd-mask" th:attr="data-pwd=${u.rawPassword != null and !u.rawPassword.isEmpty() ? u.rawPassword : 'Şifrələnib (BCrypt)'}" style="color: #fbbf24; background: rgba(15, 23, 42, 0.85); padding: 3px 8px; border-radius: 6px; font-size: 0.78rem;">••••••••</code>
+                      <button type="button" onclick="toggleAdminUserPwd(this)" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); color: #cbd5e1; border-radius: 6px; padding: 2px 8px; font-size: 0.72rem; cursor: pointer;">Göstər</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(adminUsers)}">
+                  <td colspan="5" style="text-align: center; color: #94a3b8; padding: 2rem;">İstifadəçi tapılmadı.</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+        </section>
 
-          <!-- Status Filter Tabs (Pure DOM filter) -->
-          <div class="table-filter-tabs" role="tablist" aria-label="Account Status Filter">
-            <button type="button" class="filter-tab active" data-status="all">All (5)</button>
-            <button type="button" class="filter-tab" data-status="ACTIVE">Active (3)</button>
-            <button type="button" class="filter-tab" data-status="BLOCKED">Blocked (1)</button>
-            <button type="button" class="filter-tab" data-status="PENDING">Pending (1)</button>
-          </div>
-        </div>
-
-        <!-- The Responsive Semantic Table -->
-        <div class="admin-table-responsive">
-          <table class="admin-data-table">
-            <thead>
-              <tr>
-                <th scope="col">Account ID</th>
-                <th scope="col">Customer Name</th>
-                <th scope="col" style="text-align: right;">Balance</th>
-                <th scope="col" style="text-align: center;">Status</th>
-                <th scope="col" style="text-align: right;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-
-              <!-- ========================================================
-                   SERVER-SIDE TEMPLATE ENGINE LOOP:
-                   If using Thymeleaf in Spring Boot, bind dynamic list with:
-                   
-                   <tr th:each="account : ${accounts}" th:attr="data-status=${account.status}">
-                     <td>
-                       <span class="acc-id-badge" th:text="${account.id}">AC-84920</span>
-                     </td>
-                     <td>
-                       <div class="customer-cell">
-                         <div class="customer-avatar-initials" th:text="${#strings.substring(account.customerName, 0, 2)}">AW</div>
-                         <div class="customer-info">
-                           <span class="customer-full-name" th:text="${account.customerName}">Alexander Wright</span>
-                           <span class="customer-type-meta" th:text="${account.accountType ?: 'Retail Checking'}">Retail Checking</span>
-                         </div>
-                       </div>
-                     </td>
-                     <td style="text-align: right;">
-                       <div class="balance-cell">
-                         <span class="balance-num-formatted" 
-                               th:text="${(account.currency == 'EUR' ? '€' : (account.currency == 'GBP' ? '£' : '$')) + #numbers.formatDecimal(account.balance, 1, 'COMMA', 2, 'POINT')}">
-                           $124,580.45
-                         </span>
-                         <span class="currency-tag-inline" th:text="${account.currency}">USD</span>
-                       </div>
-                     </td>
-                     <td style="text-align: center;">
-                       <span class="status-pill" 
-                             th:classappend="${account.status == 'ACTIVE' ? 'status-active' : (account.status == 'BLOCKED' ? 'status-blocked' : 'status-pending')}">
-                         <span class="status-dot-static"></span>
-                         <span th:text="${account.status}">ACTIVE</span>
-                       </span>
-                     </td>
-                     <td style="text-align: right;">
-                       <div class="table-actions-cell" style="justify-content: flex-end;">
-                         
-                         <!-- Action 1: View Link (<a>) -->
-                         <a th:href="@{/admin/accounts/{id}(id=${account.id})}" href="/admin/accounts/details" class="action-btn action-view">
-                           View
-                         </a>
-
-                         <!-- Action 2: Block/Unblock Mini Form (POST) -->
-                         <form th:if="${account.status != 'BLOCKED'}" 
-                               th:action="@{/admin/accounts/{id}/block(id=${account.id})}" 
-                               action="/admin/accounts/block" 
-                               method="POST" 
-                               class="inline-action-form">
-                           <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="csrf-token" />
-                           <button type="submit" class="action-btn action-block">Block</button>
-                         </form>
-                         <form th:if="${account.status == 'BLOCKED'}" 
-                               th:action="@{/admin/accounts/{id}/unblock(id=${account.id})}" 
-                               action="/admin/accounts/unblock" 
-                               method="POST" 
-                               class="inline-action-form">
-                           <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="csrf-token" />
-                           <button type="submit" class="action-btn action-unblock">Unblock</button>
-                         </form>
-
-                         <!-- Action 3: Delete Mini Form (POST) -->
-                         <form th:action="@{/admin/accounts/{id}/delete(id=${account.id})}" 
-                               action="/admin/accounts/delete" 
-                               method="POST" 
-                               class="inline-action-form" 
-                               onsubmit="return confirm('Are you sure you want to permanently delete this account?');">
-                           <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="csrf-token" />
-                           <button type="submit" class="action-btn action-delete">Delete</button>
-                         </form>
-                       </div>
-                     </td>
-                   </tr>
-                   ======================================================== -->
-
-              <!-- STATIC MOCK ROWS: Standalone preview & designer inspection -->
-              <!-- Row 1: Active Account -->
-              <tr data-status="ACTIVE">
-                <td>
-                  <span class="acc-id-badge">AC-84920</span>
-                </td>
-                <td>
-                  <div class="customer-cell">
-                    <div class="customer-avatar-initials">AW</div>
-                    <div class="customer-info">
-                      <span class="customer-full-name">Alexander Wright</span>
-                      <span class="customer-type-meta">Retail Checking &bull; Individual</span>
-                    </div>
-                  </div>
-                </td>
-                <td style="text-align: right;">
-                  <div class="balance-cell">
-                    <span class="balance-num-formatted">$124,580.45</span>
-                    <span class="currency-tag-inline">USD</span>
-                  </div>
-                </td>
-                <td style="text-align: center;">
-                  <span class="status-pill status-active">
-                    <span class="status-dot-static"></span>
-                    <span>ACTIVE</span>
-                  </span>
-                </td>
-                <td style="text-align: right;">
-                  <div class="table-actions-cell" style="justify-content: flex-end;">
-                    <!-- Standard Link (<a>) for Details -->
-                    <a href="/admin/accounts/AC-84920" class="action-btn action-view">View</a>
-
-                    <!-- Mini Form (POST) for Block -->
-                    <form action="/admin/accounts/AC-84920/block" method="POST" class="inline-action-form">
-                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
-                      <button type="submit" class="action-btn action-block" title="Suspend account transactions">Block</button>
-                    </form>
-
-                    <!-- Mini Form (POST) for Delete -->
-                    <form action="/admin/accounts/AC-84920/delete" method="POST" class="inline-action-form" onsubmit="return confirm('Are you sure you want to permanently delete account AC-84920? This action cannot be reversed.');">
-                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
-                      <button type="submit" class="action-btn action-delete" title="Permanently delete account">Delete</button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-
-              <!-- Row 2: Active Account (Corporate) -->
-              <tr data-status="ACTIVE">
-                <td>
-                  <span class="acc-id-badge">AC-99318</span>
-                </td>
-                <td>
-                  <div class="customer-cell">
-                    <div class="customer-avatar-initials" style="background: linear-gradient(135deg, #1d4ed8, #4338ca);">SC</div>
-                    <div class="customer-info">
-                      <span class="customer-full-name">Sophia Chen</span>
-                      <span class="customer-type-meta">Corporate Treasury &bull; Global Tech Ltd</span>
-                    </div>
-                  </div>
-                </td>
-                <td style="text-align: right;">
-                  <div class="balance-cell">
-                    <span class="balance-num-formatted">€2,840,195.00</span>
-                    <span class="currency-tag-inline">EUR</span>
-                  </div>
-                </td>
-                <td style="text-align: center;">
-                  <span class="status-pill status-active">
-                    <span class="status-dot-static"></span>
-                    <span>ACTIVE</span>
-                  </span>
-                </td>
-                <td style="text-align: right;">
-                  <div class="table-actions-cell" style="justify-content: flex-end;">
-                    <a href="/admin/accounts/AC-99318" class="action-btn action-view">View</a>
-                    
-                    <form action="/admin/accounts/AC-99318/block" method="POST" class="inline-action-form">
-                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
-                      <button type="submit" class="action-btn action-block">Block</button>
-                    </form>
-
-                    <form action="/admin/accounts/AC-99318/delete" method="POST" class="inline-action-form" onsubmit="return confirm('Are you sure you want to permanently delete account AC-99318?');">
-                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
-                      <button type="submit" class="action-btn action-delete">Delete</button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-
-              <!-- Row 3: Blocked Account -->
-              <tr data-status="BLOCKED">
-                <td>
-                  <span class="acc-id-badge" style="color: #f87171; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1);">AC-71042</span>
-                </td>
-                <td>
-                  <div class="customer-cell">
-                    <div class="customer-avatar-initials" style="background: linear-gradient(135deg, #7f1d1d, #991b1b);">MV</div>
-                    <div class="customer-info">
-                      <span class="customer-full-name">Marcus Vance</span>
-                      <span class="customer-type-meta">High-Yield Savings &bull; Flagged AML</span>
-                    </div>
-                  </div>
-                </td>
-                <td style="text-align: right;">
-                  <div class="balance-cell">
-                    <span class="balance-num-formatted">$9,410.20</span>
-                    <span class="currency-tag-inline">USD</span>
-                  </div>
-                </td>
-                <td style="text-align: center;">
-                  <span class="status-pill status-blocked">
-                    <span class="status-dot-static"></span>
-                    <span>BLOCKED</span>
-                  </span>
-                </td>
-                <td style="text-align: right;">
-                  <div class="table-actions-cell" style="justify-content: flex-end;">
-                    <a href="/admin/accounts/AC-71042" class="action-btn action-view">View</a>
-
-                    <!-- Mini Form (POST) for Unblock -->
-                    <form action="/admin/accounts/AC-71042/unblock" method="POST" class="inline-action-form">
-                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
-                      <button type="submit" class="action-btn action-unblock" title="Restore account permissions">Unblock</button>
-                    </form>
-
-                    <form action="/admin/accounts/AC-71042/delete" method="POST" class="inline-action-form" onsubmit="return confirm('Are you sure you want to permanently delete account AC-71042?');">
-                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
-                      <button type="submit" class="action-btn action-delete">Delete</button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-
-              <!-- Row 4: Pending Review Account -->
-              <tr data-status="PENDING">
-                <td>
-                  <span class="acc-id-badge" style="color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.1);">AC-66381</span>
-                </td>
-                <td>
-                  <div class="customer-cell">
-                    <div class="customer-avatar-initials" style="background: linear-gradient(135deg, #78350f, #92400e);">EP</div>
-                    <div class="customer-info">
-                      <span class="customer-full-name">Elena Rostova</span>
-                      <span class="customer-type-meta">Cross-Border Escrow &bull; Pending KYC</span>
-                    </div>
-                  </div>
-                </td>
-                <td style="text-align: right;">
-                  <div class="balance-cell">
-                    <span class="balance-num-formatted">£54,000.00</span>
-                    <span class="currency-tag-inline">GBP</span>
-                  </div>
-                </td>
-                <td style="text-align: center;">
-                  <span class="status-pill status-pending">
-                    <span class="status-dot-static"></span>
-                    <span>PENDING</span>
-                  </span>
-                </td>
-                <td style="text-align: right;">
-                  <div class="table-actions-cell" style="justify-content: flex-end;">
-                    <a href="/admin/accounts/AC-66381" class="action-btn action-view">View</a>
-
-                    <form action="/admin/accounts/AC-66381/block" method="POST" class="inline-action-form">
-                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
-                      <button type="submit" class="action-btn action-block">Block</button>
-                    </form>
-
-                    <form action="/admin/accounts/AC-66381/delete" method="POST" class="inline-action-form" onsubmit="return confirm('Are you sure you want to permanently delete account AC-66381?');">
-                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
-                      <button type="submit" class="action-btn action-delete">Delete</button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-
-              <!-- Row 5: Active Account -->
-              <tr data-status="ACTIVE">
-                <td>
-                  <span class="acc-id-badge">AC-55102</span>
-                </td>
-                <td>
-                  <div class="customer-cell">
-                    <div class="customer-avatar-initials" style="background: linear-gradient(135deg, #065f46, #047857);">DK</div>
-                    <div class="customer-info">
-                      <span class="customer-full-name">David Kim</span>
-                      <span class="customer-type-meta">Retail Checking &bull; Premium Tier</span>
-                    </div>
-                  </div>
-                </td>
-                <td style="text-align: right;">
-                  <div class="balance-cell">
-                    <span class="balance-num-formatted">$41,920.80</span>
-                    <span class="currency-tag-inline">USD</span>
-                  </div>
-                </td>
-                <td style="text-align: center;">
-                  <span class="status-pill status-active">
-                    <span class="status-dot-static"></span>
-                    <span>ACTIVE</span>
-                  </span>
-                </td>
-                <td style="text-align: right;">
-                  <div class="table-actions-cell" style="justify-content: flex-end;">
-                    <a href="/admin/accounts/AC-55102" class="action-btn action-view">View</a>
-
-                    <form action="/admin/accounts/AC-55102/block" method="POST" class="inline-action-form">
-                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
-                      <button type="submit" class="action-btn action-block">Block</button>
-                    </form>
-
-                    <form action="/admin/accounts/AC-55102/delete" method="POST" class="inline-action-form" onsubmit="return confirm('Are you sure you want to permanently delete account AC-55102?');">
-                      <input type="hidden" name="_csrf" value="sample-csrf-token" />
-                      <button type="submit" class="action-btn action-delete">Delete</button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Table Footer / Standard Server-Side Pagination Links -->
-        <div class="table-footer">
-          <div>Showing <strong style="color: #fff;">1 - 5</strong> of <strong style="color: #fff;">1,428</strong> accounts</div>
-          <div class="pagination-links">
-            <a href="?page=1" class="page-link-btn active">1</a>
-            <a href="?page=2" class="page-link-btn">2</a>
-            <a href="?page=3" class="page-link-btn">3</a>
-            <a href="?page=2" class="page-link-btn">&raquo;</a>
-          </div>
-        </div>
-
-      </section>
+      </div>
 
     </main>
 
-    <!-- Admin Footer -->
-    <footer class="admin-footer">
-      <div>&copy; 2026 NexusBank Core Management Infrastructure &bull; Strictly Confidential &bull; Authorized Personnel Only</div>
-    </footer>
-
   </div>
 
-  <!-- Minimal Vanilla JavaScript for client-side search/filters & currency sync (NO fetch) -->
-  <script src="js/admin.js" th:src="@{/js/admin.js}"></script>
+  <div id="secCodeModal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: #0f172a; border: 1.5px solid rgba(56, 189, 248, 0.45); border-radius: 16px; width: 100%; max-width: 440px; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); position: relative; text-align: center;">
+      <button type="button" onclick="closeSecurityCodeModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+      
+      <div style="width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #0284c7, #6366f1); margin: 0 auto 1.25rem auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0 0 0.5rem 0;">Təhlükəsizlik Mərkəzinə Giriş</h3>
+      <p style="color: #94a3b8; font-size: 0.85rem; margin: 0 0 1.5rem 0;">
+        Təhlükəsizlik stansiyasını açmaq üçün məxfi şöbə kodunu daxil edin.
+      </p>
+
+      <form th:action="@{/admin/security/verify}" method="POST" id="adminSecForm" autocomplete="off">
+        <input type="hidden" name="_csrf" th:value="${_csrf?.token}">
+        
+        <div style="margin-bottom: 1.25rem; text-align: left;">
+          <label for="adminSecCodeInput" style="display: block; font-size: 0.78rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px; text-transform: uppercase;">
+            Məxfi Təhlükəsizlik Kodu
+          </label>
+          <div style="position: relative;">
+            <input type="password" id="adminSecCodeInput" name="securityCode" required placeholder="Təhlükəsizlik kodunu daxil edin..." autocomplete="current-password"
+                   style="width: 100%; box-sizing: border-box; background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 10px; padding: 12px 42px 12px 14px; color: #fff; font-size: 0.95rem; outline: none;">
+            <button type="button" onclick="toggleAdminSecCode()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94a3b8; padding: 4px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" style="width: 100%; background: linear-gradient(135deg, #0284c7, #4f46e5); color: #fff; border: none; font-weight: 800; font-size: 0.95rem; padding: 12px; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); margin-bottom: 0.85rem;">
+          Təsdiqlə və Daxil Ol &rarr;
+        </button>
+
+        <a th:href="@{/admin/security}" style="font-size: 0.8rem; color: #38bdf8; text-decoration: underline;">
+          və ya birbaşa səhifəyə keçin &rarr;
+        </a>
+      </form>
+    </div>
+  </div>
+
+  <script>
+
+    document.querySelectorAll('.alert-dismiss-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        this.closest('.admin-alert').remove();
+      });
+    });
+
+    function openSecurityCodeModal() {
+      const modal = document.getElementById('secCodeModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        setTimeout(() => {
+          const inp = document.getElementById('adminSecCodeInput');
+          if (inp) { inp.value = ''; inp.focus(); }
+        }, 60);
+      }
+    }
+    function closeSecurityCodeModal() {
+      const modal = document.getElementById('secCodeModal');
+      if (modal) modal.style.display = 'none';
+    }
+    function toggleAdminSecCode() {
+      const inp = document.getElementById('adminSecCodeInput');
+      if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+    }
+    function toggleAdminUserPwd(btn) {
+      const box = btn.previousElementSibling;
+      if (!box) return;
+      const pwd = box.getAttribute('data-pwd') || '';
+      if (box.textContent === '••••••••') {
+        box.textContent = pwd;
+        btn.textContent = 'Gizlət';
+      } else {
+        box.textContent = '••••••••';
+        btn.textContent = 'Göstər';
+      }
+    }
+    window.addEventListener('click', function(e) {
+      const modal = document.getElementById('secCodeModal');
+      if (e.target === modal) closeSecurityCodeModal();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('navSecurityBtn');
+      if (btn) {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          openSecurityCodeModal();
+        });
+      }
+    });
+  </script>
+  <script th:src="@{/js/no-autocomplete-stay.js}" src="/js/no-autocomplete-stay.js"></script>
 </body>
 </html>

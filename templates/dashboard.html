@@ -1,29 +1,31 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Customer Dashboard | Nexus Neo-Bank</title>
-  <meta name="description" content="Modern Neo-Bank customer dashboard for account management, deposits, withdrawals, and transaction tracking.">
-  
-  <!-- Modern Typography: Google Fonts Plus Jakarta Sans -->
+  <title>Customer Dashboard | AsadovBank</title>
+  <meta name="description"
+    content="Modern AsadovBank customer dashboard for account management, deposits, withdrawals, and transaction tracking.">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Spring Boot Static Resource Binding -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap"
+    rel="stylesheet">
+
   <link rel="stylesheet" th:href="@{/css/styles.css}" href="../static/css/styles.css">
 </head>
-<body>
+
+<body th:data-error="${errorMessage}" th:data-success="${successMessage}">
   <div class="app-container">
 
-    <!-- Top Navigation Bar -->
     <header class="top-navbar">
       <div class="nav-inner">
-        <!-- Brand -->
+
         <div class="brand-wrapper">
           <div class="brand-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 21h18"></path>
               <path d="M5 21V9l7-5 7 5v12"></path>
               <path d="M9 10h.01"></path>
@@ -32,58 +34,62 @@
               <path d="M15 14h.01"></path>
             </svg>
           </div>
-          <span class="brand-name">Nexus<span style="font-weight: 400; opacity: 0.85;">Bank</span></span>
+          <span class="brand-name">Asadov<span style="font-weight: 400; opacity: 0.85;">Bank</span></span>
           <span class="brand-badge">Retail</span>
         </div>
 
-        <!-- Customer Profile & Session Actions -->
         <div class="nav-user-meta">
+          <a href="#feedbackSection"
+            style="background: #fee2e2; color: #b91c1c; border: 1.5px solid #ef4444; padding: 0.55rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.18);">
+            <span>💬 Rəy, İrad və Təkliflər</span>
+          </a>
+
           <div class="account-pill">
             <div class="avatar-badge" th:text="${#strings.substring(customerName ?: 'Alexander Wright', 0, 2)}">AW</div>
             <div class="user-text-info">
               <span class="user-name" th:text="${customerName ?: 'Alexander Wright'}">Alexander Wright</span>
-              <span class="user-id" th:text="'ID: ' + (${customerId ?: 'NB-84920'})">ID: NB-84920</span>
+              <span class="user-id" th:text="${customerId ?: '@customer'}">@customer</span>
             </div>
           </div>
 
-          <!-- Spring Security Logout Form -->
           <form action="/logout" th:action="@{/logout}" method="POST" style="display: inline;">
             <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="mock-csrf" />
-            <button type="submit" class="logout-btn" title="Sign out of account">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button type="submit" class="logout-btn" title="Sign out of account"
+              style="background: #ffffff !important; color: #0f172a !important; border: 1.5px solid #cbd5e1 !important;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
                 <line x1="21" y1="12" x2="9" y2="12"></line>
               </svg>
-              <span>Logout</span>
+              <span style="color: #0f172a !important; font-weight: 700;">Logout</span>
             </button>
           </form>
         </div>
       </div>
     </header>
 
-    <!-- Main Dashboard Content Area -->
     <main class="dashboard-main">
 
-      <!-- Server-Side Flash Message Banners -->
       <section class="flash-message-container" aria-label="Notifications">
-        
-        <!-- Success Alert -->
+
         <div class="alert-banner alert-success" th:if="${successMessage != null}" id="successAlert">
           <div class="alert-content">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
               <polyline points="22 4 12 14.01 9 11.01"></polyline>
             </svg>
-            <span th:text="${successMessage}">Transaction completed successfully! Your account balance has been updated.</span>
+            <span th:text="${successMessage}">Transaction completed successfully! Your account balance has been
+              updated.</span>
           </div>
           <button type="button" class="alert-close" aria-label="Dismiss alert">&times;</button>
         </div>
 
-        <!-- Error Alert -->
         <div class="alert-banner alert-danger" th:if="${errorMessage != null}" id="errorAlert">
           <div class="alert-content">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="12" y1="8" x2="12" y2="12"></line>
               <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -95,11 +101,11 @@
 
       </section>
 
-      <!-- Dashboard Greeting & Account Status Header -->
       <section class="dashboard-header">
         <div class="header-title-area">
           <h1>Account Overview</h1>
-          <p>Welcome back, <strong th:text="${customerName ?: 'Alexander'}">Alexander</strong>. Here is your current financial standing.</p>
+          <p>Welcome back, <strong th:text="${customerName ?: 'Alexander'}">Alexander</strong>. Here is your current
+            financial standing.</p>
         </div>
         <div class="header-actions-area">
           <div class="status-badge" title="FDIC Insured up to $250,000">
@@ -109,87 +115,176 @@
         </div>
       </section>
 
-      <!-- SECTION 1: Total Balance & Quick Metrics -->
       <section class="overview-grid" aria-label="Balance Overview">
-        
-        <!-- Primary Balance Hero Card -->
-        <div class="balance-card">
-          <div class="balance-card-header">
-            <div class="balance-label">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                <line x1="2" y1="10" x2="22" y2="10"></line>
-              </svg>
-              <span>Total Available Balance</span>
-            </div>
-            <div class="currency-badge">USD &bull; CHECKING</div>
-          </div>
 
-          <div class="balance-amount-wrap">
-            <span class="balance-currency-symbol">$</span>
-            <span class="balance-number" th:text="${#numbers.formatDecimal(account != null ? account.balance : 124580.45, 1, 'COMMA', 2, 'POINT')}">124,580.45</span>
-          </div>
+        <div class="card-flip-container" id="bankCardFlipContainer" tabindex="0" role="region"
+          aria-label="Digital Bank Card (click to flip)">
+          <div class="card-flip-inner">
 
-          <div class="balance-card-footer">
-            <div class="account-num-group">
-              <span class="account-num-label">Account:</span>
-              <span class="account-number" th:text="${account != null ? account.maskedAccountNumber : '•••• 4892'}">&bull;&bull;&bull;&bull; 4892</span>
-              <button type="button" class="copy-btn" id="copyAccountBtn" th:attr="data-account-number=${account != null ? account.accountNumber : '402891824892'}" data-account-number="402891824892" title="Copy full account number">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                <span>Copy</span>
-              </button>
+            <div class="balance-card card-front">
+              <div class="balance-card-header">
+                <div class="balance-label">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                    <line x1="2" y1="10" x2="22" y2="10"></line>
+                  </svg>
+                  <span>TOTAL AVAILABLE BALANCE</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button type="button" class="flip-toggle-btn"
+                    onclick="event.stopPropagation(); document.getElementById('bankCardFlipContainer').classList.toggle('is-flipped');">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="23 4 23 10 17 10"></polyline>
+                      <polyline points="1 20 1 14 7 14"></polyline>
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    <span>Kartı Çevir (CVV / Nömrə)</span>
+                  </button>
+                  <span class="currency-badge"
+                    th:text="${(account != null and account.currency != null ? account.currency : 'USD') + ' • ' + (account != null and account.accountType != null ? account.accountType : 'CHECKING')}">
+                    USD &bull; CHECKING
+                  </span>
+                </div>
+              </div>
+
+              <div class="balance-amount-wrap">
+                <span class="balance-currency-symbol"
+                  th:text="${account != null ? (account.currency == 'EUR' ? '€' : (account.currency == 'GBP' ? '£' : (account.currency == 'AZN' ? '₼' : '$'))) : '$'}">$</span>
+                <span class="balance-number"
+                  th:text="${#numbers.formatDecimal(account != null and account.balance != null ? account.balance : 0.00, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+              </div>
+
+              <div class="balance-card-footer">
+                <div class="account-num-group">
+                  <span class="account-num-label">Account:</span>
+                  <span class="account-number"
+                    th:text="${account != null ? account.maskedAccountNumber : '**** **** **** 1550'}">**** **** **** 1550</span>
+                  <button type="button" class="copy-btn" id="copyAccountBtn"
+                    th:attr="data-account-number=${account != null ? account.accountNumber : '4098 7056 0000 1550'}"
+                    title="Tam kart nömrəsini kopyala">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span>Copy</span>
+                  </button>
+                </div>
+
+                <div class="card-network">
+                  <svg width="26" height="18" viewBox="0 0 32 20" fill="none">
+                    <circle cx="11" cy="10" r="9" fill="#EA001B" fill-opacity="0.88" />
+                    <circle cx="21" cy="10" r="9" fill="#F79E1B" fill-opacity="0.88" />
+                  </svg>
+                  <span>VISA DEBIT</span>
+                </div>
+              </div>
             </div>
-            <div class="card-network">
-              <svg width="24" height="16" viewBox="0 0 32 20" fill="none">
-                <circle cx="11" cy="10" r="9" fill="#EA001B" fill-opacity="0.85"/>
-                <circle cx="21" cy="10" r="9" fill="#F79E1B" fill-opacity="0.85"/>
-              </svg>
-              <span>VISA DEBIT</span>
+
+            <div class="balance-card card-back">
+              <div class="card-back-magnetic-stripe"></div>
+
+              <div class="card-back-header">
+                <div class="card-back-bank-meta">
+                  <span class="card-chip-hologram"></span>
+                  <span>ASADOVBANK GLOBAL DEBIT</span>
+                </div>
+                <button type="button" class="flip-toggle-btn back-flip-btn"
+                  onclick="event.stopPropagation(); document.getElementById('bankCardFlipContainer').classList.remove('is-flipped');">
+                  <span>Ön Üzə Qayıt</span>
+                </button>
+              </div>
+
+              <div class="card-back-number-section">
+                <span class="card-back-field-label">Tam 16 Rəqəmli Kart Nömrəsi</span>
+                <div class="card-back-number-box">
+                  <span class="card-back-number-digits"
+                    th:text="${account != null ? account.formattedCardNumber : '4098 7056 0000 1550'}">4098 7056 0000 1550</span>
+                  <button type="button" class="card-back-copy-btn" id="copyBackCardBtn"
+                    th:attr="data-copy=${account != null ? account.accountNumber : '4098 7056 0000 1550'}">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span>Kopyala</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="card-back-security-grid">
+                <div>
+                  <span class="card-back-field-label">CVV / CVC</span>
+                  <div class="card-back-cvv-pill">
+                    <span th:text="${account != null ? account.cvv : '742'}">742</span>
+                  </div>
+                </div>
+                <div>
+                  <span class="card-back-field-label">Son Tarix (Exp Date)</span>
+                  <div class="card-back-expiry-pill">
+                    <span th:text="${account != null ? account.expiryDate : '08/28'}">08/28</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-back-footer">
+                <span class="card-back-note">AsadovBank Card Services &bull; 24/7 Dəstək: *1188</span>
+                <div class="card-network">
+                  <svg width="24" height="16" viewBox="0 0 32 20" fill="none">
+                    <circle cx="11" cy="10" r="9" fill="#EA001B" fill-opacity="0.88" />
+                    <circle cx="21" cy="10" r="9" fill="#F79E1B" fill-opacity="0.88" />
+                  </svg>
+                  <span>VISA DEBIT</span>
+                </div>
+              </div>
             </div>
+
           </div>
         </div>
 
-        <!-- Quick Metrics Overview -->
         <div class="metrics-column">
-          <!-- Metric: Inflow / Deposits -->
+
           <div class="metric-card">
             <div class="metric-info">
               <span class="metric-title">Monthly Deposits</span>
-              <span class="metric-value" th:text="${'+$' + #numbers.formatDecimal(monthlyDepositTotal ?: 18240.00, 1, 'COMMA', 2, 'POINT')}">+$18,240.00</span>
+              <span class="metric-value"
+                th:text="${'+$' + #numbers.formatDecimal(monthlyDepositTotal ?: 0.00, 1, 'COMMA', 2, 'POINT')}">+$0.00</span>
               <div class="metric-trend positive">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                   <polyline points="17 6 23 6 23 12"></polyline>
                 </svg>
-                <span>+12.4% from last month</span>
+                <span>Real-time inflow</span>
               </div>
             </div>
             <div class="metric-icon-wrap deposit-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="19" x2="12" y2="5"></line>
                 <polyline points="5 12 12 5 19 12"></polyline>
               </svg>
             </div>
           </div>
 
-          <!-- Metric: Outflow / Withdrawals -->
           <div class="metric-card">
             <div class="metric-info">
               <span class="metric-title">Monthly Withdrawals</span>
-              <span class="metric-value" th:text="${'-$' + #numbers.formatDecimal(monthlyWithdrawTotal ?: 6420.50, 1, 'COMMA', 2, 'POINT')}">-$6,420.50</span>
+              <span class="metric-value"
+                th:text="${'-$' + #numbers.formatDecimal(monthlyWithdrawTotal ?: 0.00, 1, 'COMMA', 2, 'POINT')}">-$0.00</span>
               <div class="metric-trend negative">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
                   <polyline points="17 18 23 18 23 12"></polyline>
                 </svg>
-                <span>Within safe budget limits</span>
+                <span>Tracked spending</span>
               </div>
             </div>
             <div class="metric-icon-wrap withdraw-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <polyline points="19 12 12 19 5 12"></polyline>
               </svg>
@@ -199,189 +294,188 @@
 
       </section>
 
-      <!-- SECTION 2: Forms - Deposit & Withdraw Actions -->
       <section aria-labelledby="quickActionsHeading">
         <div class="section-title-wrap">
           <h2 id="quickActionsHeading" class="section-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="12" y1="8" x2="12" y2="16"></line>
               <line x1="8" y1="12" x2="16" y2="12"></line>
             </svg>
             Manage Funds
           </h2>
-          <p class="section-subtitle">Perform instant deposits or withdrawals directly to and from your checking account.</p>
+          <p class="section-subtitle">Perform instant transfers or withdrawals to individuals (Şəxslər) and companies
+            (Şirkətlər).</p>
         </div>
 
-        <div class="actions-grid">
+        <div class="actions-grid actions-grid-single" style="margin-bottom: 1.5rem;">
 
-          <!-- FORM 1: Deposit Funds Form -->
-          <div class="action-card deposit-card">
+          <div class="action-card unified-funds-card" id="unifiedFundsCard">
             <div class="card-badge-header">
-              <div class="action-badge-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              <div class="action-badge-icon" id="fundsHeaderIcon" style="background: rgba(99, 102, 241, 0.16); color: #6366f1;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 1l4 4-4 4"></path>
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                  <path d="M7 23l-4-4 4-4"></path>
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
                 </svg>
               </div>
               <div class="action-card-headings">
-                <h2>Deposit Funds</h2>
-                <p>Add capital instantly to your primary account</p>
+                <h2 id="fundsCardTitle">Pul Göndərmə (Transfer)</h2>
+                <p id="fundsCardSubtitle">Şəxslərə və ya Şirkətlərə təhlükəsiz pul köçürməsi</p>
               </div>
             </div>
 
-            <!-- Standard HTTP Form: /account/deposit -->
-            <form action="/account/deposit" th:action="@{/account/deposit}" method="POST" id="depositForm" class="standard-bank-form">
-              <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
-
-              <div class="form-group">
-                <label for="depositAmount" class="form-label">
-                  <span>Deposit Amount</span>
-                  <span class="label-hint">Min. $1.00 USD</span>
-                </label>
-                <div class="input-currency-wrapper">
-                  <span class="currency-prefix">$</span>
-                  <input 
-                    type="number" 
-                    id="depositAmount" 
-                    name="amount" 
-                    class="form-input" 
-                    step="0.01" 
-                    min="1.00" 
-                    max="100000.00" 
-                    required 
-                    placeholder="0.00"
-                    autocomplete="off"
-                  >
-                </div>
-              </div>
-
-              <!-- Quick Presets -->
-              <div class="form-group">
-                <span class="form-label">Quick Presets</span>
-                <div class="preset-chips-wrap">
-                  <button type="button" class="preset-chip-btn" data-target="depositAmount" data-amount="50.00">+$50</button>
-                  <button type="button" class="preset-chip-btn" data-target="depositAmount" data-amount="100.00">+$100</button>
-                  <button type="button" class="preset-chip-btn" data-target="depositAmount" data-amount="500.00">+$500</button>
-                  <button type="button" class="preset-chip-btn" data-target="depositAmount" data-amount="1000.00">+$1,000</button>
-                  <button type="button" class="preset-chip-btn" data-target="depositAmount" data-amount="5000.00">+$5,000</button>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="depositDescription" class="form-label">
-                  <span>Memo / Reference</span>
-                  <span class="label-hint">Optional</span>
-                </label>
-                <input 
-                  type="text" 
-                  id="depositDescription" 
-                  name="description" 
-                  class="form-input text-field" 
-                  placeholder="e.g. Salary, Client payment, Savings" 
-                  maxlength="60"
-                >
-              </div>
-
-              <button type="submit" id="submitDepositBtn" class="form-submit-btn deposit-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
+            <div class="op-tab-group" role="tablist" aria-label="Əməliyyat növü">
+              <button type="button" class="op-tab-btn active" data-op="TRANSFER" role="tab" aria-selected="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                 </svg>
-                <span>Confirm Deposit</span>
+                <span>Pul Göndərmə (Transfer)</span>
               </button>
-
-              <div class="form-security-footnote">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-                <span>Instant 256-bit encrypted transfer</span>
-              </div>
-            </form>
-          </div>
-
-          <!-- FORM 2: Withdraw Funds Form -->
-          <div class="action-card withdraw-card">
-            <div class="card-badge-header">
-              <div class="action-badge-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <button type="button" class="op-tab-btn" data-op="WITHDRAW" role="tab" aria-selected="false">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                   <polyline points="7 10 12 15 17 10"></polyline>
                   <line x1="12" y1="15" x2="12" y2="3"></line>
                 </svg>
-              </div>
-              <div class="action-card-headings">
-                <h2>Withdraw Funds</h2>
-                <p>Transfer funds out to external bank or payout</p>
-              </div>
+                <span>Nağd Çıxarış / Ödəniş (Withdraw Funds)</span>
+              </button>
             </div>
 
-            <!-- Standard HTTP Form: /account/withdraw -->
-            <form action="/account/withdraw" th:action="@{/account/withdraw}" method="POST" id="withdrawForm" class="standard-bank-form">
+            <form th:action="@{/account/transfer}" method="POST" id="unifiedFundsForm" class="standard-bank-form"
+              th:attr="data-transfer-action=@{/account/transfer},data-withdraw-action=@{/account/withdraw},data-account-currency=${account != null and account.currency != null ? account.currency : 'AZN'},data-account-balance=${account != null and account.balance != null ? account.balance : 0}"
+              data-transfer-action="/account/transfer" data-withdraw-action="/account/withdraw" data-account-currency="AZN" data-account-balance="0"
+              autocomplete="off" data-edge-shopping="false" novalidate>
               <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
+              <input type="hidden" name="redirectTo" value="/dashboard" />
+              <input type="hidden" name="operationType" id="fundsOperationType" value="TRANSFER" />
+              <input type="hidden" name="recipientType" id="fundsRecipientType" value="INDIVIDUAL" />
 
               <div class="form-group">
-                <label for="withdrawAmount" class="form-label">
-                  <span>Withdrawal Amount</span>
-                  <span class="label-hint">Max limit: $25,000/day</span>
-                </label>
-                <div class="input-currency-wrapper">
-                  <span class="currency-prefix">$</span>
-                  <input 
-                    type="number" 
-                    id="withdrawAmount" 
-                    name="amount" 
-                    class="form-input" 
-                    step="0.01" 
-                    min="1.00" 
-                    max="25000.00" 
-                    required 
-                    placeholder="0.00"
-                    autocomplete="off"
-                  >
+                <span class="form-label">
+                  <span id="fundsRecipientTypeLabel">Təyinat Növü (Kimə göndərilir?)</span>
+                </span>
+                <div class="recipient-toggle-group">
+                  <button type="button" class="recipient-toggle-btn active" data-scope="funds" data-mode="INDIVIDUAL">
+                    <span>👤 Şəxslər (Individuals)</span>
+                  </button>
+                  <button type="button" class="recipient-toggle-btn" data-scope="funds" data-mode="CORPORATE">
+                    <span>🏢 Şirkətlər (Corporate)</span>
+                  </button>
                 </div>
               </div>
 
-              <!-- Quick Presets -->
+              <div id="fundsIndividualFields" class="individual-fields-box is-visible">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="fundsRecipientAccount" class="form-label">
+                    <span id="fundsIndividualLabel">Alıcı Hesab No və ya @İstifadəçi adı</span>
+                    <span class="label-hint" id="fundsIndividualHint">Məs: 4098 7056 ... və ya @username</span>
+                  </label>
+                  <input type="text" id="fundsRecipientAccount" name="recipientAccountNumber" class="form-input text-field"
+                    maxlength="64" autocomplete="off" required>
+                </div>
+              </div>
+
+              <div id="fundsCorporateFields" class="corporate-fields-box">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="fundsCompanyName" class="form-label">
+                    <span>Şirkət Adı / Müəssisə</span>
+                    <span class="label-hint">Məs: Azercell MMC</span>
+                  </label>
+                  <input type="text" id="fundsCompanyName" name="companyName" class="form-input text-field"
+                    maxlength="80" autocomplete="off" disabled>
+                </div>
+              </div>
+
+              <div class="funds-two-col">
+                <div class="form-group">
+                  <label for="fundsCurrency" class="form-label">
+                    <span>Valyuta / Currency</span>
+                    <span class="label-hint fx-rate-hint">1 USD = 1.70 AZN • 1 EUR = 1.85 AZN</span>
+                  </label>
+                  <select id="fundsCurrency" name="currency" class="form-input text-field" style="cursor: pointer;">
+                    <option value="AZN" selected>AZN (₼)</option>
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="fundsAmount" class="form-label">
+                    <span id="fundsAmountLabel">Köçürmə Məbləği</span>
+                    <span class="label-hint" id="fundsFeeHint">≤10: 0.02 • ≤100: 0.05 • &gt;100: 0.10</span>
+                  </label>
+                  <div class="input-currency-wrapper">
+                    <span class="currency-prefix" id="fundsCurrencyPrefix">₼</span>
+                    <input type="number" id="fundsAmount" name="amount" class="form-input" step="0.01" min="0.01"
+                      max="50000.00" placeholder="0.00" required autocomplete="off">
+                  </div>
+                </div>
+              </div>
+
+              <div class="funds-limit-info" id="fundsLimitInfo">
+                Gündəlik limit: 50,000.00 ₼/gün • Komissiya qaydaları: ≤10: 0.02 • ≤100: 0.05 • &gt;100: 0.10
+              </div>
+
               <div class="form-group">
                 <span class="form-label">Quick Presets</span>
                 <div class="preset-chips-wrap">
-                  <button type="button" class="preset-chip-btn" data-target="withdrawAmount" data-amount="50.00">$50</button>
-                  <button type="button" class="preset-chip-btn" data-target="withdrawAmount" data-amount="100.00">$100</button>
-                  <button type="button" class="preset-chip-btn" data-target="withdrawAmount" data-amount="250.00">$250</button>
-                  <button type="button" class="preset-chip-btn" data-target="withdrawAmount" data-amount="500.00">$500</button>
-                  <button type="button" class="preset-chip-btn" data-target="withdrawAmount" data-amount="1000.00">$1,000</button>
+                  <button type="button" class="preset-chip-btn funds-preset" data-target="fundsAmount" data-amount="50.00">+₼50</button>
+                  <button type="button" class="preset-chip-btn funds-preset" data-target="fundsAmount" data-amount="100.00">+₼100</button>
+                  <button type="button" class="preset-chip-btn funds-preset" data-target="fundsAmount" data-amount="250.00">+₼250</button>
+                  <button type="button" class="preset-chip-btn funds-preset" data-target="fundsAmount" data-amount="500.00">+₼500</button>
+                  <button type="button" class="preset-chip-btn funds-preset" data-target="fundsAmount" data-amount="1000.00">+₼1,000</button>
+                </div>
+              </div>
+
+              <div class="funds-preview-box" id="fundsCommissionBox">
+                <div class="funds-preview-row">
+                  <span id="calcGrossLabel">Köçürüləcək məbləğ:</span>
+                  <strong class="fp-gross" id="calcGrossPreview">0.00 ₼</strong>
+                </div>
+                <div class="funds-preview-row">
+                  <span>AZN ekvivalenti:</span>
+                  <strong class="fp-azn" id="calcAznPreview">0.00 ₼</strong>
+                </div>
+                <div class="funds-preview-row">
+                  <span>Komissiya haqqı:</span>
+                  <strong class="fp-fee" id="calcFeePreview">0.00 ₼</strong>
+                </div>
+                <div class="funds-preview-row funds-preview-total">
+                  <span>Balansdan toplam çıxılacaq:</span>
+                  <strong id="calcTotalPreview">0.00 ₼</strong>
                 </div>
               </div>
 
               <div class="form-group">
-                <label for="withdrawDescription" class="form-label">
-                  <span>Reason / Memo</span>
-                  <span class="label-hint">Optional</span>
+                <label for="fundsDescription" class="form-label">
+                  <span>Ödəniş Təyinatı / Müqavilə / Faktura / Qeyd</span>
+                  <span class="label-hint">İxtiyari</span>
                 </label>
-                <input 
-                  type="text" 
-                  id="withdrawDescription" 
-                  name="description" 
-                  class="form-input text-field" 
-                  placeholder="e.g. Rent, Bill settlement, Personal" 
-                  maxlength="60"
-                >
+                <input type="text" id="fundsDescription" name="description" class="form-input text-field"
+                  maxlength="80" autocomplete="off">
               </div>
 
-              <button type="submit" id="submitWithdrawBtn" class="form-submit-btn withdraw-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <polyline points="19 12 12 19 5 12"></polyline>
+              <button type="submit" id="fundsSubmitBtn" class="form-submit-btn funds-submit-btn is-transfer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span>Confirm Withdrawal</span>
+                <span id="fundsSubmitLabel">Pul Göndər / Transfer</span>
               </button>
 
               <div class="form-security-footnote">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M12 6v6l4 2"></path>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                 </svg>
-                <span>Zero fees &bull; Instant settlement available</span>
+                <span id="fundsFootnote">256-bit SSL encrypted &bull; Instant transfer settlement</span>
               </div>
             </form>
           </div>
@@ -389,12 +483,441 @@
         </div>
       </section>
 
-      <!-- SECTION 3: Recent Transactions -->
+      <section class="appeals-section" id="feedbackSection" aria-labelledby="appealHeading"
+        style="margin-bottom: 2rem;">
+        <div class="action-card"
+          style="border: 1px solid rgba(239, 68, 68, 0.4); background: linear-gradient(180deg, rgba(30, 27, 75, 0.55) 0%, rgba(15, 23, 42, 0.85) 100%);">
+          <div class="card-badge-header">
+            <div class="action-badge-icon" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+            <div class="action-card-headings">
+              <h2 id="appealHeading"
+                style="color: #fff; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span>Rəy, İrad və Təkliflər Bölməsi (Feedback &amp; Suggestions)</span>
+                <span
+                  style="font-size: 0.75rem; background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 9999px; padding: 2px 10px; font-weight: 600;">Security
+                  Desk</span>
+              </h2>
+              <p style="color: #94a3b8;">Bütün rəy, irad, şikayət və təkliflərinizi buradan birbaşa Sorğu (Inquiry)
+                Panelinə göndərin.</p>
+            </div>
+          </div>
+
+          <form th:action="@{/appeals/submit}" method="POST" class="standard-bank-form" style="margin-top: 1.25rem;">
+            <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
+            <input type="hidden" name="redirectTo" value="/dashboard" />
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+              <div class="form-group">
+                <label for="appealCategory" class="form-label">
+                  <span>Müraciət Növü</span>
+                  <span class="label-hint">Kateqoriyanı seçin</span>
+                </label>
+                <select id="appealCategory" name="category" class="form-input" required
+                  style="cursor: pointer; background: rgba(15, 23, 42, 0.85); color: #fff;">
+                  <option value="ŞİKAYƏT">⚠️ Şikayət / Problem</option>
+                  <option value="İRAD" selected>💬 İrad / Rəy</option>
+                  <option value="TƏKLİF">💡 Təklif / Təkmilləşdirmə</option>
+                  <option value="TƏHLÜKƏSİZLİK">🛡️ Təhlükəsizlik Şübhəsi / Dələduzluq</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="appealPhone" class="form-label">
+                  <span>Əlaqə Telefon Nömrəniz</span>
+                  <span class="label-hint">Geri dönüş üçün</span>
+                </label>
+                <input type="text" id="appealPhone" name="phoneNumber" class="form-input text-field"
+                  th:value="${phoneNumber ?: ''}" placeholder="+994 50 123 45 67" maxlength="30" autocomplete="off">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="appealSubject" class="form-label">
+                <span>Müraciətin Mövzusu</span>
+                <span class="label-hint">Məsələn: Xidmət keyfiyyəti, Kart təklifi</span>
+              </label>
+              <input type="text" id="appealSubject" name="subject" class="form-input text-field"
+                placeholder="Mövzunu qısa şəkildə qeyd edin..." required maxlength="120" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+              <label for="appealMessage" class="form-label">
+                <span>Rəy, Şikayət, İrad və ya Təklifinizin Ətraflı Mətni</span>
+                <span class="label-hint">Ətraflı izah edin</span>
+              </label>
+              <textarea id="appealMessage" name="message" class="form-input text-field" rows="3" required
+                placeholder="Fikrinizi, iradınızı, şikayətinizi və ya təklifinizi ətraflı şəkildə qeyd edin..."
+                style="resize: vertical; min-height: 85px; width: 100%; border-radius: 10px; font-family: inherit;"></textarea>
+            </div>
+
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 0.75rem;">
+              <div class="form-security-footnote" style="margin: 0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <span style="color: #cbd5e1;">Müraciət birbaşa AsadovBank Məxfi Təhlükəsizlik Bölməsinə
+                  çatdırılır</span>
+              </div>
+
+              <button type="submit" class="form-submit-btn"
+                style="width: auto; padding: 0.75rem 1.75rem; background: linear-gradient(135deg, #dc2626, #ef4444); border-color: #dc2626; color: #fff; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                <span>Rəy / Təklifi Göndər</span>
+              </button>
+            </div>
+          </form>
+
+          <div th:if="${myAppeals != null and !myAppeals.empty}"
+            style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.25rem;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.75rem;">Göndərdiyiniz
+              Rəy, İrad və Təkliflər</div>
+            <div th:each="ap : ${myAppeals}"
+              style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 0.65rem;">
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span
+                    style="background: rgba(239, 68, 68, 0.18); color: #fca5a5; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;"
+                    th:text="${ap.category}">FEEDBACK</span>
+                  <strong style="color: #fff; font-size: 0.9rem;" th:text="${ap.subject}">Mövzu</strong>
+                </div>
+                <span style="font-size: 0.74rem; color: #94a3b8;"
+                  th:text="${ap.status + (ap.createdAt != null ? ' • ' + #temporals.format(ap.createdAt, 'dd.MM.yyyy HH:mm') : '')}">NEW</span>
+              </div>
+              <p style="color: #cbd5e1; font-size: 0.84rem; margin: 0;" th:text="${ap.message}">Mesaj mətni</p>
+              <div th:if="${ap.adminNote != null and !ap.adminNote.empty}"
+                style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(255,255,255,0.1); font-size: 0.8rem; color: #34d399;"
+                th:text="'Cavab: ' + ${ap.adminNote}"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="loan-application-section" id="loanSection" aria-labelledby="loanAppHeading"
+        style="margin-bottom: 2rem;">
+        <div class="action-card"
+          style="border: 1px solid rgba(168, 85, 247, 0.4); background: linear-gradient(180deg, rgba(30, 27, 75, 0.55) 0%, rgba(15, 23, 42, 0.8) 100%); box-shadow: 0 10px 30px rgba(0,0,0,0.25);">
+          <div class="card-badge-header">
+            <div class="action-badge-icon" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <line x1="2" y1="10" x2="22" y2="10"></line>
+              </svg>
+            </div>
+            <div class="action-card-headings">
+              <h2 id="loanAppHeading" style="color: #fff; display: flex; align-items: center; gap: 8px;">
+                <span>Online Kredit Müraciəti</span>
+                <span
+                  style="font-size: 0.75rem; background: rgba(168, 85, 247, 0.25); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 9999px; padding: 2px 10px; font-weight: 600;">Kredit
+                  Xətti</span>
+              </h2>
+              <p style="color: #94a3b8;">AsadovBank-dan sərfəli şərtlərlə kredit almaq üçün müraciət edin. Şəxsiyyət
+                vəsiqəsi və FİN kod vasitəsilə müraciətiniz birbaşa Təhlükəsizlik və Sorğu Şöbəsinə göndərilir.</p>
+            </div>
+          </div>
+
+          <form th:action="@{/loan/apply}" method="POST" class="standard-bank-form" id="loanApplicationForm"
+            style="margin-top: 1.25rem;" autocomplete="off">
+            <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+              <div class="form-group">
+                <label for="loanFullName" class="form-label">
+                  <span>Ad və Soyad</span>
+                  <span class="label-hint">Tam adınız</span>
+                </label>
+                <input type="text" id="loanFullName" name="fullName" class="form-input text-field"
+                  th:value="${customerName}" placeholder="Rəvan Əsədov" required autocomplete="off">
+              </div>
+
+              <div class="form-group">
+                <label for="dashIdDigits" class="form-label">
+                  <span id="dashIdLabelText">Şəxsiyyət Vəsiqəsinin Seriya Nömrəsi</span>
+                </label>
+                <div style="display: flex; gap: 8px; align-items: stretch;">
+                  <select id="dashIdCardCategory" name="idCardCategory" class="form-input"
+                    style="width: 110px; min-width: 100px; flex-shrink: 0; cursor: pointer; background: rgba(15, 23, 42, 0.9); color: #fff; font-weight: 700; border-radius: 10px; font-size: 0.92rem;">
+                    <option value="AZE" selected>AZE</option>
+                    <option value="AA">AA</option>
+                    <option value="FOREIGN">Xarici</option>
+                  </select>
+                  <input type="text" id="dashIdDigits" class="form-input text-field" placeholder="" maxlength="8"
+                    required
+                    style="flex: 1; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; letter-spacing: 2px; font-weight: 700;"
+                    autocomplete="off">
+                </div>
+                <input type="hidden" id="idCardSerial" name="idCardSerial" th:value="${idCardSerial ?: ''}">
+                <div id="idCardFeedback" style="font-size: 0.78rem; margin-top: 4px; display: none;"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="loanFinCode" class="form-label">
+                  <span id="dashFinLabelText">FİN Kod</span>
+                </label>
+                <input type="text" id="loanFinCode" name="finCode" class="form-input text-field"
+                  th:value="${finCode ?: ''}" placeholder="" maxlength="7" minlength="7" required
+                  style="text-transform: uppercase; font-family: 'JetBrains Mono', monospace; letter-spacing: 2px; font-weight: 700;"
+                  autocomplete="off">
+                <div id="loanFinFeedback" style="font-size: 0.78rem; margin-top: 4px; display: none;"></div>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+              <div class="form-group">
+                <label for="loanPhone" class="form-label">
+                  <span>Əlaqə Telefon Nömrəsi</span>
+                  <span class="label-hint">Geri dönüş üçün</span>
+                </label>
+                <input type="tel" id="loanPhone" name="phoneNumber" class="form-input text-field"
+                  th:value="${phoneNumber ?: ''}" placeholder="+994 50 123 45 67" required autocomplete="off">
+              </div>
+
+              <div class="form-group">
+                <label for="loanAmount" class="form-label">
+                  <span>Kredit Məbləği (₼)</span>
+                  <span class="label-hint" style="color: #34d399; font-weight: 600;">100 - 500,000 ₼</span>
+                </label>
+                <div class="input-currency-wrapper">
+                  <span class="currency-prefix">₼</span>
+                  <input type="number" id="loanAmount" name="amount" class="form-input" step="0.01" min="100"
+                    max="500000" required placeholder="0.00" autocomplete="off">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="loanTermMonths" class="form-label">
+                  <span>Kredit Müddəti</span>
+                  <span class="label-hint">Ay ilə seçin</span>
+                </label>
+                <select id="loanTermMonths" name="termMonths" class="form-input" required
+                  style="cursor: pointer; background: rgba(15, 23, 42, 0.85); color: #fff;">
+                  <option value="6">6 Ay</option>
+                  <option value="12" selected>12 Ay (1 il)</option>
+                  <option value="18">18 Ay</option>
+                  <option value="24">24 Ay (2 il)</option>
+                  <option value="36">36 Ay (3 il)</option>
+                  <option value="48">48 Ay (4 il)</option>
+                  <option value="60">60 Ay (5 il)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+              <div class="form-group">
+                <label for="loanMonthlyIncome" class="form-label">
+                  <span>Rəsmi Aylıq Gəlir (₼)</span>
+                  <span class="label-hint">Təsdiq üçün</span>
+                </label>
+                <div class="input-currency-wrapper">
+                  <span class="currency-prefix">₼</span>
+                  <input type="number" id="loanMonthlyIncome" name="monthlyIncome" class="form-input" step="0.01"
+                    min="0" placeholder="0.00" required autocomplete="off">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="loanPurpose" class="form-label">
+                  <span>Kredit Məqsədi</span>
+                  <span class="label-hint">İxtiyari</span>
+                </label>
+                <input type="text" id="loanPurpose" name="purpose" class="form-input text-field"
+                  placeholder="Ev təmiri, Avtomobil, Təhsil, Biznes" maxlength="200" autocomplete="off">
+              </div>
+            </div>
+
+            <div id="loanCalcBox"
+              style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 10px; padding: 12px 16px; font-size: 0.85rem; margin-bottom: 1.25rem;">
+              <div
+                style="font-weight: 700; color: #c084fc; margin-bottom: 8px; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                📊 Kredit Kalkulyatoru (İllik faiz dərəcəsi: 12%)
+              </div>
+              <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; color: #94a3b8;">
+                <div>
+                  <span style="display: block; font-size: 0.75rem; color: #94a3b8;">Kredit məbləği:</span>
+                  <strong style="color: #38bdf8;" id="calcLoanAmtDisplay">0.00 ₼</strong>
+                </div>
+                <div>
+                  <span style="display: block; font-size: 0.75rem; color: #94a3b8;">Kredit müddəti:</span>
+                  <strong style="color: #38bdf8;" id="calcLoanTermDisplay">12 ay</strong>
+                </div>
+                <div>
+                  <span style="display: block; font-size: 0.75rem; color: #94a3b8;">Aylıq ödəniş:</span>
+                  <strong style="color: #34d399; font-size: 1rem;" id="calcLoanMonthly">0.00 ₼</strong>
+                </div>
+                <div>
+                  <span style="display: block; font-size: 0.75rem; color: #94a3b8;">Ümumi geri ödəniş:</span>
+                  <strong style="color: #fbbf24; font-size: 1rem;" id="calcLoanTotal">0.00 ₼</strong>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div class="form-security-footnote" style="margin: 0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <span style="color: #cbd5e1;">Müraciətiniz AsadovBank Təhlükəsizlik və Sorğu Şöbəsinə rəsmi qeydiyyatla
+                  göndərilir</span>
+              </div>
+
+              <button type="submit" class="form-submit-btn"
+                style="width: auto; padding: 0.75rem 2rem; background: linear-gradient(135deg, #7c3aed, #a855f7); border-color: #7c3aed; color: #fff; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                <span>Kredit Müraciətini Göndər</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="messages-inbox-section" aria-labelledby="msgInboxHeading" style="margin-bottom: 2rem;">
+        <div class="action-card"
+          style="border: 1px solid rgba(56, 189, 248, 0.35); background: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 27, 75, 0.5) 100%);">
+          <div class="card-badge-header">
+            <div class="action-badge-icon" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <div class="action-card-headings">
+              <h2 id="msgInboxHeading" style="color: #fff; display: flex; align-items: center; gap: 8px;">
+                <span>Təhlükəsizlik Xidmətindən Bildirişlər və Cavablar</span>
+                <span th:if="${customerMessages != null and !customerMessages.empty}"
+                  style="font-size: 0.75rem; background: #0284c7; color: #fff; border-radius: 9999px; padding: 2px 8px; font-weight: 700;"
+                  th:text="${customerMessages.size()}">1</span>
+              </h2>
+              <p style="color: #94a3b8;">AsadovBank Təhlükəsizlik şöbəsi tərəfindən sizə ünvanlanmış rəsmi bildirişlər
+                və müraciət cavabları.</p>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.25rem;">
+
+            <div th:each="m : ${customerMessages}"
+              style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem;">
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span th:if="${m.messageType == 'WARNING'}"
+                    style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">⚠️
+                    XƏBƏRDARLIQ</span>
+                  <span th:if="${m.messageType == 'APPEAL_REPLY'}"
+                    style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">✉️
+                    ŞİKAYƏT CAVABI</span>
+                  <span th:if="${m.messageType != 'WARNING' and m.messageType != 'APPEAL_REPLY'}"
+                    style="background: rgba(56, 189, 248, 0.2); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.4); padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">ℹ️
+                    MƏLUMAT</span>
+                  <strong style="color: #fff; font-size: 0.95rem;" th:text="${m.title}">Başlıq</strong>
+                </div>
+                <span style="font-size: 0.78rem; color: #94a3b8;"
+                  th:text="${m.createdAt != null ? #temporals.format(m.createdAt, 'dd.MM.yyyy HH:mm') : '—'}">03.11.2026</span>
+              </div>
+              <p style="color: #cbd5e1; font-size: 0.88rem; line-height: 1.45; margin: 0;" th:text="${m.content}">Mesaj
+                mətni...</p>
+              <small style="display: block; font-size: 0.75rem; color: #64748b; margin-top: 6px;"
+                th:text="'Göndərən: ' + ${m.sender}">Göndərən: Bank Təhlükəsizlik Xidməti</small>
+            </div>
+
+            <div th:if="${customerMessages == null or customerMessages.empty}"
+              style="text-align: center; padding: 1.5rem; color: #94a3b8; font-size: 0.88rem;">
+              <span>Hazırda Təhlükəsizlik Xidmətindən sizə göndərilmiş yeni bildiriş və ya xəbərdarlıq yoxdur.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="loan-history-section" aria-labelledby="loanHistoryHeading" style="margin-bottom: 2rem;"
+        th:if="${loanApplications != null and !loanApplications.empty}">
+        <div class="action-card"
+          style="border: 1px solid rgba(168, 85, 247, 0.25); background: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 27, 75, 0.4) 100%);">
+          <div class="card-badge-header">
+            <div class="action-badge-icon" style="background: rgba(168, 85, 247, 0.2); color: #a855f7;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+            </div>
+            <div class="action-card-headings">
+              <h2 id="loanHistoryHeading" style="color: #fff;">Kredit Müraciət Tarixçəsi</h2>
+              <p style="color: #94a3b8;">Göndərdiyiniz kredit müraciətlərinin statusu və detalları.</p>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.25rem; overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+              <thead>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                  <th
+                    style="text-align: left; padding: 10px 12px; color: #94a3b8; font-weight: 600; font-size: 0.78rem; text-transform: uppercase;">
+                    Tarix</th>
+                  <th
+                    style="text-align: left; padding: 10px 12px; color: #94a3b8; font-weight: 600; font-size: 0.78rem; text-transform: uppercase;">
+                    Məbləğ</th>
+                  <th
+                    style="text-align: left; padding: 10px 12px; color: #94a3b8; font-weight: 600; font-size: 0.78rem; text-transform: uppercase;">
+                    Müddət</th>
+                  <th
+                    style="text-align: left; padding: 10px 12px; color: #94a3b8; font-weight: 600; font-size: 0.78rem; text-transform: uppercase;">
+                    Aylıq Ödəniş</th>
+                  <th
+                    style="text-align: center; padding: 10px 12px; color: #94a3b8; font-weight: 600; font-size: 0.78rem; text-transform: uppercase;">
+                    Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="loan : ${loanApplications}" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 10px 12px; color: #cbd5e1;"
+                    th:text="${loan.createdAt != null ? #temporals.format(loan.createdAt, 'dd.MM.yyyy HH:mm') : '—'}">
+                    01.11.2026</td>
+                  <td style="padding: 10px 12px; color: #fff; font-weight: 600;"
+                    th:text="${#numbers.formatDecimal(loan.amount, 1, 'COMMA', 2, 'POINT') + ' ₼'}">5,000.00 ₼</td>
+                  <td style="padding: 10px 12px; color: #cbd5e1;" th:text="${loan.termMonths + ' ay'}">12 ay</td>
+                  <td style="padding: 10px 12px; color: #34d399; font-weight: 600;"
+                    th:text="${loan.monthlyPayment != null ? #numbers.formatDecimal(loan.monthlyPayment, 1, 'COMMA', 2, 'POINT') + ' ₼' : '—'}">
+                    466.67 ₼</td>
+                  <td style="padding: 10px 12px; text-align: center;">
+                    <span th:if="${loan.status == 'PENDING'}"
+                      style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">⏳
+                      GÖZLƏYİR</span>
+                    <span th:if="${loan.status == 'APPROVED'}"
+                      style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">✅
+                      TƏSDİQLƏNDİ</span>
+                    <span th:if="${loan.status == 'REJECTED'}"
+                      style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">❌
+                      RƏDD EDİLDİ</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
       <section class="transactions-card" aria-labelledby="txHeading">
         <div class="transactions-card-header">
           <div class="section-title-wrap" style="margin-bottom: 0;">
             <h2 id="txHeading" class="section-title">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
               </svg>
               Recent Transactions
@@ -402,7 +925,6 @@
             <p class="section-subtitle">Real-time ledger of your incoming deposits and debit withdrawals.</p>
           </div>
 
-          <!-- UI Filter Toggle (Vanilla JS toggle without REST calls) -->
           <div class="table-filter-pills" role="tablist" aria-label="Transaction Filter">
             <button type="button" class="filter-pill active" data-filter="all">All</button>
             <button type="button" class="filter-pill" data-filter="DEPOSIT">Deposits</button>
@@ -422,151 +944,66 @@
               </tr>
             </thead>
             <tbody>
-              <!-- Active Thymeleaf Loop over transactions list if supplied by Model -->
-              <th:block th:if="${transactions != null and !transactions.empty}">
-                <tr th:each="tx : ${transactions}" th:attr="data-type=${tx.type}">
-                  <td>
-                    <div class="tx-entity-group">
-                      <div class="tx-icon-badge" th:classappend="${tx.type == 'DEPOSIT' ? 'credit' : 'debit'}">
-                        <svg th:if="${tx.type == 'DEPOSIT'}" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                          <line x1="12" y1="19" x2="12" y2="5"></line>
-                          <polyline points="5 12 12 5 19 12"></polyline>
-                        </svg>
-                        <svg th:if="${tx.type != 'DEPOSIT'}" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                          <line x1="12" y1="5" x2="12" y2="19"></line>
-                          <polyline points="19 12 12 19 5 12"></polyline>
-                        </svg>
-                      </div>
-                      <div class="tx-details">
-                        <span class="tx-title" th:text="${tx.description ?: 'Transaction'}">Transfer</span>
-                        <span class="tx-ref" th:text="'Ref: #' + ${tx.referenceNumber ?: 'TX-0000'}">Ref: #TX-901</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="tx-type-tag" th:classappend="${tx.type == 'DEPOSIT' ? 'deposit' : 'withdraw'}" th:text="${tx.type}">DEPOSIT</span>
-                  </td>
-                  <td>
-                    <span class="tx-date" th:text="${#temporals.format(tx.timestamp, 'MMM dd, yyyy')}">Oct 08, 2026</span>
-                    <span class="tx-date-time" th:text="${#temporals.format(tx.timestamp, 'hh:mm a')}">10:45 AM</span>
-                  </td>
-                  <td>
-                    <span class="tx-status-badge completed">
-                      <span class="status-dot"></span>
-                      <span th:text="${tx.status ?: 'Completed'}">Completed</span>
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <span class="tx-amount" th:classappend="${tx.type == 'DEPOSIT' ? 'positive' : 'negative'}"
-                          th:text="${(tx.type == 'DEPOSIT' ? '+$' : '-$') + #numbers.formatDecimal(tx.amount, 1, 'COMMA', 2, 'POINT')}">
-                      +$1,000.00
-                    </span>
-                  </td>
-                </tr>
-              </th:block>
 
-              <!-- Fallback Mock Rows when no model data is provided (Static Preview Mode) -->
-              <th:block th:if="${transactions == null or transactions.empty}">
-                <tr data-type="DEPOSIT">
-                  <td>
-                    <div class="tx-entity-group">
-                      <div class="tx-icon-badge credit">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                          <line x1="12" y1="19" x2="12" y2="5"></line>
-                          <polyline points="5 12 12 5 19 12"></polyline>
-                        </svg>
-                      </div>
-                      <div class="tx-details">
-                        <span class="tx-title">Employer Payroll &bull; Stripe Payout</span>
-                        <span class="tx-ref">Ref: #TX-99482-PAY</span>
-                      </div>
+              <tr th:each="tx : ${transactions}" th:attr="data-type=${tx.type}">
+                <td>
+                  <div class="tx-entity-group">
+                    <div class="tx-icon-badge" th:classappend="${tx.type == 'DEPOSIT' ? 'credit' : 'debit'}">
+                      <svg th:if="${tx.type == 'DEPOSIT'}" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="19" x2="12" y2="5"></line>
+                        <polyline points="5 12 12 5 19 12"></polyline>
+                      </svg>
+                      <svg th:if="${tx.type != 'DEPOSIT'}" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <polyline points="19 12 12 19 5 12"></polyline>
+                      </svg>
                     </div>
-                  </td>
-                  <td>
-                    <span class="tx-type-tag deposit">Deposit</span>
-                  </td>
-                  <td>
-                    <span class="tx-date">Oct 08, 2026</span>
-                    <span class="tx-date-time">09:15 AM</span>
-                  </td>
-                  <td>
-                    <span class="tx-status-badge completed">
-                      <span class="status-dot"></span>
-                      <span>Completed</span>
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <span class="tx-amount positive">+$4,850.00</span>
-                  </td>
-                </tr>
-
-                <tr data-type="WITHDRAWAL">
-                  <td>
-                    <div class="tx-entity-group">
-                      <div class="tx-icon-badge debit">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                          <line x1="12" y1="5" x2="12" y2="19"></line>
-                          <polyline points="19 12 12 19 5 12"></polyline>
-                        </svg>
-                      </div>
-                      <div class="tx-details">
-                        <span class="tx-title">AWS Cloud Hosting &bull; Recurring</span>
-                        <span class="tx-ref">Ref: #TX-99321-BIL</span>
-                      </div>
+                    <div class="tx-details">
+                      <span class="tx-title" th:text="${tx.description ?: 'Xərcləmə / Çıxarış'}">Xərcləmə</span>
+                      <span class="tx-ref" th:text="'Ref: #' + ${tx.referenceNumber ?: 'TX-0000'}">Ref: #TX-901</span>
                     </div>
-                  </td>
-                  <td>
-                    <span class="tx-type-tag withdraw">Withdrawal</span>
-                  </td>
-                  <td>
-                    <span class="tx-date">Oct 07, 2026</span>
-                    <span class="tx-date-time">04:30 PM</span>
-                  </td>
-                  <td>
-                    <span class="tx-status-badge completed">
-                      <span class="status-dot"></span>
-                      <span>Completed</span>
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <span class="tx-amount negative">-$342.18</span>
-                  </td>
-                </tr>
+                  </div>
+                </td>
+                <td>
+                  <span class="tx-type-tag" th:classappend="${tx.type == 'DEPOSIT' ? 'deposit' : 'withdraw'}"
+                    th:text="${tx.type}">WITHDRAWAL</span>
+                </td>
+                <td>
+                  <span class="tx-date"
+                    th:text="${tx.timestamp != null ? #temporals.format(tx.timestamp, 'MMM dd, yyyy') : 'Bugün'}">Oct
+                    08, 2026</span>
+                  <span class="tx-date-time"
+                    th:text="${tx.timestamp != null ? #temporals.format(tx.timestamp, 'hh:mm a') : '00:00'}">10:45
+                    AM</span>
+                </td>
+                <td>
+                  <span class="tx-status-badge completed">
+                    <span class="status-dot"></span>
+                    <span th:text="${tx.status ?: 'Completed'}">Completed</span>
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <span class="tx-amount" th:classappend="${tx.type == 'DEPOSIT' ? 'positive' : 'negative'}"
+                    th:text="${(tx.type == 'DEPOSIT' ? '+$' : '-$') + #numbers.formatDecimal(tx.amount, 1, 'COMMA', 2, 'POINT')}">
+                    -$50.00
+                  </span>
+                </td>
+              </tr>
 
-                <tr data-type="DEPOSIT">
-                  <td>
-                    <div class="tx-entity-group">
-                      <div class="tx-icon-badge credit">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                          <line x1="12" y1="19" x2="12" y2="5"></line>
-                          <polyline points="5 12 12 5 19 12"></polyline>
-                        </svg>
-                      </div>
-                      <div class="tx-details">
-                        <span class="tx-title">Wire Transfer &bull; Client Retainer</span>
-                        <span class="tx-ref">Ref: #TX-98710-WRE</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="tx-type-tag deposit">Deposit</span>
-                  </td>
-                  <td>
-                    <span class="tx-date">Oct 05, 2026</span>
-                    <span class="tx-date-time">11:04 AM</span>
-                  </td>
-                  <td>
-                    <span class="tx-status-badge completed">
-                      <span class="status-dot"></span>
-                      <span>Completed</span>
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <span class="tx-amount positive">+$12,500.00</span>
-                  </td>
-                </tr>
-              </th:block>
-
+              <tr th:if="${transactions == null or transactions.empty}" id="noTxRow">
+                <td colspan="5" style="text-align: center; padding: 2.5rem; color: #94a3b8;">
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                      style="color: #64748b;">
+                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    <span>Hələ heç bir əməliyyat aparılmayıb. Yuxarıdan pul xərclədikdə hara xərcləndiyi burada
+                      görünəcək.</span>
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -574,21 +1011,368 @@
 
     </main>
 
-    <!-- Footer Section -->
     <footer class="app-footer">
       <div class="footer-inner">
-        <div>&copy; 2026 Nexus Neo-Bank Financial Technologies N.A. Member FDIC. Equal Housing Lender.</div>
-        <div style="display: flex; gap: 1rem;">
-          <a href="#" style="text-decoration: underline;">Security & Privacy</a>
-          <a href="#" style="text-decoration: underline;">Terms of Service</a>
-          <a href="#" style="text-decoration: underline;">Support Hotline</a>
-        </div>
+        <div>&copy; 2026 AsadovBank Financial Technologies N.A. Member FDIC. Equal Housing Lender.</div>
       </div>
     </footer>
 
   </div>
 
-  <!-- Minimal Vanilla JavaScript -->
+  <div class="error-modal-overlay" id="errorModalOverlay" role="dialog" aria-modal="true"
+    aria-labelledby="errorModalTitle">
+    <div class="error-modal">
+      <button class="error-modal-close" id="errorModalCloseBtn" aria-label="Close">&times;</button>
+      <div class="error-modal-icon-wrap" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h2 class="error-modal-title" id="errorModalTitle">Əməliyyat uğursuz oldu</h2>
+      <p class="error-modal-message" id="errorModalMessage">Məlumatlar tam daxil edilməyib</p>
+      <span class="error-modal-code" id="errorModalCode" style="display:none;"></span>
+      <div class="error-modal-actions">
+        <button class="error-modal-btn-dismiss" id="errorModalDismissBtn">Bağla</button>
+        <button class="error-modal-btn-retry" id="errorModalRetryBtn">Yenidən cəhd et</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="transfer-confirm-overlay" id="transferConfirmOverlay" role="dialog" aria-modal="true"
+    aria-labelledby="transferConfirmTitle">
+    <div class="transfer-confirm-modal">
+      <button class="transfer-confirm-close" id="transferConfirmCloseBtn" type="button"
+        aria-label="Bağla">&times;</button>
+
+      <div class="transfer-confirm-icon-wrap" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"
+          stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+
+      <h2 class="transfer-confirm-title" id="transferConfirmTitle">Köçürmənin Təsdiqi</h2>
+      <p class="transfer-confirm-subtitle">Zəhmət olmasa, əməliyyat məlumatlarını yoxlayın və təsdiq edin.</p>
+
+      <div class="transfer-confirm-card">
+        <div class="transfer-confirm-row">
+          <span class="tc-label">Qəbuledici Hesab:</span>
+          <strong class="tc-val" id="confirmRecipient">—</strong>
+        </div>
+        <div class="transfer-confirm-row">
+          <span class="tc-label">Köçürüləcək məbləğ:</span>
+          <strong class="tc-val tc-highlight" id="confirmAmount">0.00 ₼</strong>
+        </div>
+        <div class="transfer-confirm-row">
+          <span class="tc-label">Hesablanmış komissiya haqqı:</span>
+          <strong class="tc-val tc-fee" id="confirmFee">0.00 ₼</strong>
+        </div>
+        <div class="transfer-confirm-divider"></div>
+        <div class="transfer-confirm-row tc-total-row">
+          <span class="tc-label">Ümumi çıxılacaq məbləğ:</span>
+          <strong class="tc-val tc-total" id="confirmTotal">0.00 ₼</strong>
+        </div>
+      </div>
+
+      <div class="transfer-confirm-note">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          style="flex-shrink:0; margin-top:2px;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <span>Komissiya haqqı göndərənin əsas balansından əlavə olaraq çıxılacaqdır.</span>
+      </div>
+
+      <div class="transfer-confirm-actions">
+        <button type="button" class="transfer-btn-cancel" id="cancelTransferBtn">Ləğv et</button>
+        <button type="button" class="transfer-btn-confirm" id="confirmTransferBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Razıyam (Təsdiq et)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      function updateLoanCalc() {
+        var amt = parseFloat(document.getElementById('loanAmount')?.value) || 0;
+        var term = parseInt(document.getElementById('loanTermMonths')?.value) || 12;
+        var total = amt + (amt * 0.12 * (term / 12));
+        var monthly = term > 0 ? (total / term) : 0;
+        var amtDisplay = document.getElementById('calcLoanAmtDisplay');
+        var termDisplay = document.getElementById('calcLoanTermDisplay');
+        var monthlyEl = document.getElementById('calcLoanMonthly');
+        var totalEl = document.getElementById('calcLoanTotal');
+
+        if (amtDisplay) amtDisplay.innerText = amt.toFixed(2) + ' ₼';
+        if (termDisplay) termDisplay.innerText = term + ' ay';
+        if (monthlyEl) monthlyEl.innerText = monthly.toFixed(2) + ' ₼';
+        if (totalEl) totalEl.innerText = total.toFixed(2) + ' ₼';
+      }
+      var la = document.getElementById('loanAmount');
+      var lt = document.getElementById('loanTermMonths');
+      if (la) la.addEventListener('input', updateLoanCalc);
+      if (lt) lt.addEventListener('change', updateLoanCalc);
+      updateLoanCalc();
+
+      const dCatSelect = document.getElementById('dashIdCardCategory');
+      const dIdDigits = document.getElementById('dashIdDigits');
+      const dIdHidden = document.getElementById('idCardSerial');
+      const dIdFeedback = document.getElementById('idCardFeedback');
+      const dIdLabel = document.getElementById('dashIdLabelText');
+      const finInput = document.getElementById('loanFinCode');
+      const finFeedback = document.getElementById('loanFinFeedback');
+
+      function isDummyOrSequential(str) {
+        if (!str || str.length < 4) return false;
+        if (/^(\w)\1+$/.test(str)) return true;
+        const ascending = '01234567890123456789';
+        const descending = '98765432109876543210';
+        if (ascending.includes(str) || descending.includes(str)) return true;
+        return false;
+      }
+
+      function syncDashIdSerial() {
+        const cat = dCatSelect ? dCatSelect.value : 'AZE';
+        const raw = dIdDigits ? dIdDigits.value.trim().toUpperCase() : '';
+        let full = '';
+        if (cat === 'AZE') full = 'AZE' + raw;
+        else if (cat === 'AA') full = 'AA' + raw;
+        else full = raw;
+        if (dIdHidden) dIdHidden.value = full;
+      }
+
+      function onDashCatChange() {
+        const cat = dCatSelect ? dCatSelect.value : 'AZE';
+        if (dIdDigits) {
+          dIdDigits.placeholder = '';
+          if (cat === 'AZE') {
+            dIdDigits.maxLength = 8;
+            dIdDigits.value = dIdDigits.value.replace(/\D/g, '').substring(0, 8);
+          } else if (cat === 'AA') {
+            dIdDigits.maxLength = 7;
+            dIdDigits.value = dIdDigits.value.replace(/\D/g, '').substring(0, 7);
+          } else if (cat === 'FOREIGN') {
+            dIdDigits.maxLength = 10;
+            dIdDigits.value = dIdDigits.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().substring(0, 10);
+          }
+        }
+        syncDashIdSerial();
+        validateDashId();
+      }
+
+      if (dIdHidden && dIdHidden.value && dIdDigits) {
+        let val = dIdHidden.value.trim().toUpperCase();
+        if (val.startsWith('AZE')) {
+          if (dCatSelect) dCatSelect.value = 'AZE';
+          dIdDigits.value = val.substring(3);
+        } else if (val.startsWith('AA')) {
+          if (dCatSelect) dCatSelect.value = 'AA';
+          dIdDigits.value = val.substring(2);
+        } else {
+          if (dCatSelect) dCatSelect.value = 'FOREIGN';
+          dIdDigits.value = val;
+        }
+      }
+
+      if (dCatSelect) {
+        dCatSelect.addEventListener('change', onDashCatChange);
+      }
+
+      if (dIdDigits) {
+        dIdDigits.addEventListener('input', function () {
+          const cat = dCatSelect ? dCatSelect.value : 'AZE';
+          if (cat === 'AZE' || cat === 'AA') {
+            this.value = this.value.replace(/\D/g, '');
+          } else {
+            this.value = this.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+          }
+          syncDashIdSerial();
+          validateDashId();
+        });
+      }
+
+      function validateDashId() {
+        if (!dIdDigits || !dIdFeedback) return false;
+        syncDashIdSerial();
+        const cat = dCatSelect ? dCatSelect.value : 'AZE';
+        const digits = dIdDigits.value.trim().toUpperCase();
+
+        if (cat === 'AZE') {
+          if (digits.length === 0) {
+            dIdFeedback.style.display = 'none';
+            dIdDigits.classList.remove('input-invalid', 'input-valid');
+            return false;
+          }
+          if (digits.length !== 8) {
+            dIdFeedback.style.display = 'block';
+            dIdFeedback.style.color = '#fca5a5';
+            dIdFeedback.textContent = '❌ AZE seriyası üçün dəqiq 8 rəqəm olmalıdır (' + digits.length + '/8 rəqəm)';
+            dIdDigits.classList.add('input-invalid');
+            dIdDigits.classList.remove('input-valid');
+            return false;
+          }
+          if (isDummyOrSequential(digits)) {
+            dIdFeedback.style.display = 'block';
+            dIdFeedback.style.color = '#fca5a5';
+            dIdFeedback.textContent = '❌ Saxta və ya ardıcıl seriya nömrəsi qəbul edilmir';
+            dIdDigits.classList.add('input-invalid');
+            dIdDigits.classList.remove('input-valid');
+            return false;
+          }
+          dIdFeedback.style.display = 'block';
+          dIdFeedback.style.color = '#34d399';
+          dIdFeedback.textContent = '✅ AZE seriya nömrəsi düzgündür (AZE + 8 rəqəm)';
+          dIdDigits.classList.remove('input-invalid');
+          dIdDigits.classList.add('input-valid');
+          return true;
+        } else if (cat === 'AA') {
+          if (digits.length === 0) {
+            dIdFeedback.style.display = 'none';
+            dIdDigits.classList.remove('input-invalid', 'input-valid');
+            return false;
+          }
+          if (digits.length !== 7) {
+            dIdFeedback.style.display = 'block';
+            dIdFeedback.style.color = '#fca5a5';
+            dIdFeedback.textContent = '❌ AA seriyası üçün dəqiq 7 rəqəm olmalıdır, 8 və ya 6 olmaz (' + digits.length + '/7 rəqəm)';
+            dIdDigits.classList.add('input-invalid');
+            dIdDigits.classList.remove('input-valid');
+            return false;
+          }
+          if (isDummyOrSequential(digits)) {
+            dIdFeedback.style.display = 'block';
+            dIdFeedback.style.color = '#fca5a5';
+            dIdFeedback.textContent = '❌ Saxta və ya ardıcıl seriya nömrəsi qəbul edilmir';
+            dIdDigits.classList.add('input-invalid');
+            dIdDigits.classList.remove('input-valid');
+            return false;
+          }
+          dIdFeedback.style.display = 'block';
+          dIdFeedback.style.color = '#34d399';
+          dIdFeedback.textContent = '✅ AA seriya nömrəsi düzgündür (AA + 7 rəqəm)';
+          dIdDigits.classList.remove('input-invalid');
+          dIdDigits.classList.add('input-valid');
+          return true;
+        } else {
+          if (digits.length === 0) {
+            dIdFeedback.style.display = 'none';
+            dIdDigits.classList.remove('input-invalid', 'input-valid');
+            return false;
+          }
+          if (digits.length < 7 || digits.length > 10) {
+            dIdFeedback.style.display = 'block';
+            dIdFeedback.style.color = '#fca5a5';
+            dIdFeedback.textContent = '❌ Xarici sənəd nömrəsi 7-10 simvol olmalıdır (' + digits.length + '/7-10)';
+            dIdDigits.classList.add('input-invalid');
+            dIdDigits.classList.remove('input-valid');
+            return false;
+          }
+          if (/^\d+$/.test(digits) || /^[A-Z]+$/.test(digits)) {
+            dIdFeedback.style.display = 'block';
+            dIdFeedback.style.color = '#fca5a5';
+            dIdFeedback.textContent = '❌ Xarici sənəd həm hərf, həm rəqəm qarışığından ibarət olmalıdır';
+            dIdDigits.classList.add('input-invalid');
+            dIdDigits.classList.remove('input-valid');
+            return false;
+          }
+          if (isDummyOrSequential(digits)) {
+            dIdFeedback.style.display = 'block';
+            dIdFeedback.style.color = '#fca5a5';
+            dIdFeedback.textContent = '❌ Saxta sənəd nömrəsi qəbul edilmir';
+            dIdDigits.classList.add('input-invalid');
+            dIdDigits.classList.remove('input-valid');
+            return false;
+          }
+          dIdFeedback.style.display = 'block';
+          dIdFeedback.style.color = '#34d399';
+          dIdFeedback.textContent = '✅ Xarici sənəd nömrəsi beynəlxalq standarta uyğundur';
+          dIdDigits.classList.remove('input-invalid');
+          dIdDigits.classList.add('input-valid');
+          return true;
+        }
+      }
+
+      function validateDashFin() {
+        if (!finInput || !finFeedback) return false;
+        var v = finInput.value.trim().toUpperCase();
+        finInput.value = v;
+
+        if (v.length === 0) {
+          finFeedback.style.display = 'none';
+          finInput.classList.remove('input-invalid', 'input-valid');
+          return false;
+        }
+
+        if (v.includes('O') || v.includes('I')) {
+          finFeedback.style.display = 'block';
+          finFeedback.style.color = '#fca5a5';
+          finFeedback.textContent = '❌ FİN kodda O və I hərfləri istifadə olunmur (0 və 1 ilə qarışmaması üçün)';
+          finInput.classList.add('input-invalid');
+          finInput.classList.remove('input-valid');
+          return false;
+        }
+
+        if (v.length !== 7 || !/^[A-Za-z0-9]{7}$/.test(v)) {
+          finFeedback.style.display = 'block';
+          finFeedback.style.color = '#fca5a5';
+          finFeedback.textContent = '❌ FİN kod dəqiq 7 simvol olmalıdır (' + v.length + '/7)';
+          finInput.classList.add('input-invalid');
+          finInput.classList.remove('input-valid');
+          return false;
+        }
+
+        if (isDummyOrSequential(v)) {
+          finFeedback.style.display = 'block';
+          finFeedback.style.color = '#fca5a5';
+          finFeedback.textContent = '❌ Saxta FİN kod qəbul edilmir';
+          finInput.classList.add('input-invalid');
+          finInput.classList.remove('input-valid');
+          return false;
+        }
+
+        finFeedback.style.display = 'block';
+        finFeedback.style.color = '#34d399';
+        finFeedback.textContent = '✅ FİN kod standartlara uyğundur';
+        finInput.classList.remove('input-invalid');
+        finInput.classList.add('input-valid');
+        return true;
+      }
+
+      if (finInput) {
+        finInput.addEventListener('input', validateDashFin);
+      }
+
+      const loanForm = document.getElementById('loanApplicationForm');
+      if (loanForm) {
+        loanForm.addEventListener('submit', function (e) {
+          if (!validateDashId()) {
+            e.preventDefault();
+            alert('❌ Şəxsiyyət vəsiqəsi seriyası standarta uyğun deyil (AA üçün dəqiq 7 rəqəm, AZE üçün dəqiq 8 rəqəm olmalıdır).');
+            dIdDigits?.focus();
+            return false;
+          }
+          if (!validateDashFin()) {
+            e.preventDefault();
+            alert('❌ FİN kod düzgün deyil (dəqiq 7 simvol olmalıdır, O və I hərfləri ola bilməz).');
+            finInput?.focus();
+            return false;
+          }
+        });
+      }
+    })();
+  </script>
+
   <script th:src="@{/js/dashboard.js}" src="../static/js/dashboard.js"></script>
+  <script th:src="@{/js/no-autocomplete-stay.js}" src="/js/no-autocomplete-stay.js"></script>
 </body>
+
 </html>

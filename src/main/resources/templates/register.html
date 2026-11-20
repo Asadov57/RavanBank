@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registration &amp; Careers | AsadovBank</title>
+  <meta name="description" content="AsadovBank Online Customer Registration, Loan Application and Career Portal.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" th:href="@{/css/styles.css}" href="css/styles.css">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0f172a 55%, #020617 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem 1rem;
+      color: #f8fafc;
+    }
+
+    .brand-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .brand-icon-lg {
+      width: 58px; height: 58px;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 0.75rem;
+      box-shadow: 0 10px 30px rgba(79, 70, 229, 0.45);
+    }
+
+    .brand-title {
+      font-size: 2.1rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-title span { font-weight: 400; opacity: 0.85; }
+
+    .brand-sub {
+      font-size: 0.92rem;
+      color: #94a3b8;
+      margin-top: 0.25rem;
+    }
+
+    .dual-register-container {
+      width: 100%;
+      max-width: 1480px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      align-items: stretch;
+    }
+
+    @media (max-width: 1180px) {
+      .dual-register-container {
+        grid-template-columns: 1fr;
+        max-width: 580px;
+      }
+    }
+
+    .register-card {
+      background: rgba(30, 41, 59, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 24px;
+      padding: 2.25rem;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(79, 70, 229, 0.12);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+
+    .badge-standard {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.45);
+    }
+
+    .badge-customer {
+      background: rgba(168, 85, 247, 0.2);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+
+    .badge-career {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .register-card-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .register-card-sub {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-top: 0.35rem;
+      line-height: 1.45;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .form-group { margin-bottom: 1.1rem; position: relative; }
+
+    .form-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 0.45rem;
+      letter-spacing: 0.02em;
+    }
+
+    .label-hint {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 12px;
+      padding: 0.82rem 1rem;
+      font-size: 0.92rem;
+      color: #fff;
+      font-family: inherit;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    .form-input.has-toggle {
+      padding-right: 2.85rem;
+    }
+
+    .form-input::placeholder { color: rgba(255, 255, 255, 0.32); }
+
+    .form-input:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.28);
+      background: rgba(15, 23, 42, 0.98);
+    }
+
+    .form-input.input-invalid {
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+    }
+
+    .form-input.input-valid {
+      border-color: #10b981 !important;
+    }
+
+    .validation-feedback {
+      font-size: 0.76rem;
+      margin-top: 4px;
+      display: none;
+    }
+    .validation-feedback.error {
+      color: #fca5a5;
+      display: block;
+    }
+    .validation-feedback.success {
+      color: #6ee7b7;
+      display: block;
+    }
+
+    .id-card-combined-group {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .id-card-select {
+      width: 120px;
+      min-width: 110px;
+      flex-shrink: 0;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #38bdf8;
+      font-weight: 700;
+      border-radius: 12px;
+      padding: 0.82rem 0.75rem;
+      font-size: 0.92rem;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .id-card-select:focus {
+      border-color: #6366f1;
+    }
+
+    .id-card-input {
+      flex: 1;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 2px;
+      font-weight: 700;
+    }
+
+    .password-checklist {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-top: 6px;
+      font-size: 0.75rem;
+    }
+
+    .checklist-title {
+      color: #94a3b8;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+      color: #64748b;
+      transition: color 0.2s;
+    }
+
+    .check-item.met {
+      color: #34d399;
+      font-weight: 600;
+    }
+
+    .password-toggle-btn {
+      position: absolute;
+      right: 0.75rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      border-radius: 4px;
+      transition: color 0.2s, transform 0.15s;
+    }
+
+    .password-toggle-btn:hover {
+      color: #fff;
+      transform: scale(1.08);
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      border: none;
+      border-radius: 12px;
+      padding: 0.92rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 0.75rem;
+      box-shadow: 0 4px 18px rgba(79, 70, 229, 0.4);
+      transition: opacity 0.2s, transform 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .submit-btn:hover { opacity: 0.94; transform: translateY(-1px); }
+    .submit-btn:active { transform: translateY(0); }
+
+    .btn-standard {
+      background: linear-gradient(135deg, #059669, #10b981) !important;
+      box-shadow: 0 4px 18px rgba(16, 185, 129, 0.38) !important;
+    }
+
+    .btn-career {
+      background: linear-gradient(135deg, #d97706, #f59e0b) !important;
+      box-shadow: 0 4px 18px rgba(245, 158, 11, 0.35) !important;
+    }
+
+    .btn-career:hover { opacity: 0.94; }
+
+    .verify-btn {
+      background: linear-gradient(135deg, #059669, #10b981) !important;
+      box-shadow: 0 4px 18px rgba(16, 185, 129, 0.45) !important;
+    }
+
+    .code-input-large {
+      font-family: 'JetBrains Mono', monospace !important;
+      font-size: 1.85rem !important;
+      letter-spacing: 12px !important;
+      text-align: center !important;
+      font-weight: 800 !important;
+      color: #34d399 !important;
+      border-color: rgba(16, 185, 129, 0.5) !important;
+      background: rgba(6, 78, 59, 0.3) !important;
+      padding: 0.75rem !important;
+    }
+
+    .mail-sim-box {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(6, 182, 212, 0.16));
+      border: 1.5px solid rgba(16, 185, 129, 0.5);
+      border-radius: 14px;
+      padding: 1.15rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .mail-sim-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.4rem;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #34d399;
+    }
+
+    .mail-sim-body {
+      font-size: 0.88rem;
+      color: #e2e8f0;
+      line-height: 1.45;
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      color: #fca5a5;
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+      display: flex; align-items: center; gap: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .alert-close-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: #fca5a5;
+      font-size: 1.2rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 4px;
+      opacity: 0.75;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+    .alert-close-btn:hover { opacity: 1; }
+
+    @keyframes ravanSpin {
+      to { transform: rotate(360deg); }
+    }
+    .btn-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: ravanSpin 0.65s linear infinite;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .security-notice-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-top: 1.25rem;
+      line-height: 1.45;
+    }
+
+    .footer-links {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.88rem;
+      color: #94a3b8;
+    }
+
+    .footer-links a {
+      color: #818cf8;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer-links a:hover { text-decoration: underline; color: #fff; }
+  </style>
+</head>
+<body>
+
+  <div class="brand-header">
+    <div class="brand-icon-lg">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+      </svg>
+    </div>
+    <div class="brand-title">Asadov<span>Bank</span></div>
+    <div class="brand-sub">Təhlükəsiz Rəqəmsal Bankçılıq &amp; Karyera Portalı / Secure Digital Banking &amp; Career Portal</div>
+  </div>
+
+  <div style="width: 100%; max-width: 1480px; margin-bottom: 1rem;">
+    <div class="alert-error" th:if="${errorMessage != null}" id="serverErrorAlert">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span th:text="${errorMessage}">An error occurred.</span>
+      <button type="button" class="alert-close-btn" id="serverErrorCloseBtn" aria-label="Bağla">&times;</button>
+    </div>
+
+    <div class="alert-error" id="clientErrorAlert" style="display: none;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span id="clientErrorText">Error</span>
+      <button type="button" class="alert-close-btn" id="clientErrorCloseBtn" aria-label="Bağla">&times;</button>
+    </div>
+  </div>
+
+  <div class="dual-register-container">
+
+    <div class="register-card" id="standardCustomerPanel" style="border-color: rgba(16, 185, 129, 0.35);">
+      <div>
+        <span class="card-header-badge badge-standard">
+          <span>🏦 Normal Müştəri / Standard Account</span>
+        </span>
+        <h1 class="register-card-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.3">
+            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+            <line x1="2" y1="10" x2="22" y2="10"></line>
+          </svg>
+          <span>Normal Müştəri Hesabı / Standard Account</span>
+        </h1>
+
+        <div class="mail-sim-box" id="stdMailSimulationBox" th:style="${stdSmsSent == true ? 'display: block;' : 'display: none;'}">
+          <div class="mail-sim-header">
+            <span>📬 Rəsmi SMTP Bildirişi / Official SMTP Alert</span>
+            <span>Gmail Çatdırıldı / Delivered</span>
+          </div>
+          <div class="mail-sim-body">
+            Hörmətli Müştəri / Dear Customer, <strong>3 rəqəmli təsdiq kodunuz / your 3-digit verification code</strong> Gmail:
+            <div style="margin: 6px 0; color: #38bdf8; font-weight: 700; font-size: 0.95rem;" id="stdSentEmailDisplay"></div>
+            <small style="color: #cbd5e1; display: block; font-size: 0.78rem;">
+              Gmail Gələnlər (Inbox), Spam və ya Bütün Poçt (All Mail) qovluğunu yoxlayın və 3 rəqəmli kodu daxil edin / Check your Gmail Inbox, Spam, or All Mail folder and enter the 3-digit code below.
+            </small>
+          </div>
+        </div>
+
+        <form id="stdStep1Form" th:action="@{/register/standard-customer}" method="POST" th:style="${stdSmsSent == true ? 'display: none;' : 'display: block;'}" autocomplete="off">
+          <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="" />
+
+          <div class="form-group">
+            <label for="stdFullName" class="form-label">
+              <span>Ad Soyad / Full Name</span>
+            </label>
+            <input
+              type="text"
+              id="stdFullName"
+              name="fullName"
+              class="form-input"
+              placeholder=""
+              required
+              autocomplete="off"
+              th:value="${stdFullName ?: ''}"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="stdEmail" class="form-label">
+              <span>Gmail Ünvanı / Gmail Address</span>
+              <span class="label-hint">Kod göndəriləcək / Code will be sent</span>
+            </label>
+            <input
+              type="email"
+              id="stdEmail"
+              name="email"
+              class="form-input"
+              placeholder=""
+              required
+              autocomplete="off"
+              th:value="${stdEmail ?: ''}"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="stdUsername" class="form-label">
+              <span>İstifadəçi Adı / Username</span>
+            </label>
+            <input
+              type="text"
+              id="stdUsername"
+              name="username"
+              class="form-input"
+              placeholder=""
+              required
+              autocomplete="off"
+              th:value="${stdUsername ?: ''}"
+            >
+            <div class="validation-feedback" id="stdUsernameFeedback"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="stdPhoneNumber" class="form-label">
+              <span>Mobil Telefon / Mobile Phone</span>
+            </label>
+            <input
+              type="tel"
+              id="stdPhoneNumber"
+              name="phoneNumber"
+              class="form-input"
+              placeholder=""
+              autocomplete="off"
+              th:value="${stdPhoneNumber ?: ''}"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="stdPassword" class="form-label">
+              <span>Şifrə / Password</span>
+              <span class="label-hint">8+ simvol / 8+ chars, number &amp; special</span>
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="password"
+                id="stdPassword"
+                name="password"
+                class="form-input has-toggle"
+                placeholder=""
+                required
+                autocomplete="new-password"
+              >
+              <button
+                type="button"
+                id="toggleStdPasswordBtn"
+                class="password-toggle-btn"
+                title="Şifrəni Göstər / Gizlət"
+                tabindex="-1"
+              >
+                <svg id="stdEyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg id="stdEyeOffIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+
+            <div class="password-checklist">
+              <span class="checklist-title">Şifrə Tələbləri / Password Requirements:</span>
+              <div class="check-item" id="stdChkLength">
+                <span class="check-icon">⚪</span>
+                <span>Minimum 8 simvol / Minimum 8 characters</span>
+              </div>
+              <div class="check-item" id="stdChkDigit">
+                <span class="check-icon">⚪</span>
+                <span>Ən azı bir rəqəm (0–9) / At least one number (0–9)</span>
+              </div>
+              <div class="check-item" id="stdChkSpecial">
+                <span class="check-icon">⚪</span>
+                <span>Ən azı bir xüsusi simvol / At least one special character</span>
+              </div>
+              <div class="check-item" id="stdChkUnique">
+                <span class="check-icon">⚪</span>
+                <span>Əvvəllər istifadə olunmamış unikal şifrə / Unique unused password</span>
+              </div>
+            </div>
+            <div class="validation-feedback" id="stdPasswordReuseFeedback"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="stdConfirmPassword" class="form-label">
+              <span>Şifrəni Təsdiqlə / Confirm Password</span>
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="password"
+                id="stdConfirmPassword"
+                name="confirmPassword"
+                class="form-input has-toggle"
+                placeholder=""
+                required
+                autocomplete="new-password"
+              >
+              <button
+                type="button"
+                id="toggleStdConfirmPasswordBtn"
+                class="password-toggle-btn"
+                title="Şifrəni Göstər / Gizlət"
+                tabindex="-1"
+              >
+                <svg id="stdConfirmEyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg id="stdConfirmEyeOffIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn btn-standard" id="stdSendCodeBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>3 Rəqəmli Kodu Gmail-ə Göndər / Send 3-Digit Code to Gmail</span>
+          </button>
+        </form>
+
+        <form action="/register/verify-code" th:action="@{/register/verify-code}" method="POST" id="stdStep2Form" th:style="${stdSmsSent == true ? 'display: block;' : 'display: none;'}" autocomplete="off">
+          <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="" />
+          <input type="hidden" name="panelType" value="STANDARD" />
+          <input type="hidden" id="stdStep2Username" name="username" th:value="${stdUsername ?: ''}" />
+
+          <div class="form-group" style="text-align: center; margin: 1.5rem 0;">
+            <label for="stdCode" class="form-label" style="font-size: 0.95rem; color: #34d399; margin-bottom: 0.75rem; justify-content: center;">
+              🛡️ 3 Rəqəmli Təsdiq Kodunu Daxil Edin / Enter 3-Digit Verification Code
+            </label>
+            <input
+              type="text"
+              id="stdCode"
+              name="code"
+              class="form-input code-input-large"
+              placeholder=""
+              maxlength="3"
+              pattern="[0-9]{3}"
+              required
+              autocomplete="off"
+            >
+            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.65rem;">
+              Kod Gmail ünvanınıza göndərildi. Təsdiq etdikdən sonra standart cari hesabınız və VISA Debit kartınız dərhal açılacaq.
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn verify-btn" id="stdVerifySubmitBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Kodu Təsdiqlə &amp; Normal Hesabı Aç</span>
+          </button>
+
+          <div id="stdResendTimerArea" style="text-align: center; margin-top: 1rem;">
+            <div id="stdResendCountdown" style="color: #94a3b8; font-size: 0.82rem;">
+              Kodu yenidən göndər: <span id="stdResendSeconds" style="color: #34d399; font-weight: 700;">30</span> saniyə...
+            </div>
+            <button type="button" id="stdResendCodeBtn" style="display: none; width: 100%; background: rgba(16, 185, 129, 0.15); border: 1.5px solid rgba(16, 185, 129, 0.5); color: #34d399; border-radius: 12px; padding: 0.7rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem;">
+              🔄 Təsdiq Kodunu Yenidən Göndər
+            </button>
+            <div id="stdResendMessage" style="display: none; font-size: 0.82rem; margin-top: 0.5rem;"></div>
+          </div>
+
+          <button type="button" id="stdBackToStep1Btn" style="width: 100%; background: none; border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; border-radius: 12px; padding: 0.75rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; margin-top: 0.85rem;">
+            &larr; Geriyə Qayıt
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="register-card" id="customerPanel">
+      <div>
+        <span class="card-header-badge badge-customer">
+          <span>💳 Customer / Müştəri</span>
+        </span>
+        <h1 class="register-card-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.3">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="8.5" cy="7" r="4"></circle>
+            <line x1="20" y1="8" x2="20" y2="14"></line>
+            <line x1="23" y1="11" x2="17" y2="11"></line>
+          </svg>
+          <span>Kredit Müraciəti (Müştəri / Customer)</span>
+        </h1>
+
+        <div class="mail-sim-box" id="mailSimulationBox" th:style="${smsSent == true ? 'display: block;' : 'display: none;'}">
+          <div class="mail-sim-header">
+            <span>📬 Rəsmi SMTP Bildirişi / Official SMTP Alert</span>
+            <span>Gmail Çatdırıldı / Delivered</span>
+          </div>
+          <div class="mail-sim-body">
+            Hörmətli Müştəri / Dear Customer, <strong>3 rəqəmli təsdiq kodunuz / your 3-digit verification code</strong> Gmail:
+            <div style="margin: 6px 0; color: #38bdf8; font-weight: 700; font-size: 0.95rem;" id="sentEmailDisplay"></div>
+            <small style="color: #cbd5e1; display: block; font-size: 0.78rem;">
+              Gmail Gələnlər (Inbox), Spam və ya Bütün Poçt (All Mail) qovluğunu yoxlayın və 3 rəqəmli kodu daxil edin / Check your Gmail Inbox, Spam, or All Mail folder and enter the 3-digit code below.
+            </small>
+          </div>
+        </div>
+
+        <form id="step1Form" th:style="${smsSent == true ? 'display: none;' : 'display: block;'}" autocomplete="off">
+          <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="" />
+
+          <div class="form-group">
+            <label for="fullName" class="form-label">
+              <span>Ad Soyad / Full Name</span>
+            </label>
+            <input
+              type="text"
+              id="fullName"
+              name="fullName"
+              class="form-input"
+              placeholder=""
+              required
+              autocomplete="off"
+              th:value="${fullName ?: ''}"
+            >
+            <div class="validation-feedback" id="nameFeedback"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">
+              <span>Gmail Ünvanı / Gmail Address</span>
+              <span class="label-hint">Kod göndəriləcək / Code will be sent</span>
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-input"
+              placeholder=""
+              required
+              autocomplete="off"
+              th:value="${email ?: ''}"
+            >
+            <div class="validation-feedback" id="emailFeedback"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="username" class="form-label">
+              <span>İstifadəçi Adı / Username</span>
+            </label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              class="form-input"
+              placeholder=""
+              required
+              autocomplete="off"
+              th:value="${username ?: ''}"
+            >
+            <div class="validation-feedback" id="usernameFeedback"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="phoneNumber" class="form-label">
+              <span>Mobil Telefon / Mobile Phone</span>
+            </label>
+            <input
+              type="tel"
+              id="phoneNumber"
+              name="phoneNumber"
+              class="form-input"
+              placeholder=""
+              autocomplete="off"
+              th:value="${phoneNumber ?: ''}"
+            >
+            <div class="validation-feedback" id="phoneFeedback"></div>
+          </div>
+
+          <div style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(99, 102, 241, 0.12)); border: 1.5px solid rgba(168, 85, 247, 0.45); border-radius: 14px; padding: 1.15rem; margin-bottom: 1.1rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem;">
+              <strong style="color: #c084fc; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                <span>💳</span> Kredit Uyğunluğu &amp; Şəxsiyyət / Credit &amp; ID Verification
+              </strong>
+              <span style="background: rgba(168, 85, 247, 0.25); color: #e9d5ff; border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 9999px; padding: 1px 8px; font-size: 0.7rem; font-weight: 700;">Məcburi / Required</span>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+              <label class="form-label">
+                <span id="idCardLabelText">Şəxsiyyət Vəsiqəsi Seriyası / ID Card Serial</span>
+              </label>
+              <div class="id-card-combined-group">
+                <select id="idCardCategory" name="idCardCategory" class="id-card-select">
+                  <option value="AZE" selected>AZE</option>
+                  <option value="AA">AA</option>
+                  <option value="FOREIGN">Xarici / Foreign</option>
+                </select>
+                <input
+                  type="text"
+                  id="idCardDigits"
+                  class="form-input id-card-input"
+                  placeholder=""
+                  maxlength="8"
+                  autocomplete="off"
+                >
+              </div>
+              <input type="hidden" id="idCardSerial" name="idCardSerial" value="">
+              <div class="validation-feedback" id="idCardFeedback"></div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="finCode" class="form-label">
+                <span id="finCodeLabelText">FİN Kod / FIN Code</span>
+              </label>
+              <input
+                type="text"
+                id="finCode"
+                name="finCode"
+                class="form-input"
+                placeholder=""
+                maxlength="7"
+                minlength="7"
+                required
+                style="text-transform: uppercase; font-family: 'JetBrains Mono', monospace; letter-spacing: 3px; font-weight: 700;"
+                autocomplete="off"
+              >
+              <div class="validation-feedback" id="finFeedback"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">
+              <span>Şifrə / Password</span>
+              <span class="label-hint">8+ simvol / 8+ chars, number &amp; special</span>
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-input has-toggle"
+                placeholder=""
+                required
+                autocomplete="new-password"
+              >
+              <button
+                type="button"
+                id="toggleRegisterPasswordBtn"
+                class="password-toggle-btn"
+                title="Şifrəni Göstər / Gizlət"
+                tabindex="-1"
+              >
+                <svg id="regEyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg id="regEyeOffIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+
+            <div class="password-checklist">
+              <span class="checklist-title">Şifrə Tələbləri / Password Requirements:</span>
+              <div class="check-item" id="chkLength">
+                <span class="check-icon">⚪</span>
+                <span>Minimum 8 simvol / Minimum 8 characters</span>
+              </div>
+              <div class="check-item" id="chkDigit">
+                <span class="check-icon">⚪</span>
+                <span>Ən azı bir rəqəm (0–9) / At least one number (0–9)</span>
+              </div>
+              <div class="check-item" id="chkSpecial">
+                <span class="check-icon">⚪</span>
+                <span>Ən azı bir xüsusi simvol / At least one special character</span>
+              </div>
+              <div class="check-item" id="chkUnique">
+                <span class="check-icon">⚪</span>
+                <span>Əvvəllər istifadə olunmamış unikal şifrə / Unique unused password</span>
+              </div>
+            </div>
+            <div class="validation-feedback" id="custPasswordReuseFeedback"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label">
+              <span>Şifrəni Təsdiqlə / Confirm Password</span>
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                class="form-input has-toggle"
+                placeholder=""
+                required
+                autocomplete="new-password"
+              >
+              <button
+                type="button"
+                id="toggleRegisterConfirmPasswordBtn"
+                class="password-toggle-btn"
+                title="Şifrəni Göstər / Gizlət"
+                tabindex="-1"
+              >
+                <svg id="regConfirmEyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg id="regConfirmEyeOffIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn" id="sendCodeBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>3 Rəqəmli Kodu Gmail-ə Göndər / Send 3-Digit Code to Gmail</span>
+          </button>
+        </form>
+
+        <form action="/register/verify-code" th:action="@{/register/verify-code}" method="POST" id="step2Form" th:style="${smsSent == true ? 'display: block;' : 'display: none;'}" autocomplete="off">
+          <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="" />
+          <input type="hidden" id="step2Username" name="username" th:value="${username ?: ''}" />
+
+          <div class="form-group" style="text-align: center; margin: 1.5rem 0;">
+            <label for="code" class="form-label" style="font-size: 0.95rem; color: #34d399; margin-bottom: 0.75rem; justify-content: center;">
+              🛡️ 3 Rəqəmli Təsdiq Kodunu Daxil Edin / Enter 3-Digit Verification Code
+            </label>
+            <input
+              type="text"
+              id="code"
+              name="code"
+              class="form-input code-input-large"
+              placeholder=""
+              maxlength="3"
+              pattern="[0-9]{3}"
+              required
+              autocomplete="off"
+            >
+            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.65rem;">
+              Kod Gmail gələnlər qutunuza göndərildi. Təsdiq etdikdən sonra kartınız və kredit xəttiniz aktivləşəcək.
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn verify-btn" id="verifySubmitBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Kodu Təsdiqlə &amp; Hesabı Aktivləşdir</span>
+          </button>
+
+          <div id="resendTimerArea" style="text-align: center; margin-top: 1rem;">
+            <div id="resendCountdown" style="color: #94a3b8; font-size: 0.82rem;">
+              Kodu yenidən göndər: <span id="resendSeconds" style="color: #38bdf8; font-weight: 700;">30</span> saniyə...
+            </div>
+            <button type="button" id="resendCodeBtn" style="display: none; width: 100%; background: rgba(99, 102, 241, 0.15); border: 1.5px solid rgba(99, 102, 241, 0.5); color: #818cf8; border-radius: 12px; padding: 0.7rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem;">
+              🔄 Təsdiq Kodunu Yenidən Göndər
+            </button>
+            <div id="resendMessage" style="display: none; font-size: 0.82rem; margin-top: 0.5rem;"></div>
+          </div>
+
+          <button type="button" id="backToStep1Btn" style="width: 100%; background: none; border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; border-radius: 12px; padding: 0.75rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; margin-top: 0.85rem;">
+            &larr; Geriyə Qayıt
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="register-card" id="careerPanel">
+      <div>
+        <span class="card-header-badge badge-career">
+          <span>👔 Karyera / Bank İşçiləri</span>
+        </span>
+        <h1 class="register-card-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.3">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+          <span>İşə Müraciət (Karyera)</span>
+        </h1>
+
+        <form th:action="@{/register/employee}" method="POST" id="employeeForm" autocomplete="off">
+          <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="" />
+
+          <div class="form-group">
+            <label for="empFullName" class="form-label">
+              <span>Ad Soyad / Full Name</span>
+            </label>
+            <input
+              type="text"
+              id="empFullName"
+              name="fullName"
+              class="form-input"
+              placeholder=""
+              required
+              autocomplete="off"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="empUsername" class="form-label">
+              <span>İstifadəçi Adı / Username</span>
+            </label>
+            <input
+              type="text"
+              id="empUsername"
+              name="username"
+              class="form-input"
+              placeholder=""
+              required
+              autocomplete="off"
+            >
+            <div class="validation-feedback" id="empUsernameFeedback"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="empEmail" class="form-label">
+              <span>Gmail Ünvanı / Gmail Address</span>
+            </label>
+            <input
+              type="email"
+              id="empEmail"
+              name="email"
+              class="form-input"
+              placeholder=""
+              required
+              autocomplete="off"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="empPhoneNumber" class="form-label">
+              <span>Əlaqə Telefonu / Contact Phone</span>
+            </label>
+            <input
+              type="tel"
+              id="empPhoneNumber"
+              name="phoneNumber"
+              class="form-input"
+              placeholder=""
+              required
+              autocomplete="off"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="empPosition" class="form-label">
+              <span>Vəzifə / Position</span>
+            </label>
+            <select id="empPosition" name="position" class="form-input" style="cursor: pointer; background: rgba(15, 23, 42, 0.95); color: #fff;" required onchange="updateEmpQuotaHint()">
+              <option value="Operator" th:attr="data-count=${inquiryEmployeesCount ?: 0},data-limit=${inquiryLimit ?: 8},data-full=${inquiryFull ?: false}"
+                      th:text="${'Operator (' + (inquiryEmployeesCount ?: 0) + '/' + (inquiryLimit ?: 8) + ((inquiryFull ?: false) ? ' — İşçi lazım deyil' : '') + ')'}" selected>Operator</option>
+              <option value="Security" th:attr="data-count=${securityEmployeesCount ?: 0},data-limit=${securityLimit ?: 2},data-full=${securityFull ?: false}"
+                      th:text="${'Security (' + (securityEmployeesCount ?: 0) + '/' + (securityLimit ?: 2) + ((securityFull ?: false) ? ' — İşçi lazım deyil' : '') + ')'}">Security</option>
+              <option value="Xəzinədar" th:attr="data-count=${treasuryEmployeesCount ?: 0},data-limit=${treasuryLimit ?: 2},data-full=${treasuryFull ?: false}"
+                      th:text="${'Xəzinədar (' + (treasuryEmployeesCount ?: 0) + '/' + (treasuryLimit ?: 2) + ((treasuryFull ?: false) ? ' — İşçi lazım deyil' : '') + ')'}">Xəzinədar</option>
+              <option value="İT Mütəxəssisi" th:attr="data-count=${itEmployeesCount ?: 0},data-limit=${itLimit ?: 2},data-full=${itFull ?: false}"
+                      th:text="${'İT Mütəxəssisi (' + (itEmployeesCount ?: 0) + '/' + (itLimit ?: 2) + ((itFull ?: false) ? ' — İşçi lazım deyil' : '') + ')'}">İT Mütəxəssisi</option>
+              <option value="Müştəri Xidmətləri" th:attr="data-count=${customerServiceEmployeesCount ?: 0},data-limit=${customerServiceLimit ?: 4},data-full=${customerServiceFull ?: false}"
+                      th:text="${'Müştəri Xidmətləri (' + (customerServiceEmployeesCount ?: 0) + '/' + (customerServiceLimit ?: 4) + ((customerServiceFull ?: false) ? ' — İşçi lazım deyil' : '') + ')'}">Müştəri Xidmətləri</option>
+              <option value="İnsan Resursları" th:attr="data-count=${hrEmployeesCount ?: 0},data-limit=${hrLimit ?: 2},data-full=${hrFull ?: false}"
+                      th:text="${'İnsan Resursları (' + (hrEmployeesCount ?: 0) + '/' + (hrLimit ?: 2) + ((hrFull ?: false) ? ' — İşçi lazım deyil' : '') + ')'}">İnsan Resursları</option>
+            </select>
+            <div id="empQuotaStatus" style="margin-top: 6px; font-size: 0.78rem; font-weight: 700;"></div>
+            <script>
+              function updateEmpQuotaHint() {
+                var sel = document.getElementById('empPosition');
+                var box = document.getElementById('empQuotaStatus');
+                if (!sel || !box) return;
+                var opt = sel.options[sel.selectedIndex];
+                if (!opt) return;
+                var isFull = opt.getAttribute('data-full') === 'true';
+                var cnt = opt.getAttribute('data-count') || '0';
+                var lim = opt.getAttribute('data-limit') || '0';
+                if (isFull) {
+                  box.style.color = '#f87171';
+                  box.textContent = '⚠️ İşçi lazım deyil — bu vəzifə üzrə ştat sayı tamamdır (' + cnt + '/' + lim + ').';
+                } else {
+                  box.style.color = '#34d399';
+                  box.textContent = '✓ Boş ştat yeri mövcuddur (' + cnt + '/' + lim + ').';
+                }
+              }
+              document.addEventListener('DOMContentLoaded', updateEmpQuotaHint);
+            </script>
+          </div>
+
+          <div class="form-group">
+            <label for="empPassword" class="form-label">
+              <span>Şifrə / Password</span>
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="password"
+                id="empPassword"
+                name="password"
+                class="form-input has-toggle"
+                placeholder=""
+                required
+                autocomplete="new-password"
+              >
+              <button
+                type="button"
+                id="toggleEmpPasswordBtn"
+                class="password-toggle-btn"
+                title="Şifrəni Göstər / Gizlət | Show / Hide Password"
+                tabindex="-1"
+              >
+                <svg id="empEyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg id="empEyeOffIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+            <div class="validation-feedback" id="empPasswordReuseFeedback"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="empConfirmPassword" class="form-label">
+              <span>Şifrəni Təsdiqlə / Confirm Password</span>
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="password"
+                id="empConfirmPassword"
+                name="confirmPassword"
+                class="form-input has-toggle"
+                placeholder=""
+                required
+                autocomplete="new-password"
+              >
+              <button
+                type="button"
+                id="toggleEmpConfirmPasswordBtn"
+                class="password-toggle-btn"
+                title="Şifrəni Göstər / Gizlət | Show / Hide Password"
+                tabindex="-1"
+              >
+                <svg id="empConfirmEyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg id="empConfirmEyeOffIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn btn-career" id="empSubmitBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            <span>İş Müraciətini Göndər / Submit Job Application</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-links">
+    Artıq hesabınız var? / Already have an account? <a href="/login" th:href="@{/login}">Daxil Ol / Sign In</a>
+  </div>
+
+  <script>
+    (function() {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (e) {}
+
+      setupToggle('toggleStdPasswordBtn', 'stdPassword', 'stdEyeIcon', 'stdEyeOffIcon');
+      setupToggle('toggleStdConfirmPasswordBtn', 'stdConfirmPassword', 'stdConfirmEyeIcon', 'stdConfirmEyeOffIcon');
+
+      setupToggle('toggleRegisterPasswordBtn', 'password', 'regEyeIcon', 'regEyeOffIcon');
+      setupToggle('toggleRegisterConfirmPasswordBtn', 'confirmPassword', 'regConfirmEyeIcon', 'regConfirmEyeOffIcon');
+
+      setupToggle('toggleEmpPasswordBtn', 'empPassword', 'empEyeIcon', 'empEyeOffIcon');
+      setupToggle('toggleEmpConfirmPasswordBtn', 'empConfirmPassword', 'empConfirmEyeIcon', 'empConfirmEyeOffIcon');
+
+      function setupToggle(btnId, inputId, eyeOpenId, eyeOffId) {
+        const btn = document.getElementById(btnId);
+        const input = document.getElementById(inputId);
+        const eyeOpen = document.getElementById(eyeOpenId);
+        const eyeOff = document.getElementById(eyeOffId);
+        if (btn && input) {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const isPwd = input.type === 'password';
+            input.type = isPwd ? 'text' : 'password';
+            if (eyeOpen && eyeOff) {
+              eyeOpen.style.display = isPwd ? 'none' : 'block';
+              eyeOff.style.display = isPwd ? 'block' : 'none';
+            }
+          });
+        }
+      }
+
+      const stdPwdInput = document.getElementById('stdPassword');
+      const stdChkLength = document.getElementById('stdChkLength');
+      const stdChkDigit = document.getElementById('stdChkDigit');
+      const stdChkSpecial = document.getElementById('stdChkSpecial');
+      const stdChkUnique = document.getElementById('stdChkUnique');
+      const stdPwdReuseFeedback = document.getElementById('stdPasswordReuseFeedback');
+
+      const pwdInput = document.getElementById('password');
+      const chkLength = document.getElementById('chkLength');
+      const chkDigit = document.getElementById('chkDigit');
+      const chkSpecial = document.getElementById('chkSpecial');
+      const chkUnique = document.getElementById('chkUnique');
+      const custPwdReuseFeedback = document.getElementById('custPasswordReuseFeedback');
+      const empPwdInput = document.getElementById('empPassword');
+      const empPwdReuseFeedback = document.getElementById('empPasswordReuseFeedback');
+
+      let stdPasswordReused = false;
+      let custPasswordReused = false;
+      let empPasswordReused = false;
+      let stdDebounce = null;
+      let custDebounce = null;
+      let empDebounce = null;
+
+      function updateCheckItem(el, isValid) {
+        if (!el) return;
+        if (isValid) {
+          el.classList.add('met');
+          el.querySelector('.check-icon').textContent = '✅';
+        } else {
+          el.classList.remove('met');
+          el.querySelector('.check-icon').textContent = '⚪';
+        }
+      }
+
+      async function fetchWithTimeout(url, options = {}, timeoutMs = 5000) {
+        const controller = new AbortController();
+        const timerId = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          return await fetch(url, { ...options, signal: controller.signal });
+        } catch (err) {
+          if (err && err.name === 'AbortError') {
+            throw new Error('Sorğu vaxtı bitdi (5 saniyə). Zəhmət olmasa yenidən cəhd edin.');
+          }
+          throw err;
+        } finally {
+          clearTimeout(timerId);
+        }
+      }
+
+      const USERNAME_TAKEN_MSG = 'Bu istifadəçi adı artıq istifadədədir, lütfən başqa istifadəçi adı seçin.';
+      const usernameTakenState = { stdUsername: false, username: false, empUsername: false };
+
+      async function checkUsernameExistsOnServer(usernameVal) {
+        if (!usernameVal || usernameVal.trim().length === 0) return false;
+        try {
+          const res = await fetchWithTimeout('/api/auth/check-username?username=' + encodeURIComponent(usernameVal.trim()), {}, 5000);
+          if (res.ok) {
+            const data = await res.json();
+            return !!data.exists;
+          }
+        } catch (e) {}
+        return false;
+      }
+
+      function attachUsernameChecker(inputId, feedbackId) {
+        const input = document.getElementById(inputId);
+        const feedback = document.getElementById(feedbackId);
+        if (!input) return;
+        let timer = null;
+
+        async function runCheck() {
+          const val = input.value.trim();
+          if (val.length === 0) {
+            usernameTakenState[inputId] = false;
+            input.classList.remove('input-invalid', 'input-valid');
+            if (feedback) feedback.className = 'validation-feedback';
+            return false;
+          }
+          const exists = await checkUsernameExistsOnServer(val);
+          usernameTakenState[inputId] = exists;
+          if (exists) {
+            input.classList.add('input-invalid');
+            input.classList.remove('input-valid');
+            if (feedback) {
+              feedback.className = 'validation-feedback error';
+              feedback.textContent = '❌ ' + USERNAME_TAKEN_MSG;
+            }
+          } else {
+            input.classList.remove('input-invalid');
+            input.classList.add('input-valid');
+            if (feedback) {
+              feedback.className = 'validation-feedback success';
+              feedback.textContent = '✅ İstifadəçi adı uyğundur';
+            }
+          }
+          return exists;
+        }
+
+        input.addEventListener('input', function() {
+          usernameTakenState[inputId] = false;
+          if (timer) clearTimeout(timer);
+          if (this.value.trim().length === 0) {
+            usernameTakenState[inputId] = false;
+            input.classList.remove('input-invalid', 'input-valid');
+            if (feedback) feedback.className = 'validation-feedback';
+            return;
+          }
+          timer = setTimeout(runCheck, 300);
+        });
+
+        input.addEventListener('blur', runCheck);
+      }
+
+      attachUsernameChecker('stdUsername', 'stdUsernameFeedback');
+      attachUsernameChecker('username', 'usernameFeedback');
+      attachUsernameChecker('empUsername', 'empUsernameFeedback');
+
+      async function checkPasswordReuseOnServer(passwordVal, usernameVal) {
+        if (!passwordVal || passwordVal.trim().length < 4) return false;
+        try {
+          const csrfToken = document.querySelector('input[name="_csrf"]')?.value || '';
+          const params = new URLSearchParams();
+          params.append('password', passwordVal.trim());
+          if (usernameVal) params.append('username', usernameVal.trim());
+          if (csrfToken) params.append('_csrf', csrfToken);
+          const res = await fetchWithTimeout('/api/auth/check-password-reuse', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params.toString()
+          }, 5000);
+          if (res.ok) {
+            const data = await res.json();
+            return data && data.reused === true;
+          }
+        } catch (e) {}
+        return false;
+      }
+
+      if (stdPwdInput) {
+        stdPwdInput.addEventListener('input', function() {
+          const val = this.value || '';
+          stdPasswordReused = false;
+          updateCheckItem(stdChkLength, val.length >= 8);
+          updateCheckItem(stdChkDigit, /[0-9]/.test(val));
+          updateCheckItem(stdChkSpecial, /[^a-zA-Z0-9]/.test(val));
+
+          if (stdDebounce) clearTimeout(stdDebounce);
+          if (val.trim().length < 4) {
+            stdPasswordReused = false;
+            updateCheckItem(stdChkUnique, false);
+            stdPwdInput.classList.remove('input-invalid', 'input-valid');
+            if (stdPwdReuseFeedback) stdPwdReuseFeedback.className = 'validation-feedback';
+            return;
+          }
+          stdDebounce = setTimeout(async () => {
+            const uname = document.getElementById('stdUsername')?.value || '';
+            const reused = await checkPasswordReuseOnServer(val, uname);
+            stdPasswordReused = reused;
+            if (reused) {
+              updateCheckItem(stdChkUnique, false);
+              if (stdChkUnique) stdChkUnique.querySelector('.check-icon').textContent = '❌';
+              stdPwdInput.classList.add('input-invalid');
+              stdPwdInput.classList.remove('input-valid');
+              if (stdPwdReuseFeedback) {
+                stdPwdReuseFeedback.className = 'validation-feedback error';
+                stdPwdReuseFeedback.textContent = '❌ Bu şifrə daha əvvəl istifadə olunub! Təkrar istifadə qadağandır.';
+              }
+            } else {
+              updateCheckItem(stdChkUnique, true);
+              stdPwdInput.classList.remove('input-invalid');
+              stdPwdInput.classList.add('input-valid');
+              if (stdPwdReuseFeedback) {
+                stdPwdReuseFeedback.className = 'validation-feedback success';
+                stdPwdReuseFeedback.textContent = '✅ Unikal şifrə (əvvəllər istifadə olunmayıb)';
+              }
+            }
+          }, 300);
+        });
+      }
+
+      if (pwdInput) {
+        pwdInput.addEventListener('input', function() {
+          const val = this.value || '';
+          custPasswordReused = false;
+          updateCheckItem(chkLength, val.length >= 8);
+          updateCheckItem(chkDigit, /[0-9]/.test(val));
+          updateCheckItem(chkSpecial, /[^a-zA-Z0-9]/.test(val));
+
+          if (custDebounce) clearTimeout(custDebounce);
+          if (val.trim().length < 4) {
+            custPasswordReused = false;
+            updateCheckItem(chkUnique, false);
+            pwdInput.classList.remove('input-invalid', 'input-valid');
+            if (custPwdReuseFeedback) custPwdReuseFeedback.className = 'validation-feedback';
+            return;
+          }
+          custDebounce = setTimeout(async () => {
+            const uname = document.getElementById('username')?.value || '';
+            const reused = await checkPasswordReuseOnServer(val, uname);
+            custPasswordReused = reused;
+            if (reused) {
+              updateCheckItem(chkUnique, false);
+              if (chkUnique) chkUnique.querySelector('.check-icon').textContent = '❌';
+              pwdInput.classList.add('input-invalid');
+              pwdInput.classList.remove('input-valid');
+              if (custPwdReuseFeedback) {
+                custPwdReuseFeedback.className = 'validation-feedback error';
+                custPwdReuseFeedback.textContent = '❌ Bu şifrə daha əvvəl istifadə olunub! Təkrar istifadə qadağandır.';
+              }
+            } else {
+              updateCheckItem(chkUnique, true);
+              pwdInput.classList.remove('input-invalid');
+              pwdInput.classList.add('input-valid');
+              if (custPwdReuseFeedback) {
+                custPwdReuseFeedback.className = 'validation-feedback success';
+                custPwdReuseFeedback.textContent = '✅ Unikal şifrə (əvvəllər istifadə olunmayıb)';
+              }
+            }
+          }, 300);
+        });
+      }
+
+      if (empPwdInput) {
+        empPwdInput.addEventListener('input', function() {
+          const val = this.value || '';
+          empPasswordReused = false;
+          if (empDebounce) clearTimeout(empDebounce);
+          if (val.trim().length < 4) {
+            empPasswordReused = false;
+            empPwdInput.classList.remove('input-invalid', 'input-valid');
+            if (empPwdReuseFeedback) empPwdReuseFeedback.className = 'validation-feedback';
+            return;
+          }
+          empDebounce = setTimeout(async () => {
+            const uname = document.getElementById('empUsername')?.value || '';
+            const reused = await checkPasswordReuseOnServer(val, uname);
+            empPasswordReused = reused;
+            if (reused) {
+              empPwdInput.classList.add('input-invalid');
+              empPwdInput.classList.remove('input-valid');
+              if (empPwdReuseFeedback) {
+                empPwdReuseFeedback.className = 'validation-feedback error';
+                empPwdReuseFeedback.textContent = '❌ Bu şifrə daha əvvəl istifadə olunub! Təkrar istifadə qadağandır.';
+              }
+            } else {
+              empPwdInput.classList.remove('input-invalid');
+              empPwdInput.classList.add('input-valid');
+              if (empPwdReuseFeedback) {
+                empPwdReuseFeedback.className = 'validation-feedback success';
+                empPwdReuseFeedback.textContent = '✅ Unikal şifrə (əvvəllər istifadə olunmayıb)';
+              }
+            }
+          }, 300);
+        });
+      }
+
+      const idCatSelect = document.getElementById('idCardCategory');
+      const idDigitsInput = document.getElementById('idCardDigits');
+      const idHiddenInput = document.getElementById('idCardSerial');
+      const idFeedback = document.getElementById('idCardFeedback');
+      const finInput = document.getElementById('finCode');
+      const finFeedback = document.getElementById('finFeedback');
+
+      function syncIdSerial() {
+        const cat = idCatSelect ? idCatSelect.value : 'AZE';
+        const digits = idDigitsInput ? idDigitsInput.value.trim().toUpperCase() : '';
+        let full = '';
+        if (cat === 'AZE') full = 'AZE' + digits;
+        else if (cat === 'AA') full = 'AA' + digits;
+        else full = digits;
+        if (idHiddenInput) idHiddenInput.value = full;
+      }
+
+      function isDummyOrSequential(str) {
+        if (!str || str.length < 4) return false;
+        if (/^(\w)\1+$/.test(str)) return true;
+        const asc = '01234567890123456789';
+        const desc = '98765432109876543210';
+        if (asc.includes(str) || desc.includes(str)) return true;
+        return false;
+      }
+
+      function onIdCategoryChange() {
+        const cat = idCatSelect ? idCatSelect.value : 'AZE';
+        if (idDigitsInput) {
+          idDigitsInput.value = '';
+          idDigitsInput.placeholder = '';
+          if (cat === 'AZE') {
+            idDigitsInput.maxLength = 8;
+          } else if (cat === 'AA') {
+            idDigitsInput.maxLength = 7;
+          } else {
+            idDigitsInput.maxLength = 10;
+          }
+        }
+        syncIdSerial();
+        validateIdCard();
+      }
+
+      if (idCatSelect) {
+        idCatSelect.addEventListener('change', onIdCategoryChange);
+      }
+
+      function validateIdCard() {
+        if (!idDigitsInput || !idFeedback) return false;
+        syncIdSerial();
+        const cat = idCatSelect ? idCatSelect.value : 'AZE';
+        const digits = idDigitsInput.value.trim().toUpperCase();
+
+        if (cat === 'AZE') {
+          if (digits.length === 0) {
+            idFeedback.className = 'validation-feedback';
+            idDigitsInput.classList.remove('input-invalid', 'input-valid');
+            return false;
+          }
+          if (digits.length !== 8) {
+            idDigitsInput.classList.add('input-invalid');
+            idDigitsInput.classList.remove('input-valid');
+            idFeedback.className = 'validation-feedback error';
+            idFeedback.textContent = '❌ AZE seriyası dəqiq 8 rəqəm tələb edir (' + digits.length + '/8)';
+            return false;
+          }
+          if (isDummyOrSequential(digits)) {
+            idDigitsInput.classList.add('input-invalid');
+            idDigitsInput.classList.remove('input-valid');
+            idFeedback.className = 'validation-feedback error';
+            idFeedback.textContent = '❌ Saxta və ya ardıcıl rəqəmlər qəbul edilmir';
+            return false;
+          }
+          idDigitsInput.classList.remove('input-invalid');
+          idDigitsInput.classList.add('input-valid');
+          idFeedback.className = 'validation-feedback success';
+          idFeedback.textContent = '✅ AZE seriyası təsdiqləndi (AZE + 8 rəqəm)';
+          return true;
+        } else if (cat === 'AA') {
+          if (digits.length === 0) {
+            idFeedback.className = 'validation-feedback';
+            idDigitsInput.classList.remove('input-invalid', 'input-valid');
+            return false;
+          }
+          if (digits.length !== 7) {
+            idDigitsInput.classList.add('input-invalid');
+            idDigitsInput.classList.remove('input-valid');
+            idFeedback.className = 'validation-feedback error';
+            idFeedback.textContent = '❌ AA seriyası dəqiq 7 rəqəm tələb edir (' + digits.length + '/7)';
+            return false;
+          }
+          if (isDummyOrSequential(digits)) {
+            idDigitsInput.classList.add('input-invalid');
+            idDigitsInput.classList.remove('input-valid');
+            idFeedback.className = 'validation-feedback error';
+            idFeedback.textContent = '❌ Saxta və ya ardıcıl rəqəmlər qəbul edilmir';
+            return false;
+          }
+          idDigitsInput.classList.remove('input-invalid');
+          idDigitsInput.classList.add('input-valid');
+          idFeedback.className = 'validation-feedback success';
+          idFeedback.textContent = '✅ AA seriyası təsdiqləndi (AA + 7 rəqəm)';
+          return true;
+        } else {
+
+          if (digits.length === 0) {
+            idFeedback.className = 'validation-feedback';
+            idDigitsInput.classList.remove('input-invalid', 'input-valid');
+            return false;
+          }
+          if (digits.length < 7 || digits.length > 10) {
+            idDigitsInput.classList.add('input-invalid');
+            idDigitsInput.classList.remove('input-valid');
+            idFeedback.className = 'validation-feedback error';
+            idFeedback.textContent = '❌ Xarici sənəd nömrəsi 7-10 simvol olmalıdır (' + digits.length + '/7-10)';
+            return false;
+          }
+          if (/^\d+$/.test(digits) || /^[A-Z]+$/.test(digits)) {
+            idDigitsInput.classList.add('input-invalid');
+            idDigitsInput.classList.remove('input-valid');
+            idFeedback.className = 'validation-feedback error';
+            idFeedback.textContent = '❌ Xarici seriya həm hərf, həm rəqəm ehtiva etməlidir';
+            return false;
+          }
+          idDigitsInput.classList.remove('input-invalid');
+          idDigitsInput.classList.add('input-valid');
+          idFeedback.className = 'validation-feedback success';
+          idFeedback.textContent = '✅ Xarici sənəd seriyası standartlara uyğundur';
+          return true;
+        }
+      }
+
+      if (idDigitsInput) {
+        idDigitsInput.addEventListener('input', function() {
+          const cat = idCatSelect ? idCatSelect.value : 'AZE';
+          if (cat === 'AZE' || cat === 'AA') {
+            this.value = this.value.replace(/\D/g, '');
+          } else {
+            this.value = this.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+          }
+          syncIdSerial();
+          validateIdCard();
+        });
+      }
+
+      function validateFinCode() {
+        if (!finInput) return false;
+        let val = finInput.value.trim().toUpperCase();
+        finInput.value = val;
+
+        if (val.length === 0) {
+          finInput.classList.remove('input-invalid', 'input-valid');
+          if (finFeedback) finFeedback.className = 'validation-feedback';
+          return false;
+        }
+
+        if (val.includes('O') || val.includes('I')) {
+          finInput.classList.add('input-invalid');
+          finInput.classList.remove('input-valid');
+          if (finFeedback) {
+            finFeedback.className = 'validation-feedback error';
+            finFeedback.textContent = '❌ FIN kodda O və I hərfləri istifadə edilə bilməz (0 və 1 ilə qarışdırmamaq üçün)';
+          }
+          return false;
+        }
+
+        if (val.length !== 7 || !/^[A-Z0-9]{7}$/.test(val)) {
+          finInput.classList.add('input-invalid');
+          finInput.classList.remove('input-valid');
+          if (finFeedback) {
+            finFeedback.className = 'validation-feedback error';
+            finFeedback.textContent = '❌ FIN kod dəqiq 7 hərf-rəqəm simvolundan ibarət olmalıdır (' + val.length + '/7)';
+          }
+          return false;
+        }
+
+        if (isDummyOrSequential(val)) {
+          finInput.classList.add('input-invalid');
+          finInput.classList.remove('input-valid');
+          if (finFeedback) {
+            finFeedback.className = 'validation-feedback error';
+            finFeedback.textContent = '❌ Saxta və ya ardıcıl FIN kodlar qəbul edilmir';
+          }
+          return false;
+        }
+
+        finInput.classList.remove('input-invalid');
+        finInput.classList.add('input-valid');
+        if (finFeedback) {
+          finFeedback.className = 'validation-feedback success';
+          finFeedback.textContent = '✅ FIN kod təsdiqləndi';
+        }
+        return true;
+      }
+
+      if (finInput) {
+        finInput.addEventListener('input', validateFinCode);
+      }
+
+      const sendCodeBtn = document.getElementById('sendCodeBtn');
+      const step1Form = document.getElementById('step1Form');
+      const step2Form = document.getElementById('step2Form');
+      const mailSimulationBox = document.getElementById('mailSimulationBox');
+      const sentEmailDisplay = document.getElementById('sentEmailDisplay');
+      const step2Username = document.getElementById('step2Username');
+      const codeInput = document.getElementById('code');
+      const clientErrorAlert = document.getElementById('clientErrorAlert');
+      const clientErrorText = document.getElementById('clientErrorText');
+      const resendCodeBtn = document.getElementById('resendCodeBtn');
+      const resendCountdown = document.getElementById('resendCountdown');
+      const resendSecondsEl = document.getElementById('resendSeconds');
+      const resendMessage = document.getElementById('resendMessage');
+      const backToStep1Btn = document.getElementById('backToStep1Btn');
+      let resendTimerInterval = null;
+
+      const serverErrorAlert = document.getElementById('serverErrorAlert');
+      const serverErrorCloseBtn = document.getElementById('serverErrorCloseBtn');
+      const clientErrorCloseBtn = document.getElementById('clientErrorCloseBtn');
+      let errorAutoDismissTimer = null;
+
+      function setButtonLoading(btn, isLoading, loadingText, defaultHtml) {
+        if (!btn) return;
+        if (isLoading) {
+          if (!btn.dataset.defaultHtml) {
+            btn.dataset.defaultHtml = defaultHtml || btn.innerHTML;
+          }
+          btn.disabled = true;
+          btn.style.opacity = '0.82';
+          btn.style.cursor = 'not-allowed';
+          btn.innerHTML = '<span class="btn-spinner"></span><span>' + loadingText + '</span>';
+        } else {
+          btn.disabled = false;
+          btn.style.opacity = '';
+          btn.style.cursor = '';
+          btn.innerHTML = btn.dataset.defaultHtml || defaultHtml || btn.innerHTML;
+        }
+      }
+
+      function showError(msg) {
+        if (errorAutoDismissTimer) {
+          clearTimeout(errorAutoDismissTimer);
+          errorAutoDismissTimer = null;
+        }
+        if (serverErrorAlert) serverErrorAlert.style.display = 'none';
+        if (clientErrorAlert && clientErrorText) {
+          clientErrorText.textContent = msg;
+          clientErrorAlert.style.display = 'flex';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          errorAutoDismissTimer = setTimeout(hideError, 4500);
+        } else {
+          alert(msg);
+        }
+      }
+
+      function hideError() {
+        if (errorAutoDismissTimer) {
+          clearTimeout(errorAutoDismissTimer);
+          errorAutoDismissTimer = null;
+        }
+        if (clientErrorAlert) clientErrorAlert.style.display = 'none';
+        if (serverErrorAlert) serverErrorAlert.style.display = 'none';
+      }
+
+      if (clientErrorCloseBtn) {
+        clientErrorCloseBtn.addEventListener('click', hideError);
+      }
+      if (serverErrorCloseBtn) {
+        serverErrorCloseBtn.addEventListener('click', hideError);
+      }
+      if (serverErrorAlert && serverErrorAlert.style.display !== 'none') {
+        errorAutoDismissTimer = setTimeout(hideError, 4500);
+      }
+
+      document.querySelectorAll('.dual-register-container input, .dual-register-container select, .dual-register-container textarea').forEach(function(el) {
+        el.addEventListener('input', hideError);
+        el.addEventListener('change', hideError);
+      });
+
+      let custSubmitting = false;
+      async function submitCustomerStep1() {
+          if (custSubmitting) return;
+          hideError();
+
+          const fullName = document.getElementById('fullName')?.value.trim() || '';
+          const email = document.getElementById('email')?.value.trim() || '';
+          const username = document.getElementById('username')?.value.trim() || '';
+          const password = document.getElementById('password')?.value || '';
+          const confirmPassword = document.getElementById('confirmPassword')?.value || '';
+          const phoneNumber = document.getElementById('phoneNumber')?.value.trim() || '';
+
+          if (!fullName || fullName.length < 2) {
+            showError('Zəhmət olmasa ad soyadınızı daxil edin (ən azı 2 simvol).');
+            document.getElementById('fullName')?.focus();
+            return;
+          }
+
+          if (!email || !email.includes('@') || !email.includes('.')) {
+            showError('Zəhmət olmasa düzgün Gmail ünvanı daxil edin.');
+            document.getElementById('email')?.focus();
+            return;
+          }
+
+          if (!username) {
+            showError('İstifadəçi adı tələb olunur.');
+            document.getElementById('username')?.focus();
+            return;
+          }
+
+          if (!password || password.length < 4) {
+            showError('Şifrə ən azı 4 simvoldan ibarət olmalıdır.');
+            document.getElementById('password')?.focus();
+            return;
+          }
+
+          if (password !== confirmPassword) {
+            showError('Şifrələr uyğun gəlmir! Zəhmət olmasa hər iki sahəyə eyni şifrəni daxil edin.');
+            document.getElementById('confirmPassword')?.focus();
+            return;
+          }
+
+          if (!validateIdCard()) {
+            showError('Şəxsiyyət vəsiqəsinin seriya nömrəsi yanlışdır (AZE 8 rəqəm, AA 7 rəqəm tələb edir).');
+            document.getElementById('idCardDigits')?.focus();
+            return;
+          }
+
+          if (!validateFinCode()) {
+            showError('FIN kod yanlışdır (dəqiq 7 simvol olmalıdır, O və I hərfləri istifadə edilə bilməz).');
+            document.getElementById('finCode')?.focus();
+            return;
+          }
+
+          custSubmitting = true;
+          setButtonLoading(sendCodeBtn, true, 'Yoxlanılır &amp; Kod Gmail-ə göndərilir...');
+
+          try {
+            if (await checkUsernameExistsOnServer(username)) {
+              usernameTakenState.username = true;
+              const uInput = document.getElementById('username');
+              const uFeedback = document.getElementById('usernameFeedback');
+              if (uInput) { uInput.classList.add('input-invalid'); uInput.classList.remove('input-valid'); }
+              if (uFeedback) { uFeedback.className = 'validation-feedback error'; uFeedback.textContent = '❌ ' + USERNAME_TAKEN_MSG; }
+              showError(USERNAME_TAKEN_MSG);
+              uInput?.focus();
+              return;
+            }
+
+            if (await checkPasswordReuseOnServer(password, username)) {
+              showError('Bu şifrə daha əvvəl istifadə olunub! Təhlükəsizlik qaydalarına əsasən əvvəllər işlədilmiş şifrədən yenidən istifadə etmək qadağandır.');
+              document.getElementById('password')?.focus();
+              return;
+            }
+
+            const idCardSerial = document.getElementById('idCardSerial')?.value || '';
+            const finCode = document.getElementById('finCode')?.value || '';
+            const csrfToken = document.querySelector('input[name="_csrf"]')?.value || '';
+
+            const formData = new URLSearchParams();
+            formData.append('fullName', fullName);
+            formData.append('email', email);
+            formData.append('username', username);
+            formData.append('phoneNumber', phoneNumber);
+            formData.append('idCardSerial', idCardSerial);
+            formData.append('finCode', finCode);
+            formData.append('accountType', 'CREDIT');
+            formData.append('password', password);
+            formData.append('confirmPassword', confirmPassword);
+            if (csrfToken) formData.append('_csrf', csrfToken);
+
+            const res = await fetchWithTimeout('/register/send-code', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: formData.toString()
+            }, 15000);
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+              hideError();
+              if (sentEmailDisplay) sentEmailDisplay.textContent = email;
+              if (mailSimulationBox) mailSimulationBox.style.display = 'block';
+              if (step1Form) step1Form.style.display = 'none';
+              if (step2Form) step2Form.style.display = 'block';
+              if (step2Username) step2Username.value = username;
+              if (codeInput) {
+                codeInput.value = '';
+                codeInput.focus();
+              }
+              startResendTimer(30);
+            } else {
+              showError(data.message || 'Gmail təsdiq kodunun göndərilməsi uğursuz oldu.');
+            }
+          } catch (err) {
+            showError('Şəbəkə xətası və ya server əlçatan deyil: ' + err.message);
+          } finally {
+            custSubmitting = false;
+            setButtonLoading(sendCodeBtn, false);
+          }
+      }
+
+      if (step1Form) {
+        step1Form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          submitCustomerStep1();
+        });
+      }
+
+      if (codeInput) {
+        codeInput.addEventListener('input', function() {
+          this.value = this.value.replace(/\D/g, '').slice(0, 3);
+        });
+      }
+
+      if (sendCodeBtn) {
+        sendCodeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          submitCustomerStep1();
+        });
+      }
+
+      function startResendTimer(seconds) {
+        if (resendTimerInterval) clearInterval(resendTimerInterval);
+        let remaining = seconds || 30;
+
+        if (resendCountdown) resendCountdown.style.display = 'block';
+        if (resendCodeBtn) resendCodeBtn.style.display = 'none';
+        if (resendMessage) resendMessage.style.display = 'none';
+
+        function tick() {
+          if (resendSecondsEl) resendSecondsEl.textContent = remaining;
+          if (remaining <= 0) {
+            clearInterval(resendTimerInterval);
+            resendTimerInterval = null;
+            if (resendCountdown) resendCountdown.style.display = 'none';
+            if (resendCodeBtn) resendCodeBtn.style.display = 'block';
+          }
+          remaining--;
+        }
+
+        tick();
+        resendTimerInterval = setInterval(tick, 1000);
+      }
+
+      if (resendCodeBtn) {
+        resendCodeBtn.addEventListener('click', async function(e) {
+          e.preventDefault();
+          const uname = step2Username ? step2Username.value.trim() : '';
+          if (!uname) {
+            showError('İstifadəçi adı tapılmadı.');
+            return;
+          }
+
+          resendCodeBtn.disabled = true;
+          resendCodeBtn.textContent = 'Göndərilir...';
+
+          try {
+            const csrfToken = document.querySelector('#step2Form input[name="_csrf"]')?.value || '';
+            const formData = new URLSearchParams();
+            formData.append('username', uname);
+            if (csrfToken) formData.append('_csrf', csrfToken);
+
+            const res = await fetchWithTimeout('/register/resend-code', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: formData.toString()
+            }, 15000);
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+              if (resendMessage) {
+                resendMessage.style.display = 'block';
+                resendMessage.style.color = '#34d399';
+                resendMessage.textContent = '✅ ' + data.message;
+              }
+              startResendTimer(data.cooldownSeconds || 30);
+            } else {
+              if (resendMessage) {
+                resendMessage.style.display = 'block';
+                resendMessage.style.color = '#fca5a5';
+                resendMessage.textContent = '⚠️ ' + (data.message || 'Yenidən göndərmə xətası.');
+              }
+              if (data.cooldownSeconds && data.cooldownSeconds > 0) {
+                startResendTimer(data.cooldownSeconds);
+              }
+            }
+          } catch (err) {
+            if (resendMessage) {
+              resendMessage.style.display = 'block';
+              resendMessage.style.color = '#fca5a5';
+              resendMessage.textContent = '⚠️ Şəbəkə xətası: ' + err.message;
+            }
+          } finally {
+            resendCodeBtn.disabled = false;
+            resendCodeBtn.textContent = '🔄 Təsdiq Kodunu Yenidən Göndər';
+          }
+        });
+      }
+
+      if (backToStep1Btn) {
+        backToStep1Btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (step2Form) step2Form.style.display = 'none';
+          if (step1Form) step1Form.style.display = 'block';
+        });
+      }
+
+      const stdSendCodeBtn = document.getElementById('stdSendCodeBtn');
+      const stdStep1Form = document.getElementById('stdStep1Form');
+      const stdStep2Form = document.getElementById('stdStep2Form');
+      const stdMailSimulationBox = document.getElementById('stdMailSimulationBox');
+      const stdSentEmailDisplay = document.getElementById('stdSentEmailDisplay');
+      const stdStep2Username = document.getElementById('stdStep2Username');
+      const stdCodeInput = document.getElementById('stdCode');
+      const stdResendCodeBtn = document.getElementById('stdResendCodeBtn');
+      const stdResendCountdown = document.getElementById('stdResendCountdown');
+      const stdResendSecondsEl = document.getElementById('stdResendSeconds');
+      const stdResendMessage = document.getElementById('stdResendMessage');
+      const stdBackToStep1Btn = document.getElementById('stdBackToStep1Btn');
+      let stdResendTimerInterval = null;
+
+      function startStdResendTimer(seconds) {
+        if (stdResendTimerInterval) clearInterval(stdResendTimerInterval);
+        let remaining = seconds || 30;
+        if (stdResendCountdown) stdResendCountdown.style.display = 'block';
+        if (stdResendCodeBtn) stdResendCodeBtn.style.display = 'none';
+        if (stdResendMessage) stdResendMessage.style.display = 'none';
+
+        function tickStd() {
+          if (stdResendSecondsEl) stdResendSecondsEl.textContent = remaining;
+          if (remaining <= 0) {
+            clearInterval(stdResendTimerInterval);
+            stdResendTimerInterval = null;
+            if (stdResendCountdown) stdResendCountdown.style.display = 'none';
+            if (stdResendCodeBtn) stdResendCodeBtn.style.display = 'block';
+          }
+          remaining--;
+        }
+        tickStd();
+        stdResendTimerInterval = setInterval(tickStd, 1000);
+      }
+
+      let stdSubmitting = false;
+      async function submitStdStep1() {
+          if (stdSubmitting) return;
+          hideError();
+
+          const fullName = document.getElementById('stdFullName')?.value.trim() || '';
+          const email = document.getElementById('stdEmail')?.value.trim() || '';
+          const username = document.getElementById('stdUsername')?.value.trim() || '';
+          const password = document.getElementById('stdPassword')?.value || '';
+          const confirmPassword = document.getElementById('stdConfirmPassword')?.value || '';
+          const phoneNumber = document.getElementById('stdPhoneNumber')?.value.trim() || '';
+
+          if (!fullName || fullName.length < 2) {
+            showError('Normal Müştəri: Zəhmət olmasa ad soyadınızı daxil edin (ən azı 2 simvol).');
+            document.getElementById('stdFullName')?.focus();
+            return;
+          }
+          if (!email || !email.includes('@') || !email.includes('.')) {
+            showError('Normal Müştəri: Zəhmət olmasa düzgün Gmail ünvanı daxil edin.');
+            document.getElementById('stdEmail')?.focus();
+            return;
+          }
+          if (!username) {
+            showError('Normal Müştəri: İstifadəçi adı tələb olunur.');
+            document.getElementById('stdUsername')?.focus();
+            return;
+          }
+          if (!password || password.length < 4) {
+            showError('Normal Müştəri: Şifrə ən azı 4 simvoldan ibarət olmalıdır.');
+            document.getElementById('stdPassword')?.focus();
+            return;
+          }
+          if (password !== confirmPassword) {
+            showError('Normal Müştəri: Şifrələr uyğun gəlmir!');
+            document.getElementById('stdConfirmPassword')?.focus();
+            return;
+          }
+
+          const csrfToken = document.querySelector('#stdStep1Form input[name="_csrf"]')?.value || '';
+          stdSubmitting = true;
+          hideError();
+          setButtonLoading(stdSendCodeBtn, true, 'Yoxlanılır &amp; Kod Gmail-ə göndərilir...');
+
+          try {
+            if (await checkUsernameExistsOnServer(username)) {
+              usernameTakenState.stdUsername = true;
+              const stdUInput = document.getElementById('stdUsername');
+              const stdUFeedback = document.getElementById('stdUsernameFeedback');
+              if (stdUInput) { stdUInput.classList.add('input-invalid'); stdUInput.classList.remove('input-valid'); }
+              if (stdUFeedback) { stdUFeedback.className = 'validation-feedback error'; stdUFeedback.textContent = '❌ ' + USERNAME_TAKEN_MSG; }
+              showError(USERNAME_TAKEN_MSG);
+              stdUInput?.focus();
+              return;
+            }
+
+            if (await checkPasswordReuseOnServer(password, username)) {
+              showError('Bu şifrə daha əvvəl istifadə olunub! Təhlükəsizlik qaydalarına əsasən əvvəllər işlədilmiş şifrədən yenidən istifadə etmək qadağandır.');
+              document.getElementById('stdPassword')?.focus();
+              return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('fullName', fullName);
+            formData.append('email', email);
+            formData.append('username', username);
+            formData.append('phoneNumber', phoneNumber);
+            formData.append('accountType', 'CHECKING');
+            formData.append('password', password);
+            formData.append('confirmPassword', confirmPassword);
+            if (csrfToken) formData.append('_csrf', csrfToken);
+
+            const res = await fetchWithTimeout('/register/send-code', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: formData.toString()
+            }, 15000);
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+              hideError();
+              if (stdSentEmailDisplay) stdSentEmailDisplay.textContent = email;
+              if (stdMailSimulationBox) stdMailSimulationBox.style.display = 'block';
+              if (stdStep1Form) stdStep1Form.style.display = 'none';
+              if (stdStep2Form) stdStep2Form.style.display = 'block';
+              if (stdStep2Username) stdStep2Username.value = username;
+              if (stdCodeInput) {
+                stdCodeInput.value = '';
+                stdCodeInput.focus();
+              }
+              startStdResendTimer(30);
+            } else {
+              showError(data.message || 'Gmail təsdiq kodunun göndərilməsi uğursuz oldu.');
+            }
+          } catch (err) {
+            showError('Şəbəkə xətası və ya server əlçatan deyil: ' + err.message);
+          } finally {
+            stdSubmitting = false;
+            setButtonLoading(stdSendCodeBtn, false);
+          }
+      }
+
+      if (stdStep1Form) {
+        stdStep1Form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          submitStdStep1();
+        });
+      }
+
+      if (stdCodeInput) {
+        stdCodeInput.addEventListener('input', function() {
+          this.value = this.value.replace(/\D/g, '').slice(0, 3);
+        });
+      }
+
+      if (stdSendCodeBtn) {
+        stdSendCodeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          submitStdStep1();
+        });
+      }
+
+      if (stdResendCodeBtn) {
+        stdResendCodeBtn.addEventListener('click', async function(e) {
+          e.preventDefault();
+          const uname = stdStep2Username ? stdStep2Username.value.trim() : '';
+          if (!uname) {
+            showError('İstifadəçi adı tapılmadı.');
+            return;
+          }
+          stdResendCodeBtn.disabled = true;
+          stdResendCodeBtn.textContent = 'Göndərilir...';
+          try {
+            const csrfToken = document.querySelector('#stdStep2Form input[name="_csrf"]')?.value || '';
+            const formData = new URLSearchParams();
+            formData.append('username', uname);
+            if (csrfToken) formData.append('_csrf', csrfToken);
+            const res = await fetchWithTimeout('/register/resend-code', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: formData.toString()
+            }, 15000);
+            const data = await res.json();
+            if (res.ok && data.success) {
+              if (stdResendMessage) {
+                stdResendMessage.style.display = 'block';
+                stdResendMessage.style.color = '#34d399';
+                stdResendMessage.textContent = '✅ ' + data.message;
+              }
+              startStdResendTimer(data.cooldownSeconds || 30);
+            } else {
+              if (stdResendMessage) {
+                stdResendMessage.style.display = 'block';
+                stdResendMessage.style.color = '#fca5a5';
+                stdResendMessage.textContent = '⚠️ ' + (data.message || 'Yenidən göndərmə xətası.');
+              }
+              if (data.cooldownSeconds && data.cooldownSeconds > 0) {
+                startStdResendTimer(data.cooldownSeconds);
+              }
+            }
+          } catch (err) {
+            if (stdResendMessage) {
+              stdResendMessage.style.display = 'block';
+              stdResendMessage.style.color = '#fca5a5';
+              stdResendMessage.textContent = '⚠️ Şəbəkə xətası: ' + err.message;
+            }
+          } finally {
+            stdResendCodeBtn.disabled = false;
+            stdResendCodeBtn.textContent = '🔄 Təsdiq Kodunu Yenidən Göndər';
+          }
+        });
+      }
+
+      if (stdBackToStep1Btn) {
+        stdBackToStep1Btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (stdStep2Form) stdStep2Form.style.display = 'none';
+          if (stdStep1Form) stdStep1Form.style.display = 'block';
+        });
+      }
+
+      const empForm = document.getElementById('employeeForm');
+      const empSubmitBtn = document.getElementById('empSubmitBtn');
+      const verifySubmitBtn = document.getElementById('verifySubmitBtn');
+      const stdVerifySubmitBtn = document.getElementById('stdVerifySubmitBtn');
+
+      if (step2Form) {
+        step2Form.addEventListener('submit', function(e) {
+          if (verifySubmitBtn && verifySubmitBtn.disabled) {
+            e.preventDefault();
+            return;
+          }
+          hideError();
+          setButtonLoading(verifySubmitBtn, true, 'Təsdiqlənir...');
+        });
+      }
+
+      if (stdStep2Form) {
+        stdStep2Form.addEventListener('submit', function(e) {
+          if (stdVerifySubmitBtn && stdVerifySubmitBtn.disabled) {
+            e.preventDefault();
+            return;
+          }
+          hideError();
+          setButtonLoading(stdVerifySubmitBtn, true, 'Təsdiqlənir...');
+        });
+      }
+
+      let empValidatedForSubmit = false;
+      let empSubmitting = false;
+      if (empForm) {
+        empForm.addEventListener('submit', async function(e) {
+          if (empValidatedForSubmit) return;
+          e.preventDefault();
+          if (empSubmitting) return;
+          hideError();
+
+          const empPwd = document.getElementById('empPassword')?.value || '';
+          const empConfirm = document.getElementById('empConfirmPassword')?.value || '';
+          const empUname = document.getElementById('empUsername')?.value.trim() || '';
+
+          if (empPwd.length < 4) {
+            showError('Karyera müraciəti xətası: Şifrə ən azı 4 simvoldan ibarət olmalıdır.');
+            document.getElementById('empPassword')?.focus();
+            return;
+          }
+          if (empPwd !== empConfirm) {
+            showError('Karyera müraciəti xətası: Şifrələr uyğun gəlmir.');
+            document.getElementById('empConfirmPassword')?.focus();
+            return;
+          }
+
+          empSubmitting = true;
+          setButtonLoading(empSubmitBtn, true, 'Yoxlanılır &amp; Göndərilir...');
+
+          try {
+            if (await checkPasswordReuseOnServer(empPwd, empUname)) {
+              showError('Bu şifrə daha əvvəl istifadə olunub! Təhlükəsizlik qaydalarına əsasən əvvəllər işlədilmiş şifrədən yenidən istifadə etmək qadağandır.');
+              document.getElementById('empPassword')?.focus();
+              return;
+            }
+            if (await checkUsernameExistsOnServer(empUname)) {
+              usernameTakenState.empUsername = true;
+              const empUInput = document.getElementById('empUsername');
+              const empUFeedback = document.getElementById('empUsernameFeedback');
+              if (empUInput) { empUInput.classList.add('input-invalid'); empUInput.classList.remove('input-valid'); }
+              if (empUFeedback) { empUFeedback.className = 'validation-feedback error'; empUFeedback.textContent = '❌ ' + USERNAME_TAKEN_MSG; }
+              showError(USERNAME_TAKEN_MSG);
+              empUInput?.focus();
+              return;
+            }
+            empValidatedForSubmit = true;
+            empForm.submit();
+          } finally {
+            if (!empValidatedForSubmit) {
+              empSubmitting = false;
+              setButtonLoading(empSubmitBtn, false);
+            }
+          }
+        });
+      }
+    })();
+  </script>
+  <script th:src="@{/js/no-autocomplete-stay.js}" src="/js/no-autocomplete-stay.js"></script>
+</body>
+</html>

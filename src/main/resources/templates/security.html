@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Təhlükəsizlik Mərkəzi | AsadovBank</title>
+  <meta name="description" content="AsadovBank Təhlükəsizlik və Nəzarət Mərkəzi">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" th:href="@{/css/styles.css}" href="/css/styles.css">
+  <link rel="stylesheet" th:href="@{/css/admin-dark.css}" href="/css/admin-dark.css">
+
+  <style>
+    :root {
+      --cyber-bg: #070b14;
+      --cyber-card: rgba(15, 23, 42, 0.85);
+      --cyber-border: rgba(56, 189, 248, 0.25);
+      --cyber-cyan: #38bdf8;
+      --cyber-indigo: #6366f1;
+      --cyber-amber: #f59e0b;
+      --cyber-emerald: #10b981;
+      --cyber-rose: #f43f5e;
+      --cyber-purple: #a855f7;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #070b14 70%);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: #f1f5f9;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    .sec-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem 4rem 2rem;
+    }
+
+    .sec-navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1.15rem 1.75rem;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid var(--cyber-border);
+      border-radius: 18px;
+      backdrop-filter: blur(20px);
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .sec-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .sec-brand-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0284c7, #4f46e5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+    }
+
+    .sec-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .sec-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulseDot 1.8s infinite;
+    }
+
+    @keyframes pulseDot {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(1.3);
+      }
+    }
+
+    .sec-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .sec-stat-card {
+      background: var(--cyber-card);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sec-stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyber-cyan), var(--cyber-indigo));
+    }
+
+    .sec-stat-num {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 0.35rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .sec-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 0.75rem;
+    }
+
+    .sec-tab-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      font-size: 0.92rem;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .sec-tab-btn.active,
+    .sec-tab-btn:hover {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.25), rgba(99, 102, 241, 0.25));
+      border-color: var(--cyber-cyan);
+      color: #fff;
+    }
+
+    .sec-table-wrap {
+      background: var(--cyber-card);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+    }
+
+    .sec-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .sec-table th {
+      background: rgba(30, 41, 59, 0.85);
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .sec-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+      vertical-align: middle;
+    }
+
+    .sec-table tr:hover {
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .pill-cat {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .pill-cat-sikayet {
+      background: rgba(244, 63, 94, 0.15);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.35);
+    }
+
+    .pill-cat-irad {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .pill-cat-teklif {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .pill-cat-tehlukesizlik {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.35);
+    }
+
+    .code-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      letter-spacing: 1px;
+    }
+
+    .notif-live-badge {
+      background: #ef4444;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      animation: pulseAlert 1.5s infinite;
+    }
+
+    @keyframes pulseAlert {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.15);
+      }
+    }
+
+    .auth-overlay {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 460px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1.5px solid rgba(56, 189, 248, 0.4);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(56, 189, 248, 0.2);
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="sec-container auth-overlay" th:if="${needsAuth}">
+    <div class="auth-box">
+      <div
+        style="width: 64px; height: 64px; border-radius: 16px; background: linear-gradient(135deg, #0284c7, #6366f1); margin: 0 auto 1.25rem auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(56, 189, 248, 0.4);">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+
+      <h1 style="font-size: 1.45rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;">Məxfi Təhlükəsizlik Girişi
+      </h1>
+      <p style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 1.75rem;">
+        AsadovBank Təhlükəsizlik Mərkəzinə daxil olmaq üçün təyin olunmuş məxfi təhlükəsizlik kodunu daxil edin.
+      </p>
+
+      <div th:if="${errorMessage}"
+        style="background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.35); color: #fda4af; padding: 10px 14px; border-radius: 10px; font-size: 0.88rem; margin-bottom: 1.25rem;"
+        th:text="${errorMessage}">
+        Xəta baş verdi!
+      </div>
+      <div th:if="${successMessage}"
+        style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #6ee7b7; padding: 10px 14px; border-radius: 10px; font-size: 0.88rem; margin-bottom: 1.25rem;"
+        th:text="${successMessage}">
+        Uğurlu əməliyyat!
+      </div>
+
+      <form th:action="@{/admin/security/verify}" method="POST" id="secAuthForm" autocomplete="off">
+        <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
+
+        <div style="margin-bottom: 1.25rem; text-align: left;">
+          <label for="securityCodeInput"
+            style="display: block; font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">
+            Məxfi Təhlükəsizlik Kodu
+          </label>
+          <div style="position: relative;">
+            <input type="password" id="securityCodeInput" name="securityCode" class="form-control"
+              placeholder="Təhlükəsizlik kodunu daxil edin..." value="" required
+              autocomplete="current-password" autofocus
+              style="width: 100%; box-sizing: border-box; background: rgba(2, 6, 23, 0.7); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 10px; padding: 12px 42px 12px 14px; color: #fff; font-size: 1rem; font-family: inherit; outline: none;">
+            <button type="button" id="toggleSecCodeBtn" title="Kodu göstər / gizlət"
+              style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94a3b8; padding: 4px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="secAuthSubmitBtn"
+          style="width: 100%; background: linear-gradient(135deg, #0284c7, #4f46e5); color: #fff; border: none; font-weight: 800; font-size: 0.98rem; padding: 12px; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); margin-bottom: 1rem;">
+          Təhlükəsizlik Girişini Təsdiqlə &rarr;
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="sec-container" th:if="${!needsAuth}">
+
+    <header class="sec-navbar">
+      <div class="sec-brand">
+        <div class="sec-brand-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+        </div>
+        <div>
+          <div style="font-size: 1.15rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+            <span>AsadovBank Təhlükəsizlik Əməliyyat Mərkəzi</span>
+            <span class="sec-badge"><span class="sec-status-dot"></span> 24/7 CANLI NƏZARƏT</span>
+          </div>
+          <span style="font-size: 0.78rem; color: #94a3b8;">Təhlükəsizlik Əməliyyat Mərkəzi &bull; Məxfi Giriş
+            Təsdiqləndi</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+
+        <a th:if="${!isAdminUser}" th:href="@{/card}"
+          style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2)); border: 1px solid rgba(16, 185, 129, 0.45); color: #34d399; padding: 7px 14px; border-radius: 10px; display: inline-flex; align-items: center; gap: 7px; font-size: 0.84rem; font-weight: 700; text-decoration: none;">
+          <span>💳 Bank Kartım / View Card</span>
+        </a>
+
+        <a th:href="@{/admin/archive}"
+          style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(236, 72, 153, 0.25)); border: 1.5px solid #a855f7; color: #e9d5ff; padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="21 8 21 21 3 21 3 8"></polyline>
+            <rect x="1" y="3" width="22" height="5"></rect>
+            <line x1="10" y1="12" x2="14" y2="12"></line>
+          </svg>
+          <span>🗄️ RavanArxiv (Məxfi Arxiv)</span>
+          <span style="background: #a855f7; color: #fff; padding: 1px 6px; border-radius: 9999px; font-size: 0.7rem;"
+            th:text="${archivedCount}">0</span>
+        </a>
+
+        <form th:action="@{/admin/security/logout}" method="POST" style="margin: 0;">
+          <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="mock-token" />
+          <button type="submit"
+            style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; padding: 8px 14px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+            Təhlükəsizlikdən Çıxış
+          </button>
+        </form>
+      </div>
+    </header>
+
+    <div th:if="${successMessage}"
+      style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #6ee7b7; padding: 12px 18px; border-radius: 12px; font-size: 0.9rem; margin-bottom: 1.5rem;"
+      th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}"
+      style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; padding: 12px 18px; border-radius: 12px; font-size: 0.9rem; margin-bottom: 1.5rem;"
+      th:text="${errorMessage}"></div>
+
+    <div id="liveAlertBanner"
+      style="display: none; background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(99, 102, 241, 0.2)); border: 1px solid #38bdf8; border-radius: 12px; padding: 12px 18px; margin-bottom: 1.5rem; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span class="notif-live-badge">CANLI</span>
+        <span id="liveAlertText" style="color: #e0f2fe; font-size: 0.9rem; font-weight: 600;">Canlı Nəzarət Sistemi
+          aktivdir.</span>
+      </div>
+      <span style="font-size: 0.75rem; color: #94a3b8;" id="liveAlertTime">İndi</span>
+    </div>
+
+    <div class="sec-stat-grid">
+      <div class="sec-stat-card">
+        <span style="font-size: 0.82rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Ümumi
+          Sorğular</span>
+        <div class="sec-stat-num" th:text="${totalAppealsCount}">0</div>
+        <small style="color: #64748b; font-size: 0.75rem;">Şikayət, irad və təkliflər</small>
+      </div>
+
+      <div class="sec-stat-card">
+        <span style="font-size: 0.82rem; color: #fb7185; font-weight: 600; text-transform: uppercase;">Yeni /
+          Gözləyən</span>
+        <div class="sec-stat-num" style="color: #fb7185;" th:text="${newAppealsCount}">0</div>
+        <small style="color: #64748b; font-size: 0.75rem;">Baxış tələb olunur</small>
+      </div>
+
+      <div class="sec-stat-card">
+        <span style="font-size: 0.82rem; color: #34d399; font-weight: 600; text-transform: uppercase;">Təsdiqlənmiş
+          Qeydiyyatlar</span>
+        <div class="sec-stat-num" style="color: #34d399;" th:text="${verifiedRegsCount}">0</div>
+        <small style="color: #64748b; font-size: 0.75rem;">Gmail/Kod ilə aktivləşdirilən kartlar</small>
+      </div>
+
+      <div class="sec-stat-card">
+        <span style="font-size: 0.82rem; color: #c084fc; font-weight: 600; text-transform: uppercase;">RavanArxiv
+          (Silinənlər)</span>
+        <div class="sec-stat-num" style="color: #c084fc;" th:text="${archivedCount}">0</div>
+        <small style="color: #64748b; font-size: 0.75rem;">Məxfi arxivə köçürülən</small>
+      </div>
+    </div>
+
+    <div class="sec-tabs">
+      <button type="button" class="sec-tab-btn active" id="tabPanelMessagesBtn"
+        onclick="switchSecTab('tabPanelMessagesBtn', 'panelMessagesSection')">
+        <span>💬 Daxili Mesajlaşma (Feedback)</span>
+        <span
+          style="background: rgba(168, 85, 247, 0.2); color: #c084fc; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem;"
+          th:text="${panelMessages != null ? panelMessages.size() : 0}">0</span>
+      </button>
+
+      <button type="button" class="sec-tab-btn" id="tabRegistrationsBtn"
+        onclick="switchSecTab('tabRegistrationsBtn', 'registrationsSection')">
+        <span>📱 Qeydiyyat Nəzarəti (Gmail / Kod)</span>
+        <span
+          style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem;"
+          th:text="${registrations != null ? registrations.size() : 0}">0</span>
+      </button>
+
+      <button type="button" class="sec-tab-btn" id="tabAccountsBtn"
+        onclick="switchSecTab('tabAccountsBtn', 'accountsSection')">
+        <span>💳 Hesab Nəzarəti (Dondur / Sil)</span>
+        <span
+          style="background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem;"
+          th:text="${accounts != null ? accounts.size() : 0}">0</span>
+      </button>
+
+      <button type="button" class="sec-tab-btn" id="tabMessageBtn"
+        onclick="switchSecTab('tabMessageBtn', 'messageSection')">
+        <span>✉️ Müştəriyə Mesaj Göndər</span>
+      </button>
+
+      <button type="button" class="sec-tab-btn" id="tabNotificationsBtn"
+        onclick="switchSecTab('tabNotificationsBtn', 'notificationsSection')">
+        <span>🔔 Real-Vaxt Bildirişləri</span>
+        <span class="notif-live-badge" th:text="${notifications != null ? notifications.size() : 0}">0</span>
+      </button>
+
+      <button type="button" class="sec-tab-btn" id="tabLoansBtn" onclick="switchSecTab('tabLoansBtn', 'loansSection')">
+        <span>💳 Kredit Müraciətləri</span>
+        <span
+          style="background: rgba(168, 85, 247, 0.2); color: #c084fc; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem;"
+          th:text="${loanApplications != null ? loanApplications.size() : 0}">0</span>
+      </button>
+
+      <button type="button" class="sec-tab-btn" id="tabEmployeesBtn"
+        onclick="switchSecTab('tabEmployeesBtn', 'employeesSection')">
+        <span>👥 İşçi Təsdiqləri</span>
+        <span
+          style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem;"
+          th:text="${employees != null ? employees.size() : 0}">0</span>
+      </button>
+    </div>
+
+    <div id="panelMessagesSection">
+      <div style="background: var(--cyber-card); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
+        <h3 style="color: #fff; font-size: 1.05rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px;">
+          <span>💬 Panellərarası Daxili Mesaj Göndər (Admin / Sorğu / Xəzinədar)</span>
+        </h3>
+        <form th:action="@{/panel-messages/send}" method="POST" autocomplete="off">
+          <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+          <input type="hidden" name="fromPanel" value="SECURITY" />
+          <input type="hidden" name="redirectTo" value="/admin/security" />
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 0.85rem;">
+            <div>
+              <label for="secMsgToPanel" style="display: block; color: #94a3b8; font-size: 0.78rem; font-weight: 700; margin-bottom: 4px;">HANSİ PANELƏ GÖNDƏRİLSİN</label>
+              <select id="secMsgToPanel" name="toPanel" required style="width: 100%; background: rgba(2, 6, 23, 0.9); color: #ffffff; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 10px; padding: 10px 12px; font-size: 0.88rem;">
+                <option value="ADMIN">Admin Panel</option>
+                <option value="INQUIRY">Sorğu Paneli (Inquiry)</option>
+                <option value="TREASURY">Xəzinədar Paneli (Treasury)</option>
+              </select>
+            </div>
+            <div>
+              <label for="secMsgSubject" style="display: block; color: #94a3b8; font-size: 0.78rem; font-weight: 700; margin-bottom: 4px;">MÖVZU / BAŞLIQ</label>
+              <input id="secMsgSubject" type="text" name="subject" required maxlength="140" placeholder="Məsələn: Hesab yoxlanışı nəticəsi" style="width: 100%; box-sizing: border-box; background: rgba(2, 6, 23, 0.9); color: #ffffff; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 10px; padding: 10px 12px; font-size: 0.88rem;">
+            </div>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label for="secMsgBody" style="display: block; color: #94a3b8; font-size: 0.78rem; font-weight: 700; margin-bottom: 4px;">İZAH / TƏLİMAT MESAJI</label>
+            <textarea id="secMsgBody" name="message" rows="2" required placeholder="Qarşı tərəfin nə etməli olduğunu və ya əlavə qeydinizi yazın..." style="width: 100%; box-sizing: border-box; background: rgba(2, 6, 23, 0.9); color: #ffffff; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 10px; padding: 10px 12px; font-size: 0.88rem; resize: vertical;"></textarea>
+          </div>
+          <button type="submit" style="background: linear-gradient(135deg, #0284c7, #6366f1); color: #ffffff; border: none; border-radius: 10px; padding: 10px 20px; font-weight: 700; font-size: 0.88rem; cursor: pointer;">
+            Daxili Mesajı Göndər
+          </button>
+        </form>
+      </div>
+      <div class="sec-table-wrap">
+        <table class="sec-table">
+          <thead>
+            <tr>
+              <th>TARİX</th>
+              <th>KİMDƏN</th>
+              <th>KİMƏ</th>
+              <th>MÖVZU VƏ İZAH / TƏLİMAT</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="pm : ${panelMessages}">
+              <td style="color: #94a3b8; font-size: 0.82rem; white-space: nowrap;"
+                th:text="${pm.createdAt != null ? #temporals.format(pm.createdAt, 'dd.MM.yyyy HH:mm') : '—'}">-</td>
+              <td>
+                <span th:if="${pm.fromPanel == 'ADMIN'}" style="background: rgba(245, 158, 11, 0.18); color: #fbbf24; padding: 3px 9px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Admin Panel</span>
+                <span th:if="${pm.fromPanel == 'SECURITY'}" style="background: rgba(56, 189, 248, 0.18); color: #38bdf8; padding: 3px 9px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Security Paneli</span>
+                <span th:if="${pm.fromPanel == 'INQUIRY'}" style="background: rgba(168, 85, 247, 0.18); color: #c084fc; padding: 3px 9px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Sorğu Paneli</span>
+                <span th:if="${pm.fromPanel == 'TREASURY'}" style="background: rgba(16, 185, 129, 0.18); color: #34d399; padding: 3px 9px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Xəzinədar Paneli</span>
+                <div style="color: #64748b; font-size: 0.75rem; margin-top: 3px;"
+                  th:text="${pm.senderUsername != null ? '@' + pm.senderUsername : ''}">@user</div>
+              </td>
+              <td>
+                <span th:if="${pm.toPanel == 'ADMIN'}" style="background: rgba(245, 158, 11, 0.18); color: #fbbf24; padding: 3px 9px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Admin Panel</span>
+                <span th:if="${pm.toPanel == 'SECURITY'}" style="background: rgba(56, 189, 248, 0.18); color: #38bdf8; padding: 3px 9px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Security Paneli</span>
+                <span th:if="${pm.toPanel == 'INQUIRY'}" style="background: rgba(168, 85, 247, 0.18); color: #c084fc; padding: 3px 9px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Sorğu Paneli</span>
+                <span th:if="${pm.toPanel == 'TREASURY'}" style="background: rgba(16, 185, 129, 0.18); color: #34d399; padding: 3px 9px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Xəzinədar Paneli</span>
+              </td>
+              <td>
+                <strong style="color: #fff; font-size: 0.88rem; display: block;" th:text="${pm.subject}">Mövzu</strong>
+                <div style="color: #cbd5e1; font-size: 0.83rem; white-space: pre-wrap; margin-top: 4px;" th:text="${pm.message}">Mesaj</div>
+              </td>
+            </tr>
+            <tr th:if="${panelMessages == null or panelMessages.empty}">
+              <td colspan="4" style="text-align: center; padding: 2.5rem; color: #94a3b8;">Hələ heç bir daxili mesaj və ya yönləndirilmiş müraciət yoxdur.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="registrationsSection" style="display: none;">
+      <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: #fde68a; padding: 12px 16px; border-radius: 12px; font-size: 0.84rem; margin-bottom: 1rem;">
+        ⏰ <strong>Pending Hesab Qaydası:</strong> Gmail-ə göndərilən 3 rəqəmli kodu təsdiqlənməmiş (Pending) hesablar üçün <strong>30 dəqiqə sonra</strong> Security-yə xəbərdarlıq göndərilir, <strong>1 saat tamam olduqda</strong> isə hesab avtomatik silinərək <strong>RavanArxiv</strong>-ə köçürülür və onun username/parolu yenidən istifadəyə açılır.
+      </div>
+      <div class="sec-table-wrap">
+        <table class="sec-table" id="registrationsTable">
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>QEYDİYYAT TARİXİ</th>
+              <th>AD VƏ SOYAD</th>
+              <th>İSTİFADƏÇİ ADI</th>
+              <th>GMAİL / ƏLAQƏ</th>
+              <th>TƏYİN EDİLMİŞ BANK KARTI</th>
+              <th>TƏHLÜKƏSİZLİK STATUSU</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="reg, stat : ${registrations}">
+              <td style="color: #64748b; font-weight: 700;" th:text="${stat.count}">1</td>
+              <td style="color: #94a3b8; font-size: 0.82rem; white-space: nowrap;"
+                th:text="${reg.createdAt != null ? #temporals.format(reg.createdAt, 'dd.MM.yyyy HH:mm') : '—'}">
+                03.11.2026</td>
+              <td>
+                <strong style="color: #fff;" th:text="${reg.fullName ?: reg.username}">Ad Soyad</strong>
+              </td>
+              <td>
+                <span style="color: #60a5fa; font-family: 'JetBrains Mono', monospace;"
+                  th:text="${reg.username}">user</span>
+              </td>
+              <td>
+                <span style="font-family: 'JetBrains Mono', monospace; color: #38bdf8; font-weight: 600;"
+                  th:text="${reg.email != null && !reg.email.isEmpty() ? reg.email : reg.phoneNumber}">user@gmail.com</span>
+              </td>
+              <td>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #cbd5e1;"
+                  th:text="${reg.accountNumber ?: 'Təsdiq gözlənilir...'}">4098 7056 4547 6397</span>
+                <div style="margin-top: 2px;">
+                  <span th:if="${reg.accountType == 'CREDIT'}"
+                    style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;"
+                    th:text="'KREDİT • FİN: ' + ${reg.finCode}">KREDİT • FİN: 7ABC123</span>
+                </div>
+              </td>
+              <td>
+                <span th:if="${reg.status == 'VERIFIED' or reg.status == 'ACTIVE'}"
+                  style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800;">
+                  &check; AKTİV
+                </span>
+                <span th:if="${reg.status != 'VERIFIED' and reg.status != 'ACTIVE'}"
+                  style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;"
+                  th:text="${reg.status}">GÖZLƏYİR</span>
+              </td>
+            </tr>
+
+            <tr th:if="${registrations == null or registrations.empty}">
+              <td colspan="7" style="text-align: center; padding: 3rem; color: #94a3b8;">
+                <span>Hələ heç bir qeydiyyat qeydə alınmayıb.</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="accountsSection" style="display: none;">
+      <div class="sec-table-wrap">
+        <table class="sec-table" id="accountsTable">
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>KART / HESAB NO</th>
+              <th>MÜŞTƏRİ ADI</th>
+              <th>İSTİFADƏÇİ ADI</th>
+              <th>BALANS</th>
+              <th>STATUS</th>
+              <th style="text-align: right;">TƏHLÜKƏSİZLİK ƏMƏLİYYATLARI</th>
+            </tr>
+          </thead>
+          <tbody id="accountsTableBody">
+            <tr th:each="acc, stat : ${accounts}" th:id="'acc-row-' + ${acc.id}">
+              <td style="color: #64748b; font-weight: 700;" th:text="${stat.count}">1</td>
+              <td>
+                <strong style="color: #38bdf8; font-family: 'JetBrains Mono', monospace;"
+                  th:text="${acc.accountNumber}">4098 7056 1234 5678</strong>
+                <div style="margin-top: 2px;">
+                  <span th:if="${acc.accountType == 'CREDIT'}"
+                    style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;"
+                    th:text="'KREDİT • FİN: ' + (${acc.finCode} ?: 'N/A')">KREDİT</span>
+                </div>
+              </td>
+              <td>
+                <span style="color: #fff; font-weight: 600;"
+                  th:text="${acc.user != null ? acc.user.fullName : 'N/A'}">Ad Soyad</span>
+              </td>
+              <td>
+                <span style="color: #818cf8; font-family: 'JetBrains Mono', monospace;"
+                  th:text="${acc.user != null ? '@' + acc.user.username : 'N/A'}">@user</span>
+              </td>
+              <td>
+                <strong style="color: #fbbf24; font-family: 'JetBrains Mono', monospace;"
+                  th:text="${#numbers.formatDecimal(acc.balance, 1, 'COMMA', 2, 'POINT') + ' ' + acc.currency}">1,000.00
+                  AZN</strong>
+              </td>
+              <td>
+                <span th:id="'acc-status-' + ${acc.id}">
+                  <span th:if="${acc.status.name() == 'ACTIVE'}"
+                    style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800;">
+                    AKTİV
+                  </span>
+                  <span th:if="${acc.status.name() == 'BLOCKED'}"
+                    style="background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800;">
+                    ❄️ DONDURULUB
+                  </span>
+                  <span th:if="${acc.status.name() != 'ACTIVE' and acc.status.name() != 'BLOCKED'}"
+                    style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800;"
+                    th:text="${acc.status}">
+                    GÖZLƏYİR
+                  </span>
+                </span>
+              </td>
+              <td style="text-align: right;">
+                <div style="display: inline-flex; align-items: center; gap: 8px;">
+
+                  <button type="button" th:data-id="${acc.id}" class="ajax-freeze-btn"
+                    th:if="${acc.status.name() == 'ACTIVE'}"
+                    style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8; font-weight: 700; font-size: 0.78rem; padding: 5px 10px; border-radius: 6px; cursor: pointer;"
+                    onclick="ajaxToggleFreeze(this)">
+                    ❄️ Dondur
+                  </button>
+                  <button type="button" th:data-id="${acc.id}" class="ajax-freeze-btn"
+                    th:if="${acc.status.name() == 'BLOCKED'}"
+                    style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; font-weight: 700; font-size: 0.78rem; padding: 5px 10px; border-radius: 6px; cursor: pointer;"
+                    onclick="ajaxToggleFreeze(this)">
+                    🔥 Aktivləşdir
+                  </button>
+
+                  <button type="button" th:data-id="${acc.id}" class="ajax-delete-btn"
+                    style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; font-weight: 700; font-size: 0.78rem; padding: 5px 10px; border-radius: 6px; cursor: pointer;"
+                    onclick="ajaxDeleteToArchive(this)">
+                    🗑️ Sil (RavanArxiv)
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr th:if="${accounts == null or accounts.empty}">
+              <td colspan="7" style="text-align: center; padding: 3rem; color: #94a3b8;">
+                <span>Aktiv hesab tapılmadı.</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="messageSection" style="display: none;">
+      <div
+        style="background: var(--cyber-card); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 16px; padding: 2rem; margin-bottom: 2rem;">
+        <h3
+          style="color: #fff; font-size: 1.2rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">
+          <span>✉️ Müştəriyə Təhlükəsizlik Bildirişi və ya Xəbərdarlıq Göndər</span>
+        </h3>
+        <p style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 1.5rem;">
+          Qeydiyyatdan keçmiş aktiv və ya qeyri-aktiv müştərilərə xəbərdarlıq, rəsmi cavab və ya təhlükəsizlik bildirişi
+          göndərin. Mesaj dərhal müştərinin panelində görünəcək.
+        </p>
+
+        <form th:action="@{/admin/security/messages/send}" method="POST">
+          <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="mock-token" />
+
+          <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+
+            <div>
+              <label for="recipientUsername"
+                style="display: block; font-size: 0.82rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                Qəbul Edən Müştəri
+              </label>
+              <select id="recipientUsername" name="recipientUsername" required
+                style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; padding: 10px 14px; color: #fff; font-family: inherit;">
+                <option value="ALL">📢 Bütün Müştərilər (Ümumi)</option>
+                <option th:each="cust : ${customerUsers}" th:value="${cust.username}"
+                  th:text="${cust.fullName + ' (@' + cust.username + ')'}">
+                  Ad Soyad (@username)
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label for="messageType"
+                style="display: block; font-size: 0.82rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                Mesajın Növü
+              </label>
+              <select id="messageType" name="messageType" required
+                style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; padding: 10px 14px; color: #fff; font-family: inherit;">
+                <option value="INFO" selected>ℹ️ Məlumat</option>
+                <option value="WARNING">⚠️ Təhlükəsizlik Xəbərdarlığı</option>
+                <option value="APPEAL_REPLY">✉️ Sorğuya Rəsmi Cavab</option>
+                <option value="SECURITY_ALERT">🚨 Təcili Təhlükəsizlik Siqnalı</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1.25rem;">
+            <label for="msgTitle"
+              style="display: block; font-size: 0.82rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+              Mesajın Mövzusu / Başlığı
+            </label>
+            <input type="text" id="msgTitle" name="title" required
+              placeholder="məs: Kart əməliyyatınız barədə rəsmi bildiriş"
+              style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; padding: 10px 14px; color: #fff; font-family: inherit;">
+          </div>
+
+          <div style="margin-bottom: 1.5rem;">
+            <label for="msgContent"
+              style="display: block; font-size: 0.82rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+              Mesajın Mətni
+            </label>
+            <textarea id="msgContent" name="content" rows="4" required
+              placeholder="Müştəriyə çatdırılacaq rəsmi mesajı daxil edin..."
+              style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; padding: 12px 14px; color: #fff; font-family: inherit; resize: vertical;"></textarea>
+          </div>
+
+          <button type="submit"
+            style="background: linear-gradient(135deg, #0284c7, #4f46e5); color: #fff; border: none; font-weight: 800; padding: 12px 24px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            <span>Müştəriyə Mesaj Göndər</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="sec-table-wrap">
+        <div
+          style="padding: 1rem 1.5rem; background: rgba(30, 41, 59, 0.5); border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; color: #fff;">
+          Göndərilmiş Mesajlar Tarixçəsi
+        </div>
+        <table class="sec-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>TARİX</th>
+              <th>QƏBUL EDƏN</th>
+              <th>NÖV</th>
+              <th>BAŞLIQ</th>
+              <th>MƏZMUN</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="msg, stat : ${sentMessages}">
+              <td style="color: #64748b; font-weight: 700;" th:text="${stat.count}">1</td>
+              <td style="color: #94a3b8; font-size: 0.82rem; white-space: nowrap;"
+                th:text="${msg.createdAt != null ? #temporals.format(msg.createdAt, 'dd.MM.yyyy HH:mm') : '—'}">
+                03.11.2026</td>
+              <td>
+                <span style="color: #38bdf8; font-weight: 700;"
+                  th:text="${msg.recipientUsername == 'ALL' ? '📢 BÜTÜN MÜŞTƏRİLƏR' : '@' + msg.recipientUsername}">@user</span>
+              </td>
+              <td>
+                <span class="pill-cat"
+                  th:classappend="${msg.messageType == 'WARNING' ? 'pill-cat-irad' : (msg.messageType == 'SECURITY_ALERT' ? 'pill-cat-sikayet' : 'pill-cat-teklif')}"
+                  th:text="${msg.messageType == 'WARNING' ? 'XƏBƏRDARLIQ' : (msg.messageType == 'SECURITY_ALERT' ? 'TƏCİLİ' : 'MƏLUMAT')}">MƏLUMAT</span>
+              </td>
+              <td>
+                <strong style="color: #fff;" th:text="${msg.title}">Başlıq</strong>
+              </td>
+              <td style="color: #cbd5e1; font-size: 0.85rem;" th:text="${msg.content}">Mətn...</td>
+            </tr>
+
+            <tr th:if="${sentMessages == null or sentMessages.empty}">
+              <td colspan="6" style="text-align: center; padding: 2.5rem; color: #94a3b8;">
+                <span>Hələ heç bir rəsmi mesaj göndərilməyib.</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="notificationsSection" style="display: none;">
+      <div class="sec-table-wrap">
+        <div
+          style="padding: 1rem 1.5rem; background: rgba(30, 41, 59, 0.5); border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 700; color: #fff;">Canlı Hadisə Jurnalı (Real-Vaxt Hadisələri)</span>
+          <span class="notif-live-badge">CANLI REJİM</span>
+        </div>
+        <table class="sec-table" id="notifTable">
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>TARİX VƏ SAAT</th>
+              <th>HADİSƏ NÖVÜ</th>
+              <th>İSTİFADƏÇİ</th>
+              <th>TƏFƏRRÜATLAR</th>
+            </tr>
+          </thead>
+          <tbody id="notifTableBody">
+            <tr th:each="n, stat : ${notifications}">
+              <td style="color: #64748b; font-weight: 700;" th:text="${stat.count}">1</td>
+              <td style="color: #94a3b8; font-size: 0.82rem; white-space: nowrap;"
+                th:text="${n.createdAt != null ? #temporals.format(n.createdAt, 'dd.MM.yyyy HH:mm:ss') : '—'}">
+                03.11.2026</td>
+              <td>
+                <span class="pill-cat"
+                  th:classappend="${n.type == 'ACCOUNT_DELETED' ? 'pill-cat-sikayet' : (n.type == 'REGISTRATION_START' ? 'pill-cat-irad' : 'pill-cat-teklif')}"
+                  th:text="${n.title}">BİLDİRİŞ</span>
+              </td>
+              <td>
+                <span style="color: #60a5fa; font-family: 'JetBrains Mono', monospace;"
+                  th:text="${n.username != null ? '@' + n.username : '—'}">@user</span>
+              </td>
+              <td>
+                <span style="color: #f1f5f9;" th:text="${n.message}">Hadisə mətni</span>
+              </td>
+            </tr>
+
+            <tr th:if="${notifications == null or notifications.empty}">
+              <td colspan="5" style="text-align: center; padding: 3rem; color: #94a3b8;">
+                <span>Hələ təhlükəsizlik bildirişi qeydə alınmayıb.</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="loansSection" style="display: none;">
+      <div class="sec-table-wrap">
+        <div
+          style="padding: 1rem 1.5rem; background: rgba(30, 41, 59, 0.5); border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-weight: 700; color: #fff; font-size: 1rem;">💳 Kredit Müraciətləri və Təsdiq
+              Mərkəzi</span>
+            <div style="color: #94a3b8; font-size: 0.78rem; margin-top: 2px;">Müştəri şəxsiyyət vəsiqəsi və kredit
+              müraciətlərinin yoxlanılması və təsdiqi.</div>
+          </div>
+          <span
+            style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); padding: 4px 12px; border-radius: 9999px; font-size: 0.78rem; font-weight: 700;"
+            th:text="'Gözləyən: ' + (${pendingLoansCount ?: 0})">Gözləyən: 0</span>
+        </div>
+        <table class="sec-table" id="loansTable">
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>TARİX</th>
+              <th>MÜŞTƏRİ</th>
+              <th>Ş/V SERİYASI</th>
+              <th>MƏBLƏĞ</th>
+              <th>MÜDDƏT</th>
+              <th>AYLIQ ÖDƏNİŞ</th>
+              <th>GƏLİR / MƏQSƏD</th>
+              <th>STATUS</th>
+              <th style="text-align: right;">ƏMƏLİYYAT</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="loan, stat : ${loanApplications}">
+              <td style="color: #64748b; font-weight: 700;" th:text="${stat.count}">1</td>
+              <td style="color: #94a3b8; font-size: 0.82rem; white-space: nowrap;"
+                th:text="${loan.createdAt != null ? #temporals.format(loan.createdAt, 'dd.MM.yyyy HH:mm') : '—'}">
+                01.11.2026</td>
+              <td>
+                <strong style="color: #fff;" th:text="${loan.customerName}">Ad Soyad</strong>
+                <div style="color: #60a5fa; font-size: 0.75rem;" th:text="'@' + ${loan.username}">@user</div>
+              </td>
+              <td>
+                <code
+                  style="background: rgba(15, 23, 42, 0.8); color: #38bdf8; padding: 2px 8px; border-radius: 4px; font-weight: 700; letter-spacing: 1px;"
+                  th:text="${loan.idCardSerial}">AZE12345678</code>
+              </td>
+              <td style="color: #34d399; font-weight: 700;"
+                th:text="${#numbers.formatDecimal(loan.amount, 1, 'COMMA', 2, 'POINT') + ' ₼'}">5,000.00 ₼</td>
+              <td style="color: #cbd5e1;" th:text="${loan.termMonths + ' months'}">12 ay</td>
+              <td style="color: #fbbf24; font-weight: 600;"
+                th:text="${loan.monthlyPayment != null ? #numbers.formatDecimal(loan.monthlyPayment, 1, 'COMMA', 2, 'POINT') + ' ₼' : '—'}">
+                466.67 ₼</td>
+              <td>
+                <div style="font-size: 0.82rem; color: #cbd5e1;"
+                  th:text="${loan.monthlyIncome != null ? 'Income: ' + #numbers.formatDecimal(loan.monthlyIncome, 1, 'COMMA', 2, 'POINT') + ' ₼' : '—'}">
+                  Gəlir: —</div>
+                <small style="color: #64748b;" th:text="${loan.purpose ?: '—'}">Təmir</small>
+              </td>
+              <td>
+                <span th:if="${loan.status == 'PENDING'}"
+                  style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">⏳
+                  PENDING</span>
+                <span th:if="${loan.status == 'SENT_TO_SECURITY'}"
+                  style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">🛡️
+                  TƏHLÜKƏSİZLİKDƏ</span>
+                <span th:if="${loan.status == 'SENT_TO_TREASURY'}"
+                  style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">💰
+                  XƏZİNƏDARDA</span>
+                <span th:if="${loan.status == 'APPROVED'}"
+                  style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">✅
+                  APPROVED</span>
+                <span th:if="${loan.status == 'REJECTED'}"
+                  style="background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">❌
+                  REJECTED</span>
+              </td>
+              <td style="text-align: right;">
+                <div style="display: flex; gap: 6px; justify-content: flex-end;" th:if="${loan.status == 'PENDING' or loan.status == 'SENT_TO_SECURITY'}">
+                  <form th:action="@{/admin/loans/send-to-treasury}" method="POST" style="display: inline;">
+                    <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+                    <input type="hidden" name="loanId" th:value="${loan.id}" />
+                    <button type="submit"
+                      style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer;">💰
+                      Xəzinədara Göndər</button>
+                  </form>
+                  <form th:action="@{/admin/loans/reject}" method="POST" style="display: inline;">
+                    <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+                    <input type="hidden" name="loanId" th:value="${loan.id}" />
+                    <button type="submit"
+                      style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer;">❌
+                      Rədd et</button>
+                  </form>
+                </div>
+                <span th:if="${loan.status != 'PENDING' and loan.status != 'SENT_TO_SECURITY'}" style="color: #64748b; font-size: 0.78rem;">Completed</span>
+              </td>
+            </tr>
+            <tr th:if="${loanApplications == null or loanApplications.empty}">
+              <td colspan="10" style="text-align: center; padding: 3rem; color: #94a3b8;">
+                <span>Hələ kredit müraciəti daxil olmayıb.</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="employeesSection" style="display: none;">
+      <div class="sec-table-wrap">
+        <div
+          style="padding: 1rem 1.5rem; background: rgba(30, 41, 59, 0.5); border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-weight: 700; color: #fff; font-size: 1rem;">👥 Bank İşçiləri Təsdiq Paneli</span>
+            <div style="color: #94a3b8; font-size: 0.78rem; margin-top: 2px;">Bank əməkdaşı kimi qeydiyyatdan keçmiş
+              şəxslərin şəxsiyyət və təhlükəsizlik təsdiqi.</div>
+          </div>
+          <span
+            style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 4px 12px; border-radius: 9999px; font-size: 0.78rem; font-weight: 700;"
+            th:text="'Gözləyən: ' + (${pendingEmployeesCount ?: 0})">Gözləyən: 0</span>
+        </div>
+        <table class="sec-table" id="empSecTable">
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>TARİX</th>
+              <th>ƏMƏKDAŞ</th>
+              <th>İŞÇİ ID</th>
+              <th>BANK KARTI</th>
+              <th>VƏZİFƏ</th>
+              <th>HESAB STATUSU</th>
+              <th>TƏSDİQ STATUSU</th>
+              <th style="text-align: right;">ƏMƏLİYYAT</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="emp, stat : ${employees}">
+              <td style="color: #64748b; font-weight: 700;" th:text="${stat.count}">1</td>
+              <td style="color: #94a3b8; font-size: 0.82rem; white-space: nowrap;"
+                th:text="${emp.createdAt != null ? #temporals.format(emp.createdAt, 'dd.MM.yyyy HH:mm') : '—'}">
+                01.11.2026</td>
+              <td>
+                <strong style="color: #fff;" th:text="${emp.fullName}">Ad Soyad</strong>
+                <div style="color: #60a5fa; font-size: 0.75rem;" th:text="'@' + ${emp.username}">@user</div>
+              </td>
+              <td>
+                <code
+                  style="background: rgba(15, 23, 42, 0.8); color: #38bdf8; padding: 2px 8px; border-radius: 4px; font-weight: 700;"
+                  th:text="${emp.employeeId}">EMP-001</code>
+              </td>
+              <td>
+                <a th:if="${emp.role != 'ROLE_ADMIN'}" th:href="@{/card(username=${emp.username})}"
+                  style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2)); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                  <span>💳 Bank Kartım / View Card</span>
+                </a>
+                <span th:if="${emp.role == 'ROLE_ADMIN'}" style="color: #64748b;">—</span>
+              </td>
+              <td style="color: #cbd5e1;" th:text="${emp.position}">Operator</td>
+              <td>
+                <span th:if="${emp.accountStatus == 'ACTIVE'}"
+                  style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">AKTİV</span>
+                <span th:if="${emp.accountStatus != 'ACTIVE'}"
+                  style="background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">BLOKLANIB</span>
+              </td>
+              <td>
+                <span th:if="${emp.approvalStatus == 'PENDING'}"
+                  style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">⏳
+                  SORĞUDA</span>
+                <span th:if="${emp.approvalStatus == 'SENT_TO_SECURITY'}"
+                  style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">🛡️
+                  TƏSDİQ GÖZLƏYİR</span>
+                <span th:if="${emp.approvalStatus == 'SENT_TO_ADMIN' or (emp.escalatedToAdmin ?: false)}"
+                  style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">⚠️
+                  ADMİNƏ YÖNLƏNDİRİLİB</span>
+                <span th:if="${emp.approvalStatus == 'APPROVED' and !(emp.escalatedToAdmin ?: false)}"
+                  style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">✅
+                  TƏSDİQLƏNDİ</span>
+                <span th:if="${emp.approvalStatus == 'REJECTED'}"
+                  style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); padding: 3px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">❌
+                  RƏDD EDİLDİ</span>
+              </td>
+              <td style="text-align: right;">
+                <div style="display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; align-items: center;"
+                  th:if="${emp.approvalStatus == 'SENT_TO_SECURITY'}">
+                  <form th:action="@{/admin/security/employees/{id}/approve(id=${emp.id})}" method="POST"
+                    style="display: inline;">
+                    <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+                    <button type="submit"
+                      style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer;">✅
+                      İşə Qəbul (Təsdiq)</button>
+                  </form>
+                  <form th:action="@{/admin/security/employees/{id}/reject(id=${emp.id})}" method="POST"
+                    style="display: inline;">
+                    <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+                    <button type="submit"
+                      style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer;">❌
+                      Rədd</button>
+                  </form>
+                </div>
+                <form th:if="${(emp.approvalStatus == 'SENT_TO_SECURITY' or emp.approvalStatus == 'APPROVED') and !(emp.escalatedToAdmin ?: false)}"
+                      th:action="@{/admin/security/employees/{id}/escalate(id=${emp.id})}" method="POST"
+                      style="display: inline-flex; gap: 4px; align-items: center; margin-top: 4px;">
+                  <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+                  <input type="text" name="reason" placeholder="Problem qeydi..." maxlength="200"
+                    style="background: rgba(15, 23, 42, 0.85); color: #fff; border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 6px; padding: 3px 8px; font-size: 0.72rem; width: 130px;" />
+                  <button type="submit"
+                    style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.45); padding: 4px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 600; cursor: pointer;">⚠️ Adminə Göndər</button>
+                </form>
+                <span th:if="${emp.approvalStatus == 'PENDING'}"
+                  style="color: #94a3b8; font-size: 0.76rem;">Sorğu Operatorunun yönləndirməsi gözlənilir</span>
+                <span th:if="${emp.approvalStatus == 'REJECTED' or emp.approvalStatus == 'SENT_TO_ADMIN' or (emp.escalatedToAdmin ?: false)}"
+                  style="color: #64748b; font-size: 0.78rem;">Qeydə alındı</span>
+              </td>
+            </tr>
+            <tr th:if="${employees == null or employees.empty}">
+              <td colspan="10" style="text-align: center; padding: 3rem; color: #94a3b8;">
+                <span>Hələ işçi qeydiyyatı daxil olmayıb.</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content
+      || document.querySelector('input[name="_csrf"]')?.value
+      || '';
+
+    function switchSecTab(btnId, secId) {
+      const sectionIds = [
+        'panelMessagesSection',
+        'registrationsSection',
+        'accountsSection',
+        'messageSection',
+        'notificationsSection',
+        'loansSection',
+        'employeesSection'
+      ];
+      const btnIds = [
+        'tabPanelMessagesBtn',
+        'tabRegistrationsBtn',
+        'tabAccountsBtn',
+        'tabMessageBtn',
+        'tabNotificationsBtn',
+        'tabLoansBtn',
+        'tabEmployeesBtn'
+      ];
+
+      sectionIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.display = 'none';
+          el.hidden = true;
+        }
+      });
+
+      btnIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+      });
+
+      const targetSec = document.getElementById(secId);
+      if (targetSec) {
+        targetSec.hidden = false;
+        targetSec.style.display = 'block';
+      }
+
+      const targetBtn = document.getElementById(btnId);
+      if (targetBtn) targetBtn.classList.add('active');
+    }
+    window.switchSecTab = switchSecTab;
+
+    (function bindSecurityTabs() {
+      const tabConfig = [
+        { btn: 'tabPanelMessagesBtn', sec: 'panelMessagesSection' },
+        { btn: 'tabRegistrationsBtn', sec: 'registrationsSection' },
+        { btn: 'tabAccountsBtn', sec: 'accountsSection' },
+        { btn: 'tabMessageBtn', sec: 'messageSection' },
+        { btn: 'tabNotificationsBtn', sec: 'notificationsSection' },
+        { btn: 'tabLoansBtn', sec: 'loansSection' },
+        { btn: 'tabEmployeesBtn', sec: 'employeesSection' }
+      ];
+      const attach = () => {
+        tabConfig.forEach(item => {
+          const btnEl = document.getElementById(item.btn);
+          if (btnEl && !btnEl.dataset.tabBound) {
+            btnEl.dataset.tabBound = '1';
+            btnEl.addEventListener('click', (e) => {
+              e.preventDefault();
+              switchSecTab(item.btn, item.sec);
+            });
+          }
+        });
+      };
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', attach);
+      } else {
+        attach();
+      }
+    })();
+
+    const toggleSecCodeBtn = document.getElementById('toggleSecCodeBtn');
+    const securityCodeInput = document.getElementById('securityCodeInput');
+    if (toggleSecCodeBtn && securityCodeInput) {
+      toggleSecCodeBtn.addEventListener('click', () => {
+        const isPwd = securityCodeInput.type === 'password';
+        securityCodeInput.type = isPwd ? 'text' : 'password';
+      });
+    }
+
+    async function markAppealReviewed(btn) {
+      const id = btn.getAttribute('data-id');
+      if (!id) return;
+      btn.disabled = true;
+      btn.textContent = '...';
+      try {
+        const res = await fetch('/admin/security/appeals/' + id + '/status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: '_csrf=' + encodeURIComponent(csrfToken) + '&status=REVIEWED'
+        });
+        if (res.ok) {
+          const row = document.getElementById('appeal-row-' + id);
+          if (row) {
+
+            const statusCell = row.querySelectorAll('td')[7];
+            if (statusCell) statusCell.innerHTML = '<span style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">REVIEWED</span>';
+
+            const actionCell = row.querySelectorAll('td')[8];
+            if (actionCell) actionCell.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">Done</span>';
+          }
+        } else {
+          btn.disabled = false;
+          btn.textContent = 'Reviewed ✓';
+          alert('Error updating status.');
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Reviewed ✓';
+        alert('Network error: ' + e.message);
+      }
+    }
+
+    async function ajaxToggleFreeze(btn) {
+      const id = btn.getAttribute('data-id');
+      if (!id) return;
+      btn.disabled = true;
+      const origText = btn.textContent;
+      btn.textContent = '...';
+      try {
+        const res = await fetch('/admin/accounts/' + id + '/toggle-freeze', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: '_csrf=' + encodeURIComponent(csrfToken)
+        });
+        const data = await res.json();
+        if (data.success) {
+          const row = document.getElementById('acc-row-' + id);
+          if (row) {
+            const statusSpan = document.getElementById('acc-status-' + id);
+            const actionCell = row.querySelectorAll('td')[6];
+            if (data.status === 'BLOCKED') {
+              if (statusSpan) statusSpan.innerHTML = '<span style="background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800;">❄️ FROZEN</span>';
+              btn.textContent = '🔥 Activate';
+              btn.style.background = 'rgba(16, 185, 129, 0.15)';
+              btn.style.borderColor = 'rgba(16, 185, 129, 0.35)';
+              btn.style.color = '#34d399';
+            } else {
+              if (statusSpan) statusSpan.innerHTML = '<span style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800;">ACTIVE</span>';
+              btn.textContent = '❄️ Freeze';
+              btn.style.background = 'rgba(56, 189, 248, 0.15)';
+              btn.style.borderColor = 'rgba(56, 189, 248, 0.35)';
+              btn.style.color = '#38bdf8';
+            }
+          }
+          btn.disabled = false;
+        } else {
+          btn.textContent = origText;
+          btn.disabled = false;
+          alert(data.message || 'Error');
+        }
+      } catch (e) {
+        btn.textContent = origText;
+        btn.disabled = false;
+        alert('Network error: ' + e.message);
+      }
+    }
+
+    async function ajaxDeleteToArchive(btn) {
+      const id = btn.getAttribute('data-id');
+      if (!id) return;
+      if (!confirm('Are you sure you want to permanently delete this account and move it to RavanArxiv?')) return;
+      btn.disabled = true;
+      btn.textContent = '...';
+      try {
+        const res = await fetch('/admin/accounts/' + id + '/delete-to-archive', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: '_csrf=' + encodeURIComponent(csrfToken) + '&reason=Deleted+from+Security+Panel'
+        });
+        const data = await res.json();
+        if (data.success) {
+          const row = document.getElementById('acc-row-' + id);
+          if (row) {
+            row.style.transition = 'opacity 0.4s ease';
+            row.style.opacity = '0';
+            setTimeout(() => row.remove(), 400);
+          }
+        } else {
+          btn.disabled = false;
+          btn.textContent = '🗑️ Delete (RavanArxiv)';
+          alert(data.message || 'Error deleting account.');
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = '🗑️ Delete (RavanArxiv)';
+        alert('Network error: ' + e.message);
+      }
+    }
+
+    async function submitManualAppeal(e) {
+      e.preventDefault();
+      const form = document.getElementById('manualAppealForm');
+      const formData = new FormData(form);
+      const body = new URLSearchParams(formData).toString();
+      try {
+        const res = await fetch('/admin/security/appeals/manual-create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: body
+        });
+        const data = await res.json();
+        if (data.success) {
+          form.reset();
+          alert('Customer inquiry successfully added.');
+          location.reload();
+        } else {
+          alert(data.message || 'Error adding inquiry.');
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    }
+
+    function openReplyModal(btn) {
+      const id = btn.getAttribute('data-id');
+      const username = btn.getAttribute('data-username') || '';
+      const customer = btn.getAttribute('data-customer') || username;
+      const subject = btn.getAttribute('data-subject') || '';
+      const message = btn.getAttribute('data-message') || '';
+      const note = btn.getAttribute('data-note') || '';
+
+      document.getElementById('modalAppealId').value = id;
+      document.getElementById('modalCustomerName').textContent = customer;
+      document.getElementById('modalUsername').textContent = '@' + username;
+      document.getElementById('modalSubject').textContent = subject;
+      document.getElementById('modalMessageText').textContent = message;
+      document.getElementById('modalAdminReply').value = note;
+
+      const modal = document.getElementById('appealReplyModal');
+      modal.style.display = 'flex';
+      setTimeout(() => document.getElementById('modalAdminReply').focus(), 100);
+    }
+
+    function closeReplyModal() {
+      document.getElementById('appealReplyModal').style.display = 'none';
+    }
+
+    async function submitAppealReply(e) {
+      e.preventDefault();
+      const id = document.getElementById('modalAppealId').value;
+      const reply = document.getElementById('modalAdminReply').value;
+      const submitBtn = document.getElementById('modalSubmitBtn');
+
+      if (!reply || !reply.trim()) {
+        alert('Zəhmət olmasa rəy mətni daxil edin.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Göndərilir...';
+
+      try {
+        const res = await fetch('/admin/security/appeals/' + id + '/reply', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: '_csrf=' + encodeURIComponent(csrfToken) + '&adminReply=' + encodeURIComponent(reply.trim()) + '&status=REVIEWED'
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          closeReplyModal();
+
+          const row = document.getElementById('appeal-row-' + id);
+          if (row) {
+
+            const statusCell = row.querySelectorAll('td')[7];
+            if (statusCell) statusCell.innerHTML = '<span style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">REVIEWED</span>';
+
+            const msgCell = row.querySelectorAll('td')[6];
+            if (msgCell) {
+              const existingReply = msgCell.querySelector('.bank-reply-box');
+              if (existingReply) {
+                existingReply.innerHTML = '<strong style="color: #34d399;">Bank Reply:</strong> <span>' + escapeHtml(reply.trim()) + '</span>';
+              } else {
+                msgCell.insertAdjacentHTML('beforeend', '<div class="bank-reply-box" style="margin-top: 6px; padding: 6px 10px; background: rgba(16, 185, 129, 0.15); border-left: 3px solid #10b981; border-radius: 4px; font-size: 0.8rem; color: #a7f3d0;"><strong style="color: #34d399;">Bank Reply:</strong> <span>' + escapeHtml(reply.trim()) + '</span></div>');
+              }
+            }
+          }
+          alert('✓ Rəyiniz uğurla müştərinin şəxsi panelinə çatdırıldı!');
+        } else {
+          alert('Xəta: ' + (data.message || 'Rəy göndərilə bilmədi.'));
+        }
+      } catch (err) {
+        alert('Şəbəkə xətası: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Cavabı Müştəriyə Göndər →';
+      }
+    }
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    let lastNotifCount = 0;
+    async function pollSecurityNotifications() {
+      try {
+        const res = await fetch('/api/security/notifications');
+        if (res.ok) {
+          const list = await res.json();
+          if (list && list.length > 0) {
+            const latest = list[0];
+            const liveBanner = document.getElementById('liveAlertBanner');
+            const liveText = document.getElementById('liveAlertText');
+            const liveTime = document.getElementById('liveAlertTime');
+
+            if (liveBanner && liveText && latest) {
+              liveText.textContent = latest.message;
+              if (liveTime) liveTime.textContent = new Date(latest.createdAt).toLocaleTimeString();
+              liveBanner.style.display = 'flex';
+            }
+          }
+        }
+      } catch (e) {
+
+      }
+    }
+    setInterval(pollSecurityNotifications, 4000);
+  </script>
+
+  <div id="appealReplyModal"
+    style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 1rem;">
+    <div
+      style="background: #0f172a; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 16px; width: 100%; max-width: 540px; padding: 1.75rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative;">
+      <button type="button" onclick="closeReplyModal()"
+        style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+        <div
+          style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+          ✉️</div>
+        <div>
+          <h3 style="color: #fff; font-size: 1.1rem; margin: 0;">Müştəri Sorğusuna Rəsmi Cavab Göndər</h3>
+          <p style="color: #94a3b8; font-size: 0.8rem; margin: 2px 0 0 0;">Cavabınız dərhal müştərinin şəxsi panelinə
+            çatdırılacaq.</p>
+        </div>
+      </div>
+
+      <div
+        style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px; margin-bottom: 1rem;">
+        <div style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 4px;">
+          Müştəri: <strong id="modalCustomerName" style="color: #fff;"></strong> (<span id="modalUsername"
+            style="color: #60a5fa;"></span>)
+        </div>
+        <div style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 4px;">
+          Mövzu: <strong id="modalSubject" style="color: #cbd5e1;"></strong>
+        </div>
+        <div style="font-size: 0.82rem; color: #94a3b8;">
+          Mesaj: <span id="modalMessageText" style="color: #e2e8f0; font-style: italic;"></span>
+        </div>
+      </div>
+
+      <form id="appealReplyForm" onsubmit="submitAppealReply(event)">
+        <input type="hidden" id="modalAppealId" name="appealId" />
+        <div style="margin-bottom: 1.25rem;">
+          <label for="modalAdminReply"
+            style="display: block; font-size: 0.82rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+            Rəsmi Cavab <span style="color: #f43f5e;">*</span>
+          </label>
+          <textarea id="modalAdminReply" name="adminReply" rows="4" required
+            placeholder="Müştəriyə göndəriləcək rəsmi cavabı daxil edin..."
+            style="width: 100%; box-sizing: border-box; background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 12px; color: #fff; font-family: inherit; font-size: 0.9rem; outline: none;"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" onclick="closeReplyModal()"
+            style="background: rgba(255, 255, 255, 0.1); color: #cbd5e1; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;">Ləğv
+            et</button>
+          <button type="submit" id="modalSubmitBtn"
+            style="background: linear-gradient(135deg, #0284c7, #4f46e5); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 700;">Cavabı
+            Müştəriyə Göndər &rarr;</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script th:src="@{/js/no-autocomplete-stay.js}" src="/js/no-autocomplete-stay.js"></script>
+</body>
+
+</html>

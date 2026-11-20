@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Central Inquiry &amp; Loan Management Panel | AsadovBank</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/admin-dark.css}" href="../static/css/admin-dark.css">
+  
+  <style>
+    :root {
+      --primary-inq: #6366f1;
+      --primary-inq-hover: #4f46e5;
+      --bg-dark: #090d16;
+      --card-bg: rgba(15, 23, 42, 0.75);
+      --card-border: rgba(129, 140, 248, 0.2);
+    }
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 10% 20%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+        radial-gradient(at 90% 80%, rgba(168, 85, 247, 0.1) 0px, transparent 50%);
+      color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    .inq-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem 4rem;
+    }
+
+    .inq-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .inq-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .inq-logo-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+    }
+    .inq-brand-text h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin: 0;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+    .inq-brand-text span {
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+    .inq-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-nav-link {
+      padding: 0.55rem 1rem;
+      border-radius: 10px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-nav-primary {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: #a5b4fc;
+    }
+    .btn-nav-primary:hover {
+      background: rgba(99, 102, 241, 0.25);
+      color: #fff;
+    }
+    .btn-nav-security {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+    .btn-nav-security:hover {
+      background: rgba(239, 68, 68, 0.25);
+      color: #fff;
+    }
+    .btn-nav-logout {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+    .btn-nav-logout:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    
+
+    .inq-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .inq-stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s;
+    }
+    .inq-stat-card:hover {
+      border-color: rgba(129, 140, 248, 0.45);
+      transform: translateY(-2px);
+    }
+    .stat-title {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stat-val {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .stat-highlight-new {
+      color: #fbbf24;
+    }
+    .stat-highlight-sec {
+      color: #38bdf8;
+    }
+    .stat-highlight-loan {
+      color: #34d399;
+    }
+    .stat-highlight-res {
+      color: #a78bfa;
+    }
+
+    .inq-filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .inq-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .inq-tab {
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-decoration: none;
+      background: transparent;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .inq-tab.active {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: #c7d2fe;
+    }
+    .inq-tab:hover:not(.active) {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+
+    .inq-table-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    .inq-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    .inq-table th {
+      background: rgba(30, 41, 59, 0.6);
+      color: #94a3b8;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .inq-table td {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+      font-size: 0.88rem;
+      vertical-align: middle;
+    }
+    .inq-table tr:hover {
+      background: rgba(99, 102, 241, 0.04);
+    }
+    
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .badge-loan {
+      background: rgba(16, 185, 129, 0.18);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .badge-complaint {
+      background: rgba(239, 68, 68, 0.18);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .badge-inquiry {
+      background: rgba(56, 189, 248, 0.18);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    .badge-other {
+      background: rgba(168, 85, 247, 0.18);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      font-size: 0.74rem;
+      font-weight: 700;
+    }
+    .status-new {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+    .status-sec {
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+    .status-ans {
+      background: rgba(129, 140, 248, 0.2);
+      color: #a5b4fc;
+      border: 1px solid rgba(129, 140, 248, 0.4);
+    }
+    .status-res {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .inq-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .btn-act {
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .btn-reply {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.35);
+    }
+    .btn-reply:hover {
+      background: rgba(99, 102, 241, 0.35);
+      color: #fff;
+    }
+    .btn-sec-forward {
+      background: rgba(239, 68, 68, 0.18);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+    .btn-sec-forward:hover {
+      background: rgba(239, 68, 68, 0.3);
+      color: #fff;
+    }
+    .btn-sec-forward:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-resolve {
+      background: rgba(16, 185, 129, 0.18);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .btn-resolve:hover {
+      background: rgba(16, 185, 129, 0.3);
+      color: #fff;
+    }
+    .btn-approve-crd {
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #fff;
+    }
+    .btn-reject-crd {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 1.5rem;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-box {
+      background: #0f172a;
+      border: 1px solid rgba(129, 140, 248, 0.3);
+      border-radius: 20px;
+      max-width: 560px;
+      width: 100%;
+      padding: 2rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+      color: #fff;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .modal-close:hover { color: #fff; }
+    .form-ctrl {
+      width: 100%;
+      box-sizing: border-box;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1.5px solid rgba(148, 163, 184, 0.2);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: #fff;
+      font-family: inherit;
+      margin-bottom: 1rem;
+    }
+    .form-ctrl:focus {
+      outline: none;
+      border-color: #818cf8;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 1rem;
+    }
+    .alert-banner {
+      padding: 0.9rem 1.25rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .alert-succ {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #6ee7b7;
+    }
+    .alert-err {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="inq-container">
+
+    <header class="inq-header">
+      <div class="inq-brand">
+        <div class="inq-logo-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <div class="inq-brand-text">
+          <h1>Mərkəzi Sorğu və İdarəetmə Paneli</h1>
+          <span>AsadovBank • İnzibatçı: <strong style="color: #c7d2fe;" th:text="${adminUsername}">Ravan Asadov</strong></span>
+        </div>
+      </div>
+
+      <div class="inq-nav-actions">
+
+        <a th:if="${isAdminUser}" th:href="@{/admin}" class="btn-nav-link btn-nav-primary">
+          <span>&larr; Admin Panel</span>
+        </a>
+
+        <a th:if="${!isAdminUser}" th:href="@{/card}"
+           style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2)); border: 1px solid rgba(16, 185, 129, 0.45); color: #34d399; padding: 6px 14px; border-radius: 10px; display: inline-flex; align-items: center; gap: 7px; font-size: 0.82rem; font-weight: 700; text-decoration: none;">
+          <span>💳 Bank Kartım / View Card</span>
+        </a>
+
+        <form th:action="@{/admin/inquiry/logout}" method="POST" style="margin: 0;">
+          <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+          <button type="submit" class="btn-nav-link btn-nav-logout" title="Sorğu Panelindən Çıxış">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            <span>Çıxış</span>
+          </button>
+        </form>
+      </div>
+    </header>
+
+    <div th:if="${successMessage}" class="alert-banner alert-succ">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <span th:text="${successMessage}">Operation successful</span>
+    </div>
+    <div th:if="${errorMessage}" class="alert-banner alert-err">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <span th:text="${errorMessage}">Xəta baş verdi</span>
+    </div>
+
+    <section class="inq-stats-grid">
+      <div class="inq-stat-card">
+        <div class="stat-title">Ümumi Sorğular <span>📋</span></div>
+        <div class="stat-val" th:text="${totalInquiries}">0</div>
+      </div>
+      <div class="inq-stat-card">
+        <div class="stat-title">Yeni Sorğular <span>⚡</span></div>
+        <div class="stat-val stat-highlight-new" th:text="${newInquiries}">0</div>
+      </div>
+      <div class="inq-stat-card">
+        <div class="stat-title">Kredit Müraciətləri <span>💳</span></div>
+        <div class="stat-val stat-highlight-loan" th:text="${pendingLoans}">0</div>
+      </div>
+      <div class="inq-stat-card">
+        <div class="stat-title">Təhlükəsizlikdə <span>🛡️</span></div>
+        <div class="stat-val stat-highlight-sec" th:text="${sentToSecurity}">0</div>
+      </div>
+      <div class="inq-stat-card">
+        <div class="stat-title">Həll Edildi <span>✅</span></div>
+        <div class="stat-val stat-highlight-res" th:text="${resolvedCount + answeredCount}">0</div>
+      </div>
+    </section>
+
+    <div class="inq-filter-bar">
+      <div class="inq-tabs">
+        <a th:href="@{/admin/inquiry(type='ALL', status=${filterStatus})}" class="inq-tab" th:classappend="${filterType == 'ALL' ? 'active' : ''}">Bütün Sorğular</a>
+        <a th:href="@{/admin/inquiry(type='LOAN_REQUEST', status=${filterStatus})}" class="inq-tab" th:classappend="${filterType == 'LOAN_REQUEST' ? 'active' : ''}">💳 Kredit Müraciətləri</a>
+        <a th:href="@{/admin/inquiry(type='COMPLAINT', status=${filterStatus})}" class="inq-tab" th:classappend="${filterType == 'COMPLAINT' ? 'active' : ''}">⚠️ Şikayətlər</a>
+        <a th:href="@{/admin/inquiry(type='INQUIRY', status=${filterStatus})}" class="inq-tab" th:classappend="${filterType == 'INQUIRY' ? 'active' : ''}">ℹ️ Sorğular</a>
+        <a th:href="@{/admin/inquiry(type='SERVICE_ISSUE', status=${filterStatus})}" class="inq-tab" th:classappend="${filterType == 'SERVICE_ISSUE' ? 'active' : ''}">🛠️ Xidmət Problemləri</a>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <select onchange="location = this.value;" style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #cbd5e1; padding: 0.45rem 0.8rem; font-size: 0.82rem;">
+          <option th:value="@{/admin/inquiry(type=${filterType}, status='ALL')}" th:selected="${filterStatus == 'ALL'}">Bütün Statuslar</option>
+          <option th:value="@{/admin/inquiry(type=${filterType}, status='NEW')}" th:selected="${filterStatus == 'NEW'}">YENİ</option>
+          <option th:value="@{/admin/inquiry(type=${filterType}, status='IN_REVIEW')}" th:selected="${filterStatus == 'IN_REVIEW'}">BAXILIR</option>
+          <option th:value="@{/admin/inquiry(type=${filterType}, status='SENT_TO_SECURITY')}" th:selected="${filterStatus == 'SENT_TO_SECURITY'}">TƏHLÜKƏSİZLİKDƏ</option>
+          <option th:value="@{/admin/inquiry(type=${filterType}, status='ANSWERED')}" th:selected="${filterStatus == 'ANSWERED'}">CAVABLANDIRILIB</option>
+          <option th:value="@{/admin/inquiry(type=${filterType}, status='RESOLVED')}" th:selected="${filterStatus == 'RESOLVED'}">HƏLL EDİLDİ</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="inq-table-card">
+      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="font-size: 1.1rem; font-weight: 700; margin: 0; color: #fff;">Müştəri Sorğuları və Kredit Müraciətləri</h2>
+        <span style="font-size: 0.82rem; color: #94a3b8;" th:text="${inquiries.size()} + ' müraciət tapıldı'">0 müraciət</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="inq-table">
+          <thead>
+            <tr>
+              <th>Ref № / Tarix</th>
+              <th>Müştəri</th>
+              <th>Növ</th>
+              <th>Mövzu və Məzmun</th>
+              <th>Status</th>
+              <th>Bank Cavabı</th>
+              <th>Əməliyyatlar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="inq : ${inquiries}">
+              <td>
+                <strong style="color: #a5b4fc; font-size: 0.82rem;" th:text="${inq.referenceNo ?: ('INQ-' + inq.id)}">INQ-001</strong>
+                <div style="color: #64748b; font-size: 0.75rem; margin-top: 2px;" th:text="${inq.createdAt != null ? #temporals.format(inq.createdAt, 'dd.MM.yyyy HH:mm') : ''}">01.11.2026</div>
+              </td>
+              <td>
+                <div style="font-weight: 700; color: #fff;" th:text="${inq.customerName ?: inq.username}">Ad Soyad</div>
+                <div style="font-size: 0.78rem; color: #94a3b8;">
+                  <span th:text="'@' + ${inq.username}">@user</span>
+                  <span th:if="${inq.phoneNumber != null and !inq.phoneNumber.empty}" th:text="' &bull; ' + ${inq.phoneNumber}"> &bull; +994</span>
+                </div>
+              </td>
+              <td>
+                <span th:if="${inq.inquiryType == 'LOAN_REQUEST'}" class="badge badge-loan">💳 Kredit</span>
+                <span th:if="${inq.inquiryType == 'COMPLAINT'}" class="badge badge-complaint">⚠️ Şikayət</span>
+                <span th:if="${inq.inquiryType == 'INQUIRY'}" class="badge badge-inquiry">ℹ️ Sorğu</span>
+                <span th:if="${inq.inquiryType != 'LOAN_REQUEST' and inq.inquiryType != 'COMPLAINT' and inq.inquiryType != 'INQUIRY'}" class="badge badge-other" th:text="${inq.inquiryType}">Digər</span>
+              </td>
+              <td style="max-width: 320px;">
+                <strong style="color: #fff; font-size: 0.88rem; display: block; margin-bottom: 3px;" th:text="${inq.subject}">Mövzu</strong>
+                <div style="color: #cbd5e1; font-size: 0.82rem; line-height: 1.4; max-height: 4.2em; overflow: hidden; text-overflow: ellipsis;" th:text="${inq.message}">Müraciət mətni...</div>
+                
+
+                <div th:if="${inq.forwardedToSecurity}" style="margin-top: 6px; padding: 4px 8px; background: rgba(56, 189, 248, 0.1); border-left: 2px solid #38bdf8; border-radius: 4px; font-size: 0.74rem; color: #7dd3fc;">
+                  <span>🛡️ Təhlükəsizliyə Yönləndirilib (İnzibatçı: <strong th:text="${inq.forwardedBy}">Admin</strong>)</span>
+                </div>
+              </td>
+              <td>
+                <span th:if="${inq.status == 'NEW'}" class="status-pill status-new">YENİ</span>
+                <span th:if="${inq.status == 'SENT_TO_SECURITY'}" class="status-pill status-sec">TƏHLÜKƏSİZLİKDƏ</span>
+                <span th:if="${inq.status == 'ANSWERED'}" class="status-pill status-ans">CAVABLANDIRILIB</span>
+                <span th:if="${inq.status == 'RESOLVED'}" class="status-pill status-res">HƏLL EDİLDİ</span>
+                <span th:if="${inq.status != 'NEW' and inq.status != 'SENT_TO_SECURITY' and inq.status != 'ANSWERED' and inq.status != 'RESOLVED'}" class="status-pill status-ans" th:text="${inq.status}">BAXILIR</span>
+              </td>
+              <td>
+                <div th:if="${inq.adminReply != null and !inq.adminReply.empty}" style="color: #a7f3d0; font-size: 0.8rem; background: rgba(16, 185, 129, 0.1); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                  <span th:text="${inq.adminReply}">Cavab mətni</span>
+                  <div style="color: #6ee7b7; font-size: 0.7rem; margin-top: 3px;" th:text="'Cavab verən: ' + ${inq.repliedBy}">Admin: Admin</div>
+                </div>
+                <span th:if="${inq.adminReply == null or inq.adminReply.empty}" style="color: #64748b; font-size: 0.8rem;">— Hələ cavab verilməyib —</span>
+              </td>
+              <td>
+                <div class="inq-actions">
+
+                  <button type="button" class="btn-act btn-reply"
+                          th:data-id="${inq.id}"
+                          th:data-customer="${inq.customerName ?: inq.username}"
+                          th:data-subject="${inq.subject}"
+                          onclick="openReplyModal(this)">
+                    ✉️ Cavabla
+                  </button>
+
+                  <button type="button" class="btn-act btn-sec-forward"
+                          th:data-id="${inq.id}"
+                          th:data-customer="${inq.customerName ?: inq.username}"
+                          th:data-subject="${inq.subject}"
+                          onclick="openForwardModal(this)">
+                    📤 Yönləndir
+                  </button>
+
+                  <div th:if="${inq.inquiryType == 'LOAN_REQUEST' and inq.loanApplicationId != null}" style="display: flex; gap: 4px;">
+                    <form th:action="@{/admin/loans/send-to-security}" method="POST" style="margin: 0; display: inline;">
+                      <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+                      <input type="hidden" name="loanId" th:value="${inq.loanApplicationId}" />
+                      <input type="hidden" name="inquiryId" th:value="${inq.id}" />
+                      <button type="submit" class="btn-act btn-approve-crd" onclick="return confirm('Kredit müraciətini ilkin yoxlamadan sonra Security şöbəsinə göndərmək istəyirsiniz?');">
+                        🛡️ Security-yə Göndər
+                      </button>
+                    </form>
+                    <form th:action="@{/admin/loans/reject}" method="POST" style="margin: 0; display: inline;">
+                      <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+                      <input type="hidden" name="loanId" th:value="${inq.loanApplicationId}" />
+                      <button type="submit" class="btn-act btn-reject-crd" onclick="return confirm('Bu kredit müraciətini rədd etmək istəyirsiniz?');">
+                        ❌ İmtina Et
+                      </button>
+                    </form>
+                  </div>
+
+                  <form th:if="${inq.status != 'RESOLVED' and inq.inquiryType != 'LOAN_REQUEST'}" th:action="@{'/admin/inquiry/' + ${inq.id} + '/status'}" method="POST" style="margin: 0; display: inline;">
+                    <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+                    <input type="hidden" name="status" value="RESOLVED" />
+                    <button type="submit" class="btn-act btn-resolve">
+                      ✅ Həll Edildi
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+
+            <tr th:if="${inquiries == null or inquiries.empty}">
+              <td colspan="7" style="text-align: center; padding: 3rem; color: #94a3b8;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 0.5rem; opacity: 0.5;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <div>Seçilmiş filtr üçün heç bir müraciət tapılmadı.</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top: 2.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+          <h3 style="font-size: 1rem; color: #f8fafc; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+            <span>👥 Bank Əməkdaşları, İş Müraciətləri və Ştat Nəzarəti</span>
+          </h3>
+          <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;">
+            Yeni iş müraciətləri ilkin yoxlama üçün buraya düşür: Security-yə göndərə və ya problem yarandıqda Admin Panelə yönləndirə bilərsiniz.
+          </div>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; font-size: 0.75rem;">
+          <span class="badge" th:style="${(itFull ?: false) ? 'background: rgba(239,68,68,0.18); color: #fca5a5;' : 'background: rgba(16,185,129,0.15); color: #34d399;'}"
+                th:text="'İT: ' + (${itEmployeesCount ?: 0}) + '/' + (${itLimit ?: 2})">İT: 0/2</span>
+          <span class="badge" th:style="${(treasuryFull ?: false) ? 'background: rgba(239,68,68,0.18); color: #fca5a5;' : 'background: rgba(16,185,129,0.15); color: #34d399;'}"
+                th:text="'Xəzinədar: ' + (${treasuryEmployeesCount ?: 0}) + '/' + (${treasuryLimit ?: 2})">Xəzinədar: 0/2</span>
+          <span class="badge" th:style="${(securityFull ?: false) ? 'background: rgba(239,68,68,0.18); color: #fca5a5;' : 'background: rgba(16,185,129,0.15); color: #34d399;'}"
+                th:text="'Security: ' + (${securityEmployeesCount ?: 0}) + '/' + (${securityLimit ?: 2})">Security: 0/2</span>
+          <span class="badge" th:style="${(inquiryFull ?: false) ? 'background: rgba(239,68,68,0.18); color: #fca5a5;' : 'background: rgba(16,185,129,0.15); color: #34d399;'}"
+                th:text="'Operator: ' + (${inquiryEmployeesCount ?: 0}) + '/' + (${inquiryLimit ?: 8})">Operator: 0/8</span>
+          <span class="badge" th:style="${(customerServiceFull ?: false) ? 'background: rgba(239,68,68,0.18); color: #fca5a5;' : 'background: rgba(16,185,129,0.15); color: #34d399;'}"
+                th:text="'Müştəri X.: ' + (${customerServiceEmployeesCount ?: 0}) + '/' + (${customerServiceLimit ?: 4})">Müştəri X.: 0/4</span>
+          <span class="badge" th:style="${(hrFull ?: false) ? 'background: rgba(239,68,68,0.18); color: #fca5a5;' : 'background: rgba(16,185,129,0.15); color: #34d399;'}"
+                th:text="'HR: ' + (${hrEmployeesCount ?: 0}) + '/' + (${hrLimit ?: 2})">HR: 0/2</span>
+        </div>
+      </div>
+      <div class="inq-table-card">
+        <div class="table-responsive">
+          <table class="inq-table" style="font-size: 0.84rem;">
+            <thead>
+              <tr>
+                <th>Əməkdaş</th>
+                <th>İşçi ID</th>
+                <th>Vəzifə</th>
+                <th>Bank Kartı</th>
+                <th>Təsdiq &amp; Status</th>
+                <th>Əməliyyatlar</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="emp : ${employees}">
+                <td>
+                  <strong style="color: #fff;" th:text="${emp.fullName}">Ad Soyad</strong>
+                  <div style="font-size: 0.75rem; color: #94a3b8;" th:text="'@' + ${emp.username}">@user</div>
+                </td>
+                <td>
+                  <code style="background: rgba(15, 23, 42, 0.8); color: #a5b4fc; padding: 2px 7px; border-radius: 4px; font-weight: 700;" th:text="${emp.employeeId}">EMP-001</code>
+                </td>
+                <td>
+                  <div style="font-size: 0.82rem; color: #cbd5e1;" th:text="${emp.position}">Operator</div>
+                </td>
+                <td>
+                  <a th:if="${emp.role != 'ROLE_ADMIN'}" th:href="@{/card(username=${emp.username})}"
+                     style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2)); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    <span>💳 Bank Kartım / View Card</span>
+                  </a>
+                  <span th:if="${emp.role == 'ROLE_ADMIN'}" style="color: #64748b;">—</span>
+                </td>
+                <td>
+                  <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                    <span th:if="${emp.approvalStatus == 'PENDING'}" class="status-pill status-new">⏳ YENİ (GÖZLƏYİR)</span>
+                    <span th:if="${emp.approvalStatus == 'SENT_TO_SECURITY'}" class="status-pill status-sec">🛡️ SECURİTY-DƏ</span>
+                    <span th:if="${emp.approvalStatus == 'SENT_TO_ADMIN' or (emp.escalatedToAdmin ?: false)}" class="status-pill" style="background: rgba(245,158,11,0.18); color: #fbbf24; border: 1px solid rgba(245,158,11,0.4);">⚠️ ADMİNƏ YÖNLƏNDİRİLDİ</span>
+                    <span th:if="${emp.approvalStatus == 'APPROVED' and emp.accountStatus == 'ACTIVE'}" class="status-pill status-res">✅ AKTİV İŞÇİ</span>
+                    <span th:if="${emp.approvalStatus == 'REJECTED' or emp.accountStatus == 'BLOCKED'}" class="status-pill" style="background: rgba(239,68,68,0.18); color: #fca5a5;">❌ RƏDD / BLOKLU</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="inq-actions" style="flex-wrap: wrap;">
+                    <form th:if="${emp.approvalStatus == 'PENDING'}"
+                          th:action="@{'/admin/inquiry/employees/' + ${emp.id} + '/send-to-security'}"
+                          method="POST" style="margin: 0; display: inline;">
+                      <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+                      <button type="submit" class="btn-act btn-approve-crd">🛡️ Security-yə Göndər</button>
+                    </form>
+
+                    <form th:if="${emp.approvalStatus == 'PENDING'}"
+                          th:action="@{'/admin/inquiry/employees/' + ${emp.id} + '/reject'}"
+                          method="POST" style="margin: 0; display: inline;">
+                      <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+                      <button type="submit" class="btn-act btn-reject-crd" onclick="return confirm('Bu iş müraciətini rədd etmək istəyirsiniz?');">❌ Rədd Et</button>
+                    </form>
+
+                    <form th:if="${!(emp.escalatedToAdmin ?: false) and emp.approvalStatus != 'APPROVED' and emp.approvalStatus != 'REJECTED'}"
+                          th:action="@{'/admin/inquiry/employees/' + ${emp.id} + '/send-to-admin'}"
+                          method="POST"
+                          style="margin: 0; display: inline-flex; gap: 4px; align-items: center;">
+                      <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+                      <input type="text" name="reason" placeholder="Problem / əmr qeydi..." maxlength="200"
+                             style="background: rgba(15, 23, 42, 0.85); color: #fff; border: 1px solid rgba(245,158,11,0.35); border-radius: 6px; padding: 4px 8px; font-size: 0.74rem; width: 145px;" />
+                      <button type="submit" class="btn-act" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.45);">⚠️ Adminə Yönləndir</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              <tr th:if="${employees == null or employees.empty}">
+                <td colspan="6" style="text-align: center; color: #64748b; padding: 1.5rem;">Heç bir əməkdaş tapılmadı.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 3rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-size: 1rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">
+          🛡️ Sorğu Paneli və İnzibatçı Audit Tarixçəsi (Son Əməliyyatlar)
+        </h3>
+      </div>
+      <div class="inq-table-card" style="padding: 1rem;">
+        <div style="max-height: 240px; overflow-y: auto;">
+          <table class="inq-table" style="font-size: 0.8rem;">
+            <thead>
+              <tr>
+                <th>Tarix / Vaxt</th>
+                <th>İnzibatçı</th>
+                <th>Əməliyyat</th>
+                <th>Hədəf</th>
+                <th>Təfərrüatlar</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="log : ${recentLogs}">
+                <td style="color: #64748b;" th:text="${log.timestamp != null ? #temporals.format(log.timestamp, 'dd.MM.yyyy HH:mm:ss') : ''}">-</td>
+                <td><strong style="color: #c7d2fe;" th:text="${log.adminUsername}">Admin</strong></td>
+                <td><span class="badge badge-inquiry" th:text="${log.action}">ƏMƏLİYYAT</span></td>
+                <td style="color: #94a3b8;" th:text="${log.targetType + ' #' + log.targetId}">HƏDƏF</td>
+                <td style="color: #cbd5e1;" th:text="${log.details}">Təfərrüat</td>
+              </tr>
+              <tr th:if="${recentLogs == null or recentLogs.empty}">
+                <td colspan="5" style="text-align: center; color: #64748b; padding: 1.5rem;">Heç bir audit qeydi tapılmadı.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="inq-table-card" id="inquiryPanelMessagesSection" style="margin-top: 2rem; padding: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="margin: 0; font-size: 1.08rem; font-weight: 800; color: #c084fc; display: flex; align-items: center; gap: 8px;">
+          <span>💬 Panellərarası Daxili Mesajlaşma (Feedback)</span>
+        </h3>
+      </div>
+      <div>
+        <form th:action="@{/panel-messages/send}" method="POST" autocomplete="off" style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;">
+          <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+          <input type="hidden" name="fromPanel" value="INQUIRY" />
+          <input type="hidden" name="redirectTo" value="/admin/inquiry" />
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div>
+              <label for="inqMsgToPanel" style="display: block; font-size: 0.78rem; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">HANSİ PANELƏ GÖNDƏRİLSİN</label>
+              <select id="inqMsgToPanel" name="toPanel" class="form-ctrl" required style="margin-bottom: 0;">
+                <option value="SECURITY">Security Paneli (Təhlükəsizlik)</option>
+                <option value="TREASURY">Xəzinədar Paneli (Treasury)</option>
+                <option value="ADMIN">Admin Panel</option>
+              </select>
+            </div>
+            <div>
+              <label for="inqMsgSubject" style="display: block; font-size: 0.78rem; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">MÖVZU / BAŞLIQ</label>
+              <input id="inqMsgSubject" type="text" name="subject" class="form-ctrl" required maxlength="140" placeholder="Məsələn: Müştəri şikayəti üzrə sorğu" style="margin-bottom: 0;">
+            </div>
+          </div>
+
+          <div style="margin-bottom: 0.75rem;">
+            <label for="inqMsgBody" style="display: block; font-size: 0.78rem; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">İZAH / TƏLİMAT MESAJI</label>
+            <textarea id="inqMsgBody" name="message" class="form-ctrl" rows="2" required placeholder="Qarşı tərəfin nə etməli olduğunu və ya əlavə qeydinizi yazın..." style="margin-bottom: 0; resize: vertical;"></textarea>
+          </div>
+
+          <button type="submit" class="btn-act" style="padding: 9px 18px; background: linear-gradient(135deg, #4f46e5, #0284c7); color: #ffffff; border: none; font-weight: 700; border-radius: 8px; cursor: pointer;">
+            Daxili Mesajı Göndər
+          </button>
+        </form>
+
+        <div class="table-responsive" style="max-height: 360px; overflow-y: auto;">
+          <table class="inq-table">
+            <thead>
+              <tr>
+                <th>Tarix</th>
+                <th>Kimdən</th>
+                <th>Kimə</th>
+                <th>Mövzu &amp; İzah / Təlimat</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="pm : ${panelMessages}">
+                <td style="color: #94a3b8; white-space: nowrap; font-size: 0.82rem;" th:text="${pm.createdAt != null ? #temporals.format(pm.createdAt, 'dd.MM.yyyy HH:mm') : '—'}">-</td>
+                <td>
+                  <span th:if="${pm.fromPanel == 'ADMIN'}" class="badge" style="background: rgba(245, 158, 11, 0.18); color: #fbbf24;">Admin Panel</span>
+                  <span th:if="${pm.fromPanel == 'SECURITY'}" class="badge" style="background: rgba(56, 189, 248, 0.18); color: #38bdf8;">Security Paneli</span>
+                  <span th:if="${pm.fromPanel == 'INQUIRY'}" class="badge badge-inquiry">Sorğu Paneli</span>
+                  <span th:if="${pm.fromPanel == 'TREASURY'}" class="badge" style="background: rgba(16, 185, 129, 0.18); color: #34d399;">Xəzinədar Paneli</span>
+                  <div style="color: #64748b; font-size: 0.75rem; margin-top: 2px;" th:text="${pm.senderUsername != null ? '@' + pm.senderUsername : ''}">@user</div>
+                </td>
+                <td>
+                  <span th:if="${pm.toPanel == 'ADMIN'}" class="badge" style="background: rgba(245, 158, 11, 0.18); color: #fbbf24;">Admin Panel</span>
+                  <span th:if="${pm.toPanel == 'SECURITY'}" class="badge" style="background: rgba(56, 189, 248, 0.18); color: #38bdf8;">Security Paneli</span>
+                  <span th:if="${pm.toPanel == 'INQUIRY'}" class="badge badge-inquiry">Sorğu Paneli</span>
+                  <span th:if="${pm.toPanel == 'TREASURY'}" class="badge" style="background: rgba(16, 185, 129, 0.18); color: #34d399;">Xəzinədar Paneli</span>
+                </td>
+                <td>
+                  <strong style="color: #fff; display: block;" th:text="${pm.subject}">Mövzu</strong>
+                  <div style="color: #cbd5e1; white-space: pre-wrap; margin-top: 4px; font-size: 0.82rem;" th:text="${pm.message}">Mesaj</div>
+                </td>
+              </tr>
+              <tr th:if="${panelMessages == null or panelMessages.empty}">
+                <td colspan="4" style="text-align: center; color: #94a3b8; padding: 1.5rem;">Hələ ki panellərarası daxili mesaj yoxdur.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modal-overlay" id="forwardModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">📤 Müraciəti Digər Panelə Yönləndir</h3>
+        <button class="modal-close" onclick="closeForwardModal()">&times;</button>
+      </div>
+      <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1rem;">
+        Müştəri: <strong id="forwardCustomerName" style="color: #fff;">-</strong><br>
+        Mövzu: <span id="forwardSubject" style="color: #a5b4fc;">-</span>
+      </p>
+      <form id="forwardForm" method="POST" autocomplete="off">
+        <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+        <label style="display: block; font-size: 0.82rem; color: #cbd5e1; margin-bottom: 6px; font-weight: 600;">Yönləndiriləcək Panel:</label>
+        <select name="targetPanel" class="form-ctrl" style="margin-bottom: 1rem;" required>
+          <option value="SECURITY">🛡️ Security (Təhlükəsizlik) Paneli</option>
+          <option value="ADMIN">🏦 Admin Panel</option>
+        </select>
+        <label style="display: block; font-size: 0.82rem; color: #cbd5e1; margin-bottom: 6px; font-weight: 600;">Qeyd / Təlimat Mesajı (Qarşı tərəf nə etməlidir?):</label>
+        <textarea name="forwardNote" id="forwardNoteInput" class="form-ctrl" rows="4" placeholder="Məsələn: Zəhmət olmasa müştərinin kart limitini yoxlayın və ya hesabı yoxlayıb təsdiq edin..." required></textarea>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn-act" style="background: rgba(255,255,255,0.08); color: #cbd5e1;" onclick="closeForwardModal()">Ləğv et</button>
+          <button type="submit" class="btn-act btn-sec-forward" style="padding: 0.6rem 1.25rem; font-size: 0.85rem;">Yönləndir və Mesaj Göndər</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="replyModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">✉️ Müraciətə Rəsmi Cavab Göndər</h3>
+        <button class="modal-close" onclick="closeReplyModal()">&times;</button>
+      </div>
+
+      <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.25rem;">
+        Müştəri: <strong id="replyCustomerName" style="color: #fff;">-</strong><br>
+        Mövzu: <span id="replySubject" style="color: #a5b4fc;">-</span>
+      </p>
+
+      <form id="replyForm" method="POST" autocomplete="off">
+        <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+
+        <label style="display: block; font-size: 0.82rem; color: #cbd5e1; margin-bottom: 6px; font-weight: 600;">Rəsmi Bank Cavabı / Qeyd:</label>
+        <textarea name="adminReply" class="form-ctrl" rows="5" placeholder="Müştərinin panelində dərhal görünəcək cavab mətnini yazın..." required></textarea>
+
+        <label style="display: block; font-size: 0.82rem; color: #cbd5e1; margin-bottom: 6px; font-weight: 600;">Cavabdan sonrakı status:</label>
+        <select name="newStatus" class="form-ctrl" style="margin-bottom: 1.5rem;">
+          <option value="ANSWERED" selected>Cavablandırıldı (ANSWERED)</option>
+          <option value="RESOLVED">Tam Həll Edildi (RESOLVED)</option>
+          <option value="IN_REVIEW">Baxılır (IN_REVIEW)</option>
+        </select>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-act" style="background: rgba(255,255,255,0.1); color: #cbd5e1;" onclick="closeReplyModal()">İmtina</button>
+          <button type="submit" class="btn-act" style="background: linear-gradient(135deg, #4f46e5, #6366f1); color: #fff;">
+            ✉️ Cavabı Müştəriyə Çatdır
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="secCodeModal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: #0f172a; border: 1.5px solid rgba(56, 189, 248, 0.45); border-radius: 16px; width: 100%; max-width: 440px; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); position: relative; text-align: center;">
+      <button type="button" onclick="closeSecurityCodeModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+      
+      <div style="width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #0284c7, #6366f1); margin: 0 auto 1.25rem auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0 0 0.5rem 0;">Təhlükəsizlik Mərkəzinə Giriş</h3>
+      <p style="color: #94a3b8; font-size: 0.85rem; margin: 0 0 1.5rem 0;">
+        Təhlükəsizlik stansiyasını açmaq üçün məxfi şöbə kodunu daxil edin.
+      </p>
+
+      <form th:action="@{/admin/security/verify}" method="POST" id="inqSecForm" autocomplete="off">
+        <input type="hidden" name="_csrf" th:value="${_csrf?.token}">
+        
+        <div style="margin-bottom: 1.25rem; text-align: left;">
+          <label for="inqSecCodeInput" style="display: block; font-size: 0.78rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px; text-transform: uppercase;">
+            Məxfi Təhlükəsizlik Kodu
+          </label>
+          <div style="position: relative;">
+            <input type="password" id="inqSecCodeInput" name="securityCode" required placeholder="Təhlükəsizlik kodunu daxil edin..." autocomplete="current-password"
+                   style="width: 100%; box-sizing: border-box; background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 10px; padding: 12px 42px 12px 14px; color: #fff; font-size: 0.95rem; outline: none;">
+            <button type="button" onclick="toggleInqSecCode()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94a3b8; padding: 4px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" style="width: 100%; background: linear-gradient(135deg, #0284c7, #4f46e5); color: #fff; border: none; font-weight: 800; font-size: 0.95rem; padding: 12px; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); margin-bottom: 0.85rem;">
+          Təsdiqlə və Daxil Ol &rarr;
+        </button>
+
+        <a th:href="@{/admin/security}" style="font-size: 0.8rem; color: #38bdf8; text-decoration: underline;">
+          və ya birbaşa səhifəyə keçin &rarr;
+        </a>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function openReplyModal(btn) {
+      if (!btn || !btn.dataset) return;
+      const inquiryId = btn.dataset.id;
+      const customerName = btn.dataset.customer || 'Müştəri';
+      const subject = btn.dataset.subject || 'Müraciət';
+      document.getElementById('replyCustomerName').innerText = customerName;
+      document.getElementById('replySubject').innerText = subject;
+      document.getElementById('replyForm').action = '/admin/inquiry/' + inquiryId + '/reply';
+      document.getElementById('replyModal').classList.add('active');
+    }
+    function closeReplyModal() {
+      document.getElementById('replyModal').classList.remove('active');
+    }
+
+    function openSecurityCodeModal() {
+      const modal = document.getElementById('secCodeModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        setTimeout(() => {
+          const inp = document.getElementById('inqSecCodeInput');
+          if (inp) { inp.value = ''; inp.focus(); }
+        }, 60);
+      }
+    }
+    function closeSecurityCodeModal() {
+      const modal = document.getElementById('secCodeModal');
+      if (modal) modal.style.display = 'none';
+    }
+    function toggleInqSecCode() {
+      const inp = document.getElementById('inqSecCodeInput');
+      if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+    }
+
+    window.onclick = function(e) {
+      if (e.target.classList && e.target.classList.contains('modal-overlay')) {
+        e.target.classList.remove('active');
+      }
+      const secModal = document.getElementById('secCodeModal');
+      if (e.target === secModal) {
+        closeSecurityCodeModal();
+      }
+    };
+
+    function openForwardModal(btn) {
+      if (!btn || !btn.dataset) return;
+      const inquiryId = btn.dataset.id;
+      const customerName = btn.dataset.customer || 'Müştəri';
+      const subject = btn.dataset.subject || 'Müraciət';
+      document.getElementById('forwardCustomerName').textContent = customerName;
+      document.getElementById('forwardSubject').textContent = subject;
+      document.getElementById('forwardForm').action = '/admin/inquiry/' + inquiryId + '/forward';
+      const noteEl = document.getElementById('forwardNoteInput');
+      if (noteEl) noteEl.value = '';
+      document.getElementById('forwardModal').classList.add('active');
+    }
+
+    function closeForwardModal() {
+      document.getElementById('forwardModal').classList.remove('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('inqNavSecBtn');
+      if (btn) {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          openSecurityCodeModal();
+        });
+      }
+    });
+  </script>
+  <script th:src="@{/js/no-autocomplete-stay.js}" src="/js/no-autocomplete-stay.js"></script>
+</body>
+</html>
+

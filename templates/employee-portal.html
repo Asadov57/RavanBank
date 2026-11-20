@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>İşçi Portalı &bull; AsadovBank</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin-dark.css" th:href="@{/css/admin-dark.css}">
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #0f172a 60%, #020617 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: #f8fafc;
+      margin: 0;
+    }
+    .portal-nav {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .portal-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .portal-container {
+      max-width: 1120px;
+      margin: 2.5rem auto;
+      padding: 0 1.5rem;
+      flex: 1;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .portal-card {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+    .portal-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #6366f1, #a855f7, #3b82f6);
+    }
+    .status-banner {
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      margin-bottom: 1.75rem;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .banner-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+    .banner-warning {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fcd34d;
+    }
+    .banner-success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #6ee7b7;
+    }
+
+    .emp-overview-row {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 1.5rem;
+      align-items: stretch;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 860px) {
+      .emp-overview-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .emp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 1.65rem;
+      align-content: center;
+    }
+    .emp-metric-label {
+      font-size: 0.76rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .emp-metric-val {
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .neobank-card {
+      background: linear-gradient(135deg, #1e1b4b 0%, #1d4ed8 52%, #4338ca 100%);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 20px;
+      padding: 1.75rem 2rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.6), 0 0 25px rgba(59, 130, 246, 0.25);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 215px;
+      box-sizing: border-box;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .neobank-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 24px 40px -10px rgba(15, 23, 42, 0.7), 0 0 30px rgba(99, 102, 241, 0.35);
+    }
+    .neobank-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -15%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(255, 255, 255, 0) 70%);
+      pointer-events: none;
+    }
+    .neobank-card::after {
+      content: '';
+      position: absolute;
+      bottom: -45%;
+      left: 15%;
+      width: 240px;
+      height: 240px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.28) 0%, rgba(255, 255, 255, 0) 70%);
+      pointer-events: none;
+    }
+    .neobank-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+    .neobank-balance-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.82);
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .neobank-currency-badge {
+      background: rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 0.28rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+    }
+    .neobank-amount-wrap {
+      position: relative;
+      z-index: 2;
+      margin: 1.15rem 0;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+    .neobank-currency-symbol {
+      font-size: 2rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.88);
+    }
+    .neobank-balance-number {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      color: #ffffff;
+    }
+    .neobank-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      padding-top: 0.95rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .neobank-account-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .neobank-account-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .neobank-account-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      color: #fff;
+    }
+    .neobank-copy-btn {
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      cursor: pointer;
+      padding: 4px 9px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .neobank-copy-btn:hover {
+      background: rgba(255, 255, 255, 0.28);
+    }
+    .neobank-card-network {
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: rgba(255, 255, 255, 0.92);
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-label {
+      display: block;
+      font-weight: 600;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+    .form-control {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 0.85rem 1.2rem;
+      color: #fff;
+      font-size: 1rem;
+      box-sizing: border-box;
+      transition: all 0.2s;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #818cf8;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+    }
+    .btn-submit {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: #fff;
+      border: none;
+      padding: 0.9rem 1.75rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+    }
+    .dept-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .badge-security {
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+    .badge-inquiry {
+      background: rgba(168, 85, 247, 0.2);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="portal-nav">
+    <div class="portal-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+        <line x1="8" y1="21" x2="16" y2="21"></line>
+        <line x1="12" y1="17" x2="12" y2="21"></line>
+      </svg>
+      <span>Asadov<span style="color: #818cf8;">Bank</span> &bull; İşçi Portalı</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <a th:href="@{/card}" href="/card" style="background: linear-gradient(135deg, #4f46e5, #6366f1); color: #ffffff; border: 1px solid rgba(129, 140, 248, 0.45); padding: 6px 14px; border-radius: 8px; font-size: 0.84rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+          <line x1="2" y1="10" x2="22" y2="10"></line>
+        </svg>
+        <span>Bank Kartım / View Card</span>
+      </a>
+      <span style="color: #94a3b8; font-size: 0.88rem; font-weight: 600;" th:if="${employee != null}" th:text="${employee.fullName}">Əməkdaş</span>
+      <form th:action="@{/logout}" method="POST" style="margin: 0;">
+        <input type="hidden" name="_csrf" th:value="${_csrf?.token}">
+        <button type="submit" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">Çıxış</button>
+      </form>
+    </div>
+  </nav>
+
+  <div class="portal-container">
+
+    <div th:if="${errorMessage}" class="status-banner banner-danger">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <span th:text="${errorMessage}">Giriş xətası</span>
+    </div>
+
+    <div th:if="${successMessage}" class="status-banner banner-success">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      <span th:text="${successMessage}">Əməliyyat uğurla tamamlandı</span>
+    </div>
+
+    <div th:if="${isBlocked}" class="portal-card" style="border-color: rgba(239, 68, 68, 0.4);">
+      <div style="text-align: center; padding: 2rem 1rem;">
+        <div style="width: 64px; height: 64px; background: rgba(239, 68, 68, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; color: #ef4444;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <h2 style="color: #fff; margin: 0 0 0.75rem 0;">İş Stansiyasına Giriş Bloklanıb</h2>
+        <p style="color: #94a3b8; max-width: 500px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+          Bank İdarəetməsi tərəfindən işçi hesabınız <strong style="color: #fca5a5;">BLOKLANIB</strong>. Şöbə stansiyalarına daxil ola bilməzsiniz. Zəhmət olmasa Administrator və ya Təhlükəsizlik əməkdaşları ilə əlaqə saxlayın.
+        </p>
+      </div>
+    </div>
+
+    <div th:if="${isPending}" class="portal-card" style="border-color: rgba(245, 158, 11, 0.4);">
+      <div style="text-align: center; padding: 2rem 1rem;">
+        <div style="width: 64px; height: 64px; background: rgba(245, 158, 11, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; color: #f59e0b;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <h2 style="color: #fff; margin: 0 0 0.75rem 0;">Müraciətə Baxılır</h2>
+        <p style="color: #94a3b8; max-width: 550px; margin: 0 auto 1.5rem auto; line-height: 1.5;" th:text="${statusMessage}">
+          İşçi qeydiyyatınız hazırda Administrator təsdiqi gözləyir.
+        </p>
+      </div>
+    </div>
+
+    <div th:if="${isApproved and not isBlocked}" class="portal-card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="margin: 0 0 6px 0; color: #fff; font-size: 1.5rem;">Əməkdaş İş Stansiyası Terminalı</h2>
+          <p th:if="${hasWorkstationPanel}" style="margin: 0; color: #94a3b8; font-size: 0.9rem;">Əməliyyat panelinə daxil olmaq üçün şöbə təhlükəsizlik kodunuzu daxil edin.</p>
+          <p th:unless="${hasWorkstationPanel}" style="margin: 0; color: #94a3b8; font-size: 0.9rem;">Şəxsi işçi profiliniz və əməkdaş bank kartınız.</p>
+        </div>
+        <span th:if="${normalizedDept == 'Security'}" class="dept-badge badge-security">Security / Təhlükəsizlik Stansiyası</span>
+        <span th:if="${normalizedDept == 'Inquiry'}" class="dept-badge badge-inquiry">Inquiry / Sorğu Stansiyası</span>
+        <span th:if="${normalizedDept == 'Treasury'}" class="dept-badge" style="background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35);">Xəzinədar / Treasury Stansiyası</span>
+        <span th:unless="${hasWorkstationPanel}" class="dept-badge" style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3);" th:text="${employee.position != null and !employee.position.empty ? employee.position : employee.department}">Vəzifə</span>
+      </div>
+
+      <div class="emp-overview-row">
+
+        <div class="emp-grid">
+          <div>
+            <div class="emp-metric-label">Əməkdaşın Adı</div>
+            <div class="emp-metric-val" th:text="${employee.fullName}">Əməkdaş</div>
+          </div>
+          <div>
+            <div class="emp-metric-label">İşçi ID</div>
+            <div class="emp-metric-val" style="font-family: 'JetBrains Mono', monospace;" th:text="${employee.employeeId}">EMP-001</div>
+          </div>
+          <div>
+            <div class="emp-metric-label">Təyin Olunmuş Şöbə</div>
+            <div class="emp-metric-val">
+              <span th:text="${employee.department}">Sorğu</span>
+            </div>
+          </div>
+          <div>
+            <div class="emp-metric-label">Əməliyyat Statusu</div>
+            <div class="emp-metric-val" style="color: #34d399;">AKTİV</div>
+          </div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, rgba(30, 27, 75, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%); border: 1px solid rgba(99, 102, 241, 0.38); border-radius: 18px; padding: 1.65rem 1.85rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <span style="font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #a5b4fc; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                <span>Əməkdaş Bank Kartı</span>
+              </span>
+              <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 9999px; font-size: 0.72rem; font-weight: 700;">VISA DEBIT</span>
+            </div>
+            <h3 style="margin: 0 0 0.45rem 0; font-size: 1.2rem; font-weight: 800; color: #fff;">Şəxsi Bank Kartım</h3>
+            <p style="margin: 0 0 1.15rem 0; color: #94a3b8; font-size: 0.86rem; line-height: 1.45;">
+              Şəxsi bank kartınızı, cari balansınızı və 16 rəqəmli kart məlumatlarınızı ayrı pəncərədə görüntüləyin.
+            </p>
+          </div>
+          <div style="display: flex; justify-content: flex-end; padding-top: 0.85rem; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+            <a th:href="@{/card}" href="/card" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #ffffff; padding: 0.65rem 1.35rem; border-radius: 10px; font-size: 0.88rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <line x1="2" y1="10" x2="22" y2="10"></line>
+              </svg>
+              <span>Bank Kartım / View Card &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <form th:if="${hasWorkstationPanel}" th:action="@{/employee/portal/verify-code}" method="POST" style="margin-top: 1.5rem;">
+        <input type="hidden" name="_csrf" th:value="${_csrf?.token}">
+
+        <div class="form-group">
+          <label for="deptCode" class="form-label">
+            <span>Şöbə Giriş Kodu</span>
+            <small style="color: #94a3b8; font-weight: 400; margin-left: 8px;">(İş stansiyasını aktivləşdirmək üçün vacibdir)</small>
+          </label>
+          <div style="position: relative;">
+            <input type="password" id="deptCode" name="departmentCode" class="form-control" placeholder="Şöbə giriş kodunu daxil edin..." style="padding-right: 42px;" required autocomplete="off">
+            <button type="button" onclick="togglePortalDeptCode()" title="Kodu göstər / gizlət" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94a3b8; padding: 4px; display: inline-flex; align-items: center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div style="background: rgba(30, 27, 75, 0.4); border: 1px solid rgba(129, 140, 248, 0.2); border-radius: 10px; padding: 12px 16px; margin-bottom: 1.5rem; font-size: 0.82rem; color: #cbd5e1; line-height: 1.45;">
+          <strong style="color: #f59e0b;">⚠️ Təhlükəsizlik Protokolu Qeydi:</strong>
+          Security, Sorğu və Xəzinədar əməkdaşları yalnız öz şöbələrinə məxsus giriş kodunu daxil edə bilər.
+          Başqa şöbənin kodunu daxil etdikdə və ya 5 dəfə yanlış cəhd edildikdə giriş dərhal bloklanır və Təhlükəsizlik şöbəsinə bildiriş göndərilir.
+        </div>
+
+        <button type="submit" class="btn-submit">
+          <span>Təsdiqlə &amp; İş Stansiyasını Başlat &rarr;</span>
+        </button>
+      </form>
+
+      <div th:if="${hasWorkstationPanel and stationVerified}" style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.5rem;">
+        <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.75rem;">Aktiv Sessiya Stansiyası:</div>
+        <a th:if="${normalizedDept == 'Security'}" th:href="@{/admin/security}" style="display: inline-block; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 8px 18px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.9rem;">
+          &rarr; Security / Təhlükəsizlik Mərkəzinə Keçid
+        </a>
+        <a th:if="${normalizedDept == 'Inquiry'}" th:href="@{/admin/inquiry}" style="display: inline-block; background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); padding: 8px 18px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.9rem;">
+          &rarr; Inquiry / Sorğu Stansiyasına Keçid
+        </a>
+        <a th:if="${normalizedDept == 'Treasury'}" th:href="@{/admin/treasury}" style="display: inline-block; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 8px 18px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.9rem;">
+          &rarr; Xəzinədar / Treasury Panelinə Keçid
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    function togglePortalDeptCode() {
+      const inp = document.getElementById('deptCode');
+      if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+    }
+    function copyEmployeeCardNumber(btn) {
+      const accNum = btn.getAttribute('data-account-number') || '';
+      const textSpan = document.getElementById('copyEmpCardText');
+      if (navigator.clipboard && accNum) {
+        navigator.clipboard.writeText(accNum.replace(/\s+/g, '')).then(() => {
+          if (textSpan) textSpan.textContent = 'Copied!';
+          setTimeout(() => {
+            if (textSpan) textSpan.textContent = 'Copy';
+          }, 1800);
+        });
+      }
+    }
+  </script>
+  <script th:src="@{/js/no-autocomplete-stay.js}" src="/js/no-autocomplete-stay.js"></script>
+</body>
+</html>

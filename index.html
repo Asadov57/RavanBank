@@ -3,26 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Customer Dashboard | Nexus Neo-Bank</title>
-  <meta name="description" content="Modern Neo-Bank customer dashboard for account management, deposits, withdrawals, and transaction tracking.">
+  <title>Customer Dashboard | AsadovBank</title>
+  <meta name="description" content="Modern AsadovBank customer dashboard for account management, deposits, withdrawals, and transaction tracking.">
   
-  <!-- Modern Typography: Google Fonts Plus Jakarta Sans -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- Stylesheet (Linked for standalone preview & Spring Boot static resources: th:href="@{/css/styles.css}") -->
+
   <link rel="stylesheet" href="css/styles.css" th:href="@{/css/styles.css}">
 </head>
-<body>
+<body
+  th:data-error="${errorMessage}"
+  th:data-success="${successMessage}">
   <div class="app-container">
 
-    <!-- ====================================================================
-         Top Navigation Bar
-         ==================================================================== -->
     <header class="top-navbar">
       <div class="nav-inner">
-        <!-- Brand / Logo -->
+
         <div class="brand-wrapper">
           <div class="brand-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -34,11 +33,10 @@
               <path d="M15 14h.01"></path>
             </svg>
           </div>
-          <span class="brand-name">Nexus<span style="font-weight: 400; opacity: 0.85;">Bank</span></span>
+          <span class="brand-name">Asadov<span style="font-weight: 400; opacity: 0.85;">Bank</span></span>
           <span class="brand-badge">Retail</span>
         </div>
 
-        <!-- Customer Profile & Session Actions -->
         <div class="nav-user-meta">
           <div class="account-pill">
             <div class="avatar-badge" th:text="${#strings.substring(customerName ?: 'Alexander Wright', 0, 2)}">AW</div>
@@ -48,35 +46,27 @@
             </div>
           </div>
 
-          <!-- Spring Security Logout Form Hook -->
           <form action="/logout" th:action="@{/logout}" method="POST" style="display: inline;">
-            <!-- Spring Security CSRF Token Placeholder -->
+
             <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="mock-csrf" />
-            <button type="submit" class="logout-btn" title="Sign out of account">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button type="submit" class="logout-btn" title="Sign out of account" style="background: #ffffff !important; color: #0f172a !important; border: 1.5px solid #cbd5e1 !important;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
                 <line x1="21" y1="12" x2="9" y2="12"></line>
               </svg>
-              <span>Logout</span>
+              <span style="color: #0f172a !important; font-weight: 700;">Logout</span>
             </button>
           </form>
         </div>
       </div>
     </header>
 
-    <!-- ====================================================================
-         Main Dashboard Content Area
-         ==================================================================== -->
     <main class="dashboard-main">
 
-      <!-- ==================================================================
-           Server-Side Flash Message Banners (Thymeleaf Model Attributes)
-           e.g. redirectAttributes.addFlashAttribute("successMessage", "...")
-           ================================================================== -->
       <section class="flash-message-container" aria-label="Notifications">
         
-        <!-- Success Alert (Shown when successMessage is present) -->
+
         <div class="alert-banner alert-success" th:if="${successMessage != null}" id="successAlert">
           <div class="alert-content">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -88,23 +78,8 @@
           <button type="button" class="alert-close" aria-label="Dismiss alert">&times;</button>
         </div>
 
-        <!-- Error Alert (Shown when errorMessage is present) -->
-        <!-- Thymeleaf sample: <div class="alert-banner alert-danger" th:if="${errorMessage != null}"> -->
-        <div class="alert-banner alert-danger" th:if="${errorMessage != null}" style="display: none;" id="errorAlert">
-          <div class="alert-content">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <span th:text="${errorMessage}">Transaction failed. Insufficient funds or invalid amount entered.</span>
-          </div>
-          <button type="button" class="alert-close" aria-label="Dismiss alert">&times;</button>
-        </div>
-
       </section>
 
-      <!-- Dashboard Greeting & Account Status Header -->
       <section class="dashboard-header">
         <div class="header-title-area">
           <h1>Account Overview</h1>
@@ -118,12 +93,9 @@
         </div>
       </section>
 
-      <!-- ==================================================================
-           SECTION 1: Total Balance & Quick Metrics
-           ================================================================== -->
       <section class="overview-grid" aria-label="Balance Overview">
         
-        <!-- Primary Balance Hero Card -->
+
         <div class="balance-card">
           <div class="balance-card-header">
             <div class="balance-label">
@@ -138,7 +110,7 @@
 
           <div class="balance-amount-wrap">
             <span class="balance-currency-symbol">$</span>
-            <!-- Formatted via Thymeleaf #numbers.formatDecimal if present, fallback to static mock -->
+
             <span class="balance-number" th:text="${#numbers.formatDecimal(account != null ? account.balance : 124580.45, 1, 'COMMA', 2, 'POINT')}">124,580.45</span>
           </div>
 
@@ -164,9 +136,8 @@
           </div>
         </div>
 
-        <!-- Quick Metrics Overview -->
         <div class="metrics-column">
-          <!-- Metric: Inflow / Deposits -->
+
           <div class="metric-card">
             <div class="metric-info">
               <span class="metric-title">Monthly Deposits</span>
@@ -187,7 +158,6 @@
             </div>
           </div>
 
-          <!-- Metric: Outflow / Withdrawals -->
           <div class="metric-card">
             <div class="metric-info">
               <span class="metric-title">Monthly Withdrawals</span>
@@ -211,10 +181,6 @@
 
       </section>
 
-      <!-- ==================================================================
-           SECTION 2: Account Actions (Forms - Deposit & Withdraw)
-           Two distinct standard HTML <form> elements with standard HTTP POST
-           ================================================================== -->
       <section aria-labelledby="quickActionsHeading">
         <div class="section-title-wrap">
           <h2 id="quickActionsHeading" class="section-title">
@@ -230,10 +196,6 @@
 
         <div class="actions-grid">
 
-          <!-- ==============================================================
-               FORM 1: Deposit Funds Form
-               Standard HTML form submitting via POST to /account/deposit
-               ============================================================== -->
           <div class="action-card deposit-card">
             <div class="card-badge-header">
               <div class="action-badge-icon">
@@ -247,13 +209,11 @@
               </div>
             </div>
 
-            <!-- Standard HTTP Form: /account/deposit -->
             <form action="/account/deposit" th:action="@{/account/deposit}" method="POST" id="depositForm" class="standard-bank-form">
               
-              <!-- Spring Security CSRF Token Hook -->
+
               <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
 
-              <!-- Deposit Amount Field -->
               <div class="form-group">
                 <label for="depositAmount" class="form-label">
                   <span>Deposit Amount</span>
@@ -276,7 +236,6 @@
                 </div>
               </div>
 
-              <!-- Quick Preset Amount Chips (Client-Side Helper) -->
               <div class="form-group">
                 <span class="form-label">Quick Presets</span>
                 <div class="preset-chips-wrap">
@@ -288,7 +247,6 @@
                 </div>
               </div>
 
-              <!-- Optional Reference / Memo Field -->
               <div class="form-group">
                 <label for="depositDescription" class="form-label">
                   <span>Memo / Reference</span>
@@ -304,7 +262,6 @@
                 >
               </div>
 
-              <!-- Submit Button -->
               <button type="submit" id="submitDepositBtn" class="form-submit-btn deposit-btn">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="20 6 9 17 4 12"></polyline>
@@ -322,10 +279,6 @@
             </form>
           </div>
 
-          <!-- ==============================================================
-               FORM 2: Withdraw Funds Form
-               Standard HTML form submitting via POST to /account/withdraw
-               ============================================================== -->
           <div class="action-card withdraw-card">
             <div class="card-badge-header">
               <div class="action-badge-icon">
@@ -341,13 +294,11 @@
               </div>
             </div>
 
-            <!-- Standard HTTP Form: /account/withdraw -->
             <form action="/account/withdraw" th:action="@{/account/withdraw}" method="POST" id="withdrawForm" class="standard-bank-form">
               
-              <!-- Spring Security CSRF Token Hook -->
+
               <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
 
-              <!-- Withdraw Amount Field -->
               <div class="form-group">
                 <label for="withdrawAmount" class="form-label">
                   <span>Withdrawal Amount</span>
@@ -370,7 +321,6 @@
                 </div>
               </div>
 
-              <!-- Quick Preset Amount Chips (Client-Side Helper) -->
               <div class="form-group">
                 <span class="form-label">Quick Presets</span>
                 <div class="preset-chips-wrap">
@@ -382,7 +332,6 @@
                 </div>
               </div>
 
-              <!-- Optional Memo / Destination Field -->
               <div class="form-group">
                 <label for="withdrawDescription" class="form-label">
                   <span>Reason / Memo</span>
@@ -398,7 +347,6 @@
                 >
               </div>
 
-              <!-- Submit Button -->
               <button type="submit" id="submitWithdrawBtn" class="form-submit-btn withdraw-btn">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -420,10 +368,6 @@
         </div>
       </section>
 
-      <!-- ==================================================================
-           SECTION 3: Recent Transactions
-           Responsive data table designed for Thymeleaf iteration (th:each)
-           ================================================================== -->
       <section class="transactions-card" aria-labelledby="txHeading">
         <div class="transactions-card-header">
           <div class="section-title-wrap" style="margin-bottom: 0;">
@@ -436,7 +380,6 @@
             <p class="section-subtitle">Real-time ledger of your incoming deposits and debit withdrawals.</p>
           </div>
 
-          <!-- UI Filter Toggle (Vanilla JS toggle without REST/fetch calls) -->
           <div class="table-filter-pills" role="tablist" aria-label="Transaction Filter">
             <button type="button" class="filter-pill active" data-filter="all">All</button>
             <button type="button" class="filter-pill" data-filter="DEPOSIT">Deposits</button>
@@ -456,46 +399,7 @@
               </tr>
             </thead>
             <tbody>
-              <!-- ==========================================================
-                   THYMELEAF LOOP TEMPLATE INSTRUCTION:
-                   To bind dynamic transactions from Spring Boot Model, uncomment:
-                   
-                   <tr th:each="tx : ${transactions}" th:attr="data-type=${tx.type}">
-                     <td>
-                       <div class="tx-entity-group">
-                         <div class="tx-icon-badge" th:classappend="${tx.type == 'DEPOSIT' ? 'credit' : 'debit'}">
-                           <svg th:if="${tx.type == 'DEPOSIT'}" ...></svg>
-                           <svg th:if="${tx.type == 'WITHDRAWAL'}" ...></svg>
-                         </div>
-                         <div class="tx-details">
-                           <span class="tx-title" th:text="${tx.description}">Direct Deposit</span>
-                           <span class="tx-ref" th:text="'Ref: #' + ${tx.referenceNumber}">Ref: #TX-901</span>
-                         </div>
-                       </div>
-                     </td>
-                     <td>
-                       <span class="tx-type-tag" th:classappend="${tx.type == 'DEPOSIT' ? 'deposit' : 'withdraw'}" th:text="${tx.type}">DEPOSIT</span>
-                     </td>
-                     <td>
-                       <span class="tx-date" th:text="${#temporals.format(tx.timestamp, 'MMM dd, yyyy')}">Oct 08, 2026</span>
-                       <span class="tx-date-time" th:text="${#temporals.format(tx.timestamp, 'hh:mm a')}">10:45 AM</span>
-                     </td>
-                     <td>
-                       <span class="tx-status-badge completed">
-                         <span class="status-dot"></span>
-                         <span th:text="${tx.status}">Completed</span>
-                       </span>
-                     </td>
-                     <td style="text-align: right;">
-                       <span class="tx-amount" th:classappend="${tx.type == 'DEPOSIT' ? 'positive' : 'negative'}"
-                             th:text="${(tx.type == 'DEPOSIT' ? '+$' : '-$') + #numbers.formatDecimal(tx.amount, 1, 'COMMA', 2, 'POINT')}">
-                         +$5,200.00
-                       </span>
-                     </td>
-                   </tr>
-                   ========================================================== -->
 
-              <!-- STATIC MOCK ROWS (Thymeleaf renders these when no server loop is present, or replace with th:each) -->
               <tr data-type="DEPOSIT">
                 <td>
                   <div class="tx-entity-group">
@@ -667,23 +571,43 @@
 
     </main>
 
-    <!-- ====================================================================
-         Footer Section
-         ==================================================================== -->
+    <div class="error-modal-overlay" id="errorModalOverlay" role="dialog" aria-modal="true" aria-labelledby="errorModalTitle">
+      <div class="error-modal">
+
+        <button class="error-modal-close" id="errorModalCloseBtn" aria-label="Close">&times;</button>
+
+        <div class="error-modal-icon-wrap" aria-hidden="true">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+
+        <h2 class="error-modal-title" id="errorModalTitle">Əməliyyat uğursuz oldu</h2>
+
+        <p class="error-modal-message" id="errorModalMessage">Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.</p>
+
+        <span class="error-modal-code" id="errorModalCode" style="display:none;"></span>
+
+        <div class="error-modal-actions">
+          <button class="error-modal-btn-dismiss" id="errorModalDismissBtn">Bağla</button>
+          <button class="error-modal-btn-retry" id="errorModalRetryBtn">Yenidən cəhd et</button>
+        </div>
+
+      </div>
+    </div>
+
     <footer class="app-footer">
       <div class="footer-inner">
-        <div>&copy; 2026 Nexus Neo-Bank Financial Technologies N.A. Member FDIC. Equal Housing Lender.</div>
-        <div style="display: flex; gap: 1rem;">
-          <a href="#" style="text-decoration: underline;">Security & Privacy</a>
-          <a href="#" style="text-decoration: underline;">Terms of Service</a>
-          <a href="#" style="text-decoration: underline;">Support Hotline</a>
-        </div>
+        <div>&copy; 2026 AsadovBank Financial Technologies N.A. Member FDIC. Equal Housing Lender.</div>
       </div>
     </footer>
 
   </div>
 
-  <!-- Minimal Vanilla JavaScript (Toggles & Presets only, no fetch) -->
   <script src="js/dashboard.js" th:src="@{/js/dashboard.js}"></script>
+  <script src="js/no-autocomplete-stay.js" th:src="@{/js/no-autocomplete-stay.js}"></script>
 </body>
 </html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xəzinədar Şöbəsi Girişi | AsadovBank</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: linear-gradient(135deg, #020617, #0f172a, #1e1b4b);
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1.5px solid rgba(245, 158, 11, 0.4);
+      border-radius: 20px;
+      padding: 2.25rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      text-align: center;
+    }
+    .icon-box {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 1.25rem;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.35);
+    }
+    h1 { font-size: 1.35rem; font-weight: 800; margin-bottom: 0.5rem; }
+    p { color: #94a3b8; font-size: 0.86rem; margin-bottom: 1.5rem; }
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-size: 0.84rem;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    .alert-err { background: rgba(239, 68, 68, 0.18); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; }
+    .alert-ok { background: rgba(16, 185, 129, 0.18); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; }
+    .form-input {
+      width: 100%;
+      background: rgba(2, 6, 23, 0.85);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      margin-bottom: 1.25rem;
+    }
+    .btn-login {
+      width: 100%;
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      color: #020617;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="icon-box">🏦</div>
+    <h1>Xəzinədar Şöbəsi (Treasury)</h1>
+    <p>Maliyyə axınları, maaş ödənişləri və kredit rəsmiləşdirmə panelinə daxil olmaq üçün Xəzinədar kodunu daxil edin.</p>
+
+    <div th:if="${errorMessage}" class="alert alert-err" th:text="${errorMessage}">Xəta</div>
+    <div th:if="${successMessage}" class="alert alert-ok" th:text="${successMessage}">Uğurlu</div>
+
+    <form th:action="@{/admin/treasury/verify}" method="POST" autocomplete="off">
+      <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
+      <div style="position: relative; margin-bottom: 1.25rem;">
+        <input type="password" id="treasuryCodeInput" name="treasuryCode" class="form-input" placeholder="Xəzinədar giriş kodunu daxil edin..." required autofocus style="margin-bottom: 0; padding-right: 42px;" />
+        <button type="button" onclick="toggleTreasuryCode()" title="Kodu göstər / gizlət" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94a3b8; padding: 4px; display: inline-flex; align-items: center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+      </div>
+      <button type="submit" class="btn-login">Təsdiqlə və Daxil Ol</button>
+    </form>
+  </div>
+  <script>
+    function toggleTreasuryCode() {
+      const inp = document.getElementById('treasuryCodeInput');
+      if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+    }
+  </script>
+  <script th:src="@{/js/no-autocomplete-stay.js}" src="/js/no-autocomplete-stay.js"></script>
+</body>
+</html>

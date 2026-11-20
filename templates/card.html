@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bank Kartım &amp; Vəsait İdarəetməsi | AsadovBank</title>
+  <meta name="description"
+    content="AsadovBank digital card, available balance, monthly deposits & withdrawals, and instant funds management.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" th:href="@{/css/styles.css}" href="/css/styles.css">
+  <style>
+    .btn-back-panel {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--primary-50);
+      border: 1px solid var(--primary-100);
+      color: var(--primary-700);
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.18s ease;
+    }
+
+    .btn-back-panel:hover {
+      background: var(--primary-600);
+      border-color: var(--primary-600);
+      color: #ffffff;
+      transform: translateX(-2px);
+    }
+
+    .manage-card-dark-input .form-label {
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+
+<body th:data-error="${errorMessage}" th:data-success="${successMessage}">
+  <div class="app-container">
+
+    <header class="top-navbar">
+      <div class="nav-inner">
+
+        <a th:href="@{${backUrl ?: '/dashboard'}}" class="brand-wrapper">
+          <div class="brand-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+              <line x1="2" y1="10" x2="22" y2="10"></line>
+            </svg>
+          </div>
+          <span class="brand-name">Asadov<span style="font-weight: 400; opacity: 0.85;">Bank</span></span>
+          <span class="brand-badge">Digital Card &amp; Funds</span>
+        </a>
+
+        <div class="nav-user-meta">
+          <a href="#cardFeedbackSection" style="background: #fee2e2; color: #b91c1c; border: 1.5px solid #ef4444; padding: 0.5rem 0.95rem; border-radius: 10px; font-size: 0.84rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.18);">
+            <span>💬 Rəy, İrad və Təkliflər</span>
+          </a>
+
+          <a th:href="@{${backUrl ?: '/dashboard'}}" class="btn-back-panel">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span th:text="${backLabel ?: 'Əsas Panelə Qayıt'}">Əsas Panelə Qayıt</span>
+          </a>
+
+          <div class="account-pill">
+            <div class="avatar-badge"
+              th:text="${customerName != null and #strings.length(customerName) >= 2 ? #strings.substring(customerName, 0, 2).toUpperCase() : 'RB'}">RB</div>
+            <div class="user-text-info">
+              <span class="user-name" th:text="${customerName ?: 'İstifadəçi'}">İstifadəçi</span>
+              <span class="user-id" th:text="${customerId ?: '@user'}">@user</span>
+            </div>
+          </div>
+
+          <form action="/logout" th:action="@{/logout}" method="POST" style="display: inline;">
+            <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="mock-csrf" />
+            <button type="submit" class="logout-btn" title="Sign out of account">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span>Logout</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+
+      <section class="flash-message-container" aria-label="Notifications">
+        <div class="alert-banner alert-success" th:if="${successMessage != null}" id="successAlert">
+          <div class="alert-content">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span th:text="${successMessage}">Əməliyyat uğurla tamamlandı!</span>
+          </div>
+          <button type="button" class="alert-close" aria-label="Dismiss alert"
+            onclick="this.parentElement.style.display='none'">&times;</button>
+        </div>
+
+        <div class="alert-banner alert-danger" th:if="${errorMessage != null}" id="errorAlert">
+          <div class="alert-content">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span th:text="${errorMessage}">Əməliyyat zamanı xəta baş verdi.</span>
+          </div>
+          <button type="button" class="alert-close" aria-label="Dismiss alert"
+            onclick="this.parentElement.style.display='none'">&times;</button>
+        </div>
+      </section>
+
+      <section class="dashboard-header">
+        <div class="header-title-area">
+          <h1>Account Overview</h1>
+          <p>Welcome back, <strong th:text="${customerName ?: 'İstifadəçi'}">İstifadəçi</strong>. Here is your current financial standing.</p>
+        </div>
+        <div class="header-actions-area">
+          <div class="status-badge" title="FDIC Insured up to $250,000">
+            <span class="status-dot"></span>
+            <span>Account Active &bull; Verified Tier 1</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="overview-grid" aria-label="Card &amp; Monthly Balance Overview">
+
+        <div class="card-flip-container" id="bankCardFlipContainer" tabindex="0" role="region"
+          aria-label="Digital Bank Card (click to flip)">
+          <div class="card-flip-inner">
+
+            <div class="balance-card card-front">
+              <div class="balance-card-header">
+                <div class="balance-label">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                    <line x1="2" y1="10" x2="22" y2="10"></line>
+                  </svg>
+                  <span>TOTAL AVAILABLE BALANCE</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button type="button" class="flip-toggle-btn"
+                    onclick="event.stopPropagation(); document.getElementById('bankCardFlipContainer').classList.toggle('is-flipped');">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="23 4 23 10 17 10"></polyline>
+                      <polyline points="1 20 1 14 7 14"></polyline>
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    <span>Kartı Çevir (CVV / Nömrə)</span>
+                  </button>
+                  <span class="currency-badge"
+                    th:text="${(account != null and account.currency != null ? account.currency : 'USD') + ' • ' + (account != null and account.accountType != null ? account.accountType : 'CHECKING')}">
+                    USD &bull; CHECKING
+                  </span>
+                </div>
+              </div>
+
+              <div class="balance-amount-wrap">
+                <span class="balance-currency-symbol"
+                  th:text="${account != null ? (account.currency == 'EUR' ? '€' : (account.currency == 'GBP' ? '£' : (account.currency == 'AZN' ? '₼' : '$'))) : '$'}">$</span>
+                <span class="balance-number"
+                  th:text="${#numbers.formatDecimal(account != null and account.balance != null ? account.balance : 0.00, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+              </div>
+
+              <div class="balance-card-footer">
+                <div class="account-num-group">
+                  <span class="account-num-label">Account:</span>
+                  <span class="account-number"
+                    th:text="${account != null ? account.maskedAccountNumber : '**** **** **** 1550'}">**** **** **** 1550</span>
+                  <button type="button" class="copy-btn" id="copyAccountBtn"
+                    th:attr="data-account-number=${account != null ? account.accountNumber : '4098 7056 0000 1550'}"
+                    title="Tam kart nömrəsini kopyala">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span>Copy</span>
+                  </button>
+                </div>
+
+                <div class="card-network">
+                  <svg width="26" height="18" viewBox="0 0 32 20" fill="none">
+                    <circle cx="11" cy="10" r="9" fill="#EA001B" fill-opacity="0.88" />
+                    <circle cx="21" cy="10" r="9" fill="#F79E1B" fill-opacity="0.88" />
+                  </svg>
+                  <span>VISA DEBIT</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="balance-card card-back">
+              <div class="card-back-magnetic-stripe"></div>
+
+              <div class="card-back-header">
+                <div class="card-back-bank-meta">
+                  <span class="card-chip-hologram"></span>
+                  <span>ASADOVBANK GLOBAL DEBIT</span>
+                </div>
+                <button type="button" class="flip-toggle-btn back-flip-btn"
+                  onclick="event.stopPropagation(); document.getElementById('bankCardFlipContainer').classList.remove('is-flipped');">
+                  <span>Ön Üzə Qayıt</span>
+                </button>
+              </div>
+
+              <div class="card-back-number-section">
+                <span class="card-back-field-label">Tam 16 Rəqəmli Kart Nömrəsi</span>
+                <div class="card-back-number-box">
+                  <span class="card-back-number-digits"
+                    th:text="${account != null ? account.formattedCardNumber : '4098 7056 0000 1550'}">4098 7056 0000 1550</span>
+                  <button type="button" class="card-back-copy-btn" id="copyBackCardBtn"
+                    th:attr="data-copy=${account != null ? account.accountNumber : '4098 7056 0000 1550'}">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span>Kopyala</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="card-back-security-grid">
+                <div>
+                  <span class="card-back-field-label">CVV / CVC</span>
+                  <div class="card-back-cvv-pill">
+                    <span th:text="${account != null ? account.cvv : '742'}">742</span>
+                  </div>
+                </div>
+                <div>
+                  <span class="card-back-field-label">Son Tarix (Exp Date)</span>
+                  <div class="card-back-expiry-pill">
+                    <span th:text="${account != null ? account.expiryDate : '08/28'}">08/28</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-back-footer">
+                <span class="card-back-note">AsadovBank Card Services &bull; 24/7 Dəstək: *1188</span>
+                <div class="card-network">
+                  <svg width="24" height="16" viewBox="0 0 32 20" fill="none">
+                    <circle cx="11" cy="10" r="9" fill="#EA001B" fill-opacity="0.88" />
+                    <circle cx="21" cy="10" r="9" fill="#F79E1B" fill-opacity="0.88" />
+                  </svg>
+                  <span>VISA DEBIT</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="metrics-column">
+
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-title">Monthly Deposits</span>
+              <span class="metric-value"
+                th:text="${'+$' + #numbers.formatDecimal(monthlyDepositTotal ?: 0.00, 1, 'COMMA', 2, 'POINT')}">+$0.00</span>
+              <div class="metric-trend positive">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                  <polyline points="17 6 23 6 23 12"></polyline>
+                </svg>
+                <span>Real-time inflow</span>
+              </div>
+            </div>
+            <div class="metric-icon-wrap deposit-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"></line>
+                <polyline points="5 12 12 5 19 12"></polyline>
+              </svg>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-title">Monthly Withdrawals</span>
+              <span class="metric-value"
+                th:text="${'-$' + #numbers.formatDecimal(monthlyWithdrawTotal ?: 0.00, 1, 'COMMA', 2, 'POINT')}">-$0.00</span>
+              <div class="metric-trend negative">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                  <polyline points="17 18 23 18 23 12"></polyline>
+                </svg>
+                <span>Tracked spending</span>
+              </div>
+            </div>
+            <div class="metric-icon-wrap withdraw-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <polyline points="19 12 12 19 5 12"></polyline>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <section aria-labelledby="manageFundsHeading">
+        <div class="section-title-wrap">
+          <h2 id="manageFundsHeading" class="section-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            Manage Funds
+          </h2>
+          <p class="section-subtitle">Perform instant transfers or withdrawals to individuals (Şəxslər) and companies (Şirkətlər).</p>
+        </div>
+
+        <div class="actions-grid actions-grid-single">
+
+          <div class="action-card unified-funds-card manage-card-dark-input" id="unifiedFundsCard">
+            <div class="card-badge-header">
+              <div class="action-badge-icon" id="fundsHeaderIcon" style="background: rgba(99, 102, 241, 0.16); color: #6366f1;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 1l4 4-4 4"></path>
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                  <path d="M7 23l-4-4 4-4"></path>
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                </svg>
+              </div>
+              <div class="action-card-headings">
+                <h2 id="fundsCardTitle">Pul Göndərmə (Transfer)</h2>
+                <p id="fundsCardSubtitle">Şəxslərə və ya Şirkətlərə təhlükəsiz pul köçürməsi</p>
+              </div>
+            </div>
+
+            <div class="op-tab-group" role="tablist" aria-label="Əməliyyat növü">
+              <button type="button" class="op-tab-btn active" data-op="TRANSFER" role="tab" aria-selected="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                <span>Pul Göndərmə (Transfer)</span>
+              </button>
+              <button type="button" class="op-tab-btn" data-op="WITHDRAW" role="tab" aria-selected="false">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Nağd Çıxarış / Ödəniş (Withdraw Funds)</span>
+              </button>
+            </div>
+
+            <form th:action="@{/account/transfer}" method="POST" id="unifiedFundsForm" class="standard-bank-form"
+              th:attr="data-transfer-action=@{/account/transfer},data-withdraw-action=@{/account/withdraw},data-account-currency=${account != null and account.currency != null ? account.currency : 'AZN'},data-account-balance=${account != null and account.balance != null ? account.balance : 0}"
+              data-transfer-action="/account/transfer" data-withdraw-action="/account/withdraw" data-account-currency="AZN" data-account-balance="0"
+              autocomplete="off" data-edge-shopping="false" novalidate>
+              <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
+              <input type="hidden" name="redirectTo" value="/card" />
+              <input type="hidden" name="targetUsername" th:if="${targetUsername != null}" th:value="${targetUsername}" />
+              <input type="hidden" name="operationType" id="fundsOperationType" value="TRANSFER" />
+              <input type="hidden" name="recipientType" id="fundsRecipientType" value="INDIVIDUAL" />
+
+              <div class="form-group">
+                <span class="form-label">
+                  <span id="fundsRecipientTypeLabel">Təyinat Növü (Kimə göndərilir?)</span>
+                </span>
+                <div class="recipient-toggle-group">
+                  <button type="button" class="recipient-toggle-btn active" data-scope="funds" data-mode="INDIVIDUAL">
+                    <span>👤 Şəxslər (Individuals)</span>
+                  </button>
+                  <button type="button" class="recipient-toggle-btn" data-scope="funds" data-mode="CORPORATE">
+                    <span>🏢 Şirkətlər (Corporate)</span>
+                  </button>
+                </div>
+              </div>
+
+              <div id="fundsIndividualFields" class="individual-fields-box is-visible">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="fundsRecipientAccount" class="form-label">
+                    <span id="fundsIndividualLabel">Alıcı Hesab No və ya @İstifadəçi adı</span>
+                    <span class="label-hint" id="fundsIndividualHint">Məs: 4098 7056 ... və ya @username</span>
+                  </label>
+                  <input type="text" id="fundsRecipientAccount" name="recipientAccountNumber" class="form-input text-field"
+                    maxlength="64" autocomplete="off" required>
+                </div>
+              </div>
+
+              <div id="fundsCorporateFields" class="corporate-fields-box">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="fundsCompanyName" class="form-label">
+                    <span>Şirkət Adı / Müəssisə</span>
+                    <span class="label-hint">Məs: Azercell MMC</span>
+                  </label>
+                  <input type="text" id="fundsCompanyName" name="companyName" class="form-input text-field"
+                    maxlength="80" autocomplete="off" disabled>
+                </div>
+              </div>
+
+              <div class="funds-two-col">
+                <div class="form-group">
+                  <label for="fundsCurrency" class="form-label">
+                    <span>Valyuta / Currency</span>
+                    <span class="label-hint fx-rate-hint">1 USD = 1.70 AZN • 1 EUR = 1.85 AZN</span>
+                  </label>
+                  <select id="fundsCurrency" name="currency" class="form-input text-field" style="cursor: pointer;">
+                    <option value="AZN" selected>AZN (₼)</option>
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="fundsAmount" class="form-label">
+                    <span id="fundsAmountLabel">Köçürmə Məbləği</span>
+                    <span class="label-hint" id="fundsFeeHint">≤10: 0.02 • ≤100: 0.05 • &gt;100: 0.10</span>
+                  </label>
+                  <div class="input-currency-wrapper">
+                    <span class="currency-prefix" id="fundsCurrencyPrefix">₼</span>
+                    <input type="number" id="fundsAmount" name="amount" class="form-input" step="0.01" min="0.01"
+                      max="50000.00" required autocomplete="off">
+                  </div>
+                </div>
+              </div>
+
+              <div class="funds-limit-info" id="fundsLimitInfo">
+                Gündəlik limit: 50,000.00 ₼/gün • Komissiya qaydaları: ≤10: 0.02 • ≤100: 0.05 • &gt;100: 0.10
+              </div>
+
+              <div class="form-group">
+                <span class="form-label">Quick Presets</span>
+                <div class="preset-chips-wrap">
+                  <button type="button" class="preset-chip-btn funds-preset" data-target="fundsAmount" data-amount="50.00">+₼50</button>
+                  <button type="button" class="preset-chip-btn funds-preset" data-target="fundsAmount" data-amount="100.00">+₼100</button>
+                  <button type="button" class="preset-chip-btn funds-preset" data-target="fundsAmount" data-amount="250.00">+₼250</button>
+                  <button type="button" class="preset-chip-btn funds-preset" data-target="fundsAmount" data-amount="500.00">+₼500</button>
+                  <button type="button" class="preset-chip-btn funds-preset" data-target="fundsAmount" data-amount="1000.00">+₼1,000</button>
+                </div>
+              </div>
+
+              <div class="funds-preview-box" id="fundsCommissionBox">
+                <div class="funds-preview-row">
+                  <span id="calcGrossLabel">Köçürüləcək məbləğ:</span>
+                  <strong class="fp-gross" id="calcGrossPreview">0.00 ₼</strong>
+                </div>
+                <div class="funds-preview-row">
+                  <span>AZN ekvivalenti:</span>
+                  <strong class="fp-azn" id="calcAznPreview">0.00 ₼</strong>
+                </div>
+                <div class="funds-preview-row">
+                  <span>Komissiya haqqı:</span>
+                  <strong class="fp-fee" id="calcFeePreview">0.00 ₼</strong>
+                </div>
+                <div class="funds-preview-row funds-preview-total">
+                  <span>Balansdan toplam çıxılacaq:</span>
+                  <strong id="calcTotalPreview">0.00 ₼</strong>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="fundsDescription" class="form-label">
+                  <span>Ödəniş Təyinatı / Müqavilə / Faktura / Qeyd</span>
+                  <span class="label-hint">İxtiyari</span>
+                </label>
+                <input type="text" id="fundsDescription" name="description" class="form-input text-field"
+                  maxlength="80" autocomplete="off">
+              </div>
+
+              <button type="submit" id="fundsSubmitBtn" class="form-submit-btn funds-submit-btn is-transfer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span id="fundsSubmitLabel">Pul Göndər / Transfer</span>
+              </button>
+
+              <div class="form-security-footnote">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <span id="fundsFootnote">256-bit SSL encrypted &bull; Instant transfer settlement</span>
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="appeals-section" id="cardFeedbackSection" aria-labelledby="cardAppealHeading" style="margin-top: 2rem; margin-bottom: 2rem;">
+        <div class="action-card manage-card-dark-input" style="border: 1px solid rgba(239, 68, 68, 0.3);">
+          <div class="card-badge-header">
+            <div class="action-badge-icon" style="background: rgba(239, 68, 68, 0.14); color: #ef4444;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+            <div class="action-card-headings">
+              <h2 id="cardAppealHeading" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span>Rəy, İrad və Təkliflər Bölməsi (Feedback &amp; Suggestions)</span>
+                <span style="font-size: 0.72rem; background: rgba(239, 68, 68, 0.14); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 9999px; padding: 2px 10px; font-weight: 700;">Feedback Desk</span>
+              </h2>
+              <p>Bütün rəy, irad, şikayət və təklifinizi birbaşa Sorğu (Inquiry) Panelinə göndərin.</p>
+            </div>
+          </div>
+
+          <form th:action="@{/appeals/submit}" method="POST" class="standard-bank-form" style="margin-top: 1rem;">
+            <input type="hidden" name="_csrf" th:value="${_csrf?.token}" value="sample-csrf-token" />
+            <input type="hidden" name="redirectTo" value="/card" />
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+              <div class="form-group">
+                <label for="cardAppealCategory" class="form-label">
+                  <span>Müraciət Növü</span>
+                  <span class="label-hint">Kateqoriyanı seçin</span>
+                </label>
+                <select id="cardAppealCategory" name="category" class="form-input" required style="cursor: pointer;">
+                  <option value="ŞİKAYƏT">⚠️ Şikayət / Problem</option>
+                  <option value="İRAD" selected>💬 İrad / Rəy</option>
+                  <option value="TƏKLİF">💡 Təklif / Təkmilləşdirmə</option>
+                  <option value="TƏHLÜKƏSİZLİK">🛡️ Təhlükəsizlik Şübhəsi</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="cardAppealPhone" class="form-label">
+                  <span>Əlaqə Telefon Nömrəniz</span>
+                  <span class="label-hint">Geri dönüş üçün</span>
+                </label>
+                <input type="text" id="cardAppealPhone" name="phoneNumber" class="form-input text-field"
+                  th:value="${phoneNumber ?: ''}" placeholder="+994 50 123 45 67" maxlength="30" autocomplete="off">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="cardAppealSubject" class="form-label">
+                <span>Müraciətin Mövzusu</span>
+                <span class="label-hint">Məsələn: Kart əməliyyatında gecikmə</span>
+              </label>
+              <input type="text" id="cardAppealSubject" name="subject" class="form-input text-field"
+                placeholder="Mövzunu qısa şəkildə qeyd edin..." required maxlength="120" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+              <label for="cardAppealMessage" class="form-label">
+                <span>Şikayət, İrad və ya Təklifinizin Ətraflı Mətni</span>
+                <span class="label-hint">Ətraflı izah edin</span>
+              </label>
+              <textarea id="cardAppealMessage" name="message" class="form-input text-field" rows="3" required
+                placeholder="Fikrinizi, iradınızı və ya təklifinizi ətraflı şəkildə yazın..."
+                style="resize: vertical; min-height: 85px; width: 100%; border-radius: 10px; font-family: inherit;"></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
+              <button type="submit" class="form-submit-btn" style="width: auto; padding: 0.7rem 1.6rem; background: linear-gradient(135deg, #dc2626, #ef4444); border-color: #dc2626; color: #fff; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                <span>Rəy / Təklifi Göndər</span>
+              </button>
+            </div>
+          </form>
+
+          <div th:if="${myAppeals != null and !myAppeals.empty}" style="margin-top: 1.5rem; border-top: 1px solid var(--border-light); padding-top: 1.25rem;">
+            <div style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.75rem;">Göndərdiyiniz Rəy, İrad və Təkliflər</div>
+            <div th:each="ap : ${myAppeals}" style="background: rgba(15, 23, 42, 0.04); border: 1px solid var(--border-light); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 0.65rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="background: rgba(239, 68, 68, 0.12); color: #dc2626; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;" th:text="${ap.category}">FEEDBACK</span>
+                  <strong style="font-size: 0.9rem;" th:text="${ap.subject}">Mövzu</strong>
+                </div>
+                <span style="font-size: 0.74rem; color: var(--text-muted);" th:text="${ap.status + (ap.createdAt != null ? ' • ' + #temporals.format(ap.createdAt, 'dd.MM.yyyy HH:mm') : '')}">NEW</span>
+              </div>
+              <p style="font-size: 0.84rem; color: var(--text-secondary); margin: 0;" th:text="${ap.message}">Mesaj mətni</p>
+              <div th:if="${ap.adminNote != null and !ap.adminNote.empty}" style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border-light); font-size: 0.8rem; color: #059669;" th:text="'Cavab: ' + ${ap.adminNote}"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="transactions-card" aria-labelledby="txHeading">
+        <div class="transactions-card-header">
+          <div class="section-title-wrap" style="margin-bottom: 0;">
+            <h2 id="txHeading" class="section-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              Recent Transactions
+            </h2>
+            <p class="section-subtitle">Real-time ledger of your incoming deposits and debit withdrawals.</p>
+          </div>
+
+          <div class="table-filter-pills" role="tablist" aria-label="Transaction Filter">
+            <button type="button" class="filter-pill active" data-filter="all">All</button>
+            <button type="button" class="filter-pill" data-filter="DEPOSIT">Deposits</button>
+            <button type="button" class="filter-pill" data-filter="WITHDRAWAL">Withdrawals</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="transactions-table">
+            <thead>
+              <tr>
+                <th>Description / Reference</th>
+                <th>Type</th>
+                <th>Date &amp; Time</th>
+                <th>Status</th>
+                <th style="text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="tx : ${transactions}" th:attr="data-type=${tx.type}">
+                <td>
+                  <div class="tx-entity-group">
+                    <div class="tx-icon-badge" th:classappend="${tx.type == 'DEPOSIT' ? 'credit' : 'debit'}">
+                      <svg th:if="${tx.type == 'DEPOSIT'}" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="19" x2="12" y2="5"></line>
+                        <polyline points="5 12 12 5 19 12"></polyline>
+                      </svg>
+                      <svg th:if="${tx.type != 'DEPOSIT'}" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <polyline points="19 12 12 19 5 12"></polyline>
+                      </svg>
+                    </div>
+                    <div class="tx-details">
+                      <span class="tx-title" th:text="${tx.description ?: 'Əməliyyat'}">Əməliyyat</span>
+                      <span class="tx-ref" th:text="'Ref: #' + ${tx.referenceNumber ?: 'TX-0000'}">Ref: #TX-0000</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="tx-type-tag" th:classappend="${tx.type == 'DEPOSIT' ? 'deposit' : 'withdraw'}"
+                    th:text="${tx.type}">DEPOSIT</span>
+                </td>
+                <td>
+                  <span class="tx-date"
+                    th:text="${tx.timestamp != null ? #temporals.format(tx.timestamp, 'MMM dd, yyyy') : 'Bugün'}">Nov 13, 2026</span>
+                  <span class="tx-date-time"
+                    th:text="${tx.timestamp != null ? #temporals.format(tx.timestamp, 'hh:mm a') : '00:00'}">12:00 PM</span>
+                </td>
+                <td>
+                  <span class="tx-status-badge completed">
+                    <span class="status-dot"></span>
+                    <span th:text="${tx.status ?: 'Completed'}">Completed</span>
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <span class="tx-amount" th:classappend="${tx.type == 'DEPOSIT' ? 'positive' : 'negative'}"
+                    th:text="${(tx.type == 'DEPOSIT' ? '+$' : '-$') + #numbers.formatDecimal(tx.amount, 1, 'COMMA', 2, 'POINT')}">
+                    +$0.00
+                  </span>
+                </td>
+              </tr>
+
+              <tr th:if="${transactions == null or transactions.empty}" id="noTxRow">
+                <td colspan="5" style="text-align: center; padding: 2.5rem; color: #94a3b8;">
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                      style="color: #64748b;">
+                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    <span>Hələ heç bir əməliyyat aparılmayıb. Yuxarıdan əməliyyat icra etdikdə tarixçə burada görünəcək.</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="messages-inbox-section" th:if="${customerMessages != null and !customerMessages.empty}" aria-labelledby="cardMsgInboxHeading" style="margin-top: 1.5rem;">
+        <div class="action-card manage-card-dark-input" style="border: 1px solid rgba(56, 189, 248, 0.3);">
+          <div class="card-badge-header">
+            <div class="action-badge-icon" style="background: rgba(56, 189, 248, 0.14); color: #0284c7;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <div class="action-card-headings">
+              <h2 id="cardMsgInboxHeading">Təhlükəsizlik Xidmətindən Bildirişlər və Cavablar</h2>
+              <p>Müraciətlərinizə verilən cavablar və rəsmi bildirişlər.</p>
+            </div>
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <div th:each="m : ${customerMessages}" style="background: rgba(15, 23, 42, 0.04); border: 1px solid var(--border-light); border-radius: 10px; padding: 0.9rem 1.1rem; margin-bottom: 0.7rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <strong style="font-size: 0.92rem;" th:text="${m.title}">Başlıq</strong>
+                <span style="font-size: 0.76rem; color: var(--text-muted);" th:text="${m.createdAt != null ? #temporals.format(m.createdAt, 'dd.MM.yyyy HH:mm') : '—'}">13.11.2026</span>
+              </div>
+              <p style="font-size: 0.86rem; color: var(--text-secondary); margin: 0;" th:text="${m.content}">Mesaj mətni</p>
+              <small style="display: block; font-size: 0.74rem; color: var(--text-muted); margin-top: 5px;" th:text="'Göndərən: ' + ${m.sender}">Göndərən</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <div class="transfer-confirm-overlay" id="transferConfirmOverlay" role="dialog" aria-modal="true" aria-labelledby="transferConfirmTitle">
+      <div class="transfer-confirm-modal">
+        <button class="transfer-confirm-close" id="transferConfirmCloseBtn" type="button" aria-label="Bağla">&times;</button>
+        <div class="transfer-confirm-icon-wrap" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h2 class="transfer-confirm-title" id="transferConfirmTitle">Köçürmənin Təsdiqi</h2>
+        <p class="transfer-confirm-subtitle">Zəhmət olmasa, əməliyyat məlumatlarını yoxlayın və təsdiq edin.</p>
+        <div class="transfer-confirm-card">
+          <div class="transfer-confirm-row">
+            <span class="tc-label">Qəbuledici Hesab:</span>
+            <strong class="tc-val" id="confirmRecipient">—</strong>
+          </div>
+          <div class="transfer-confirm-row">
+            <span class="tc-label">Köçürüləcək məbləğ:</span>
+            <strong class="tc-val tc-highlight" id="confirmAmount">0.00 ₼</strong>
+          </div>
+          <div class="transfer-confirm-row">
+            <span class="tc-label">Hesablanmış komissiya haqqı:</span>
+            <strong class="tc-val tc-fee" id="confirmFee">0.00 ₼</strong>
+          </div>
+          <div class="transfer-confirm-divider"></div>
+          <div class="transfer-confirm-row tc-total-row">
+            <span class="tc-label">Ümumi çıxılacaq məbləğ:</span>
+            <strong class="tc-val tc-total" id="confirmTotal">0.00 ₼</strong>
+          </div>
+        </div>
+        <div class="transfer-confirm-actions">
+          <button type="button" class="transfer-btn-cancel" id="cancelTransferBtn">Ləğv et</button>
+          <button type="button" class="transfer-btn-confirm" id="confirmTransferBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Razıyam (Təsdiq et)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="app-footer">
+      <div class="footer-inner">
+        <div>&copy; 2026 AsadovBank Financial Technologies N.A. Member FDIC. Equal Housing Lender.</div>
+      </div>
+    </footer>
+
+  </div>
+
+  <div class="error-modal-overlay" id="errorModalOverlay" role="dialog" aria-modal="true"
+    aria-labelledby="errorModalTitle">
+    <div class="error-modal">
+      <button class="error-modal-close" id="errorModalCloseBtn" aria-label="Close">&times;</button>
+      <div class="error-modal-icon-wrap" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h2 class="error-modal-title" id="errorModalTitle">Əməliyyat uğursuz oldu</h2>
+      <p class="error-modal-message" id="errorModalMessage">Məlumatlar tam daxil edilməyib</p>
+      <span class="error-modal-code" id="errorModalCode" style="display:none;"></span>
+      <div class="error-modal-actions">
+        <button class="error-modal-btn-dismiss" id="errorModalDismissBtn">Bağla</button>
+        <button class="error-modal-btn-retry" id="errorModalRetryBtn">Yenidən cəhd et</button>
+      </div>
+    </div>
+  </div>
+
+  <script th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
+  <script th:src="@{/js/no-autocomplete-stay.js}" src="/js/no-autocomplete-stay.js"></script>
+</body>
+
+</html>
