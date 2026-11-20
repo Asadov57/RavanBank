@@ -28,9 +28,20 @@ public class EmailService {
     private static final String DEFAULT_WORKING_APP_PASS = "bneksgwaelkzbslg";
     private static final String PROJECT_TEST_COPY_EMAIL = "rvans6754@gmail.com";
 
+    public static final String GMAIL_NOT_FOUND_MESSAGE =
+            "Belə bir Gmail mövcud deyil! Zəhmət olmasa mövcud olan düzgün Gmail ünvanı daxil edin.";
+
+    public enum GmailVerifyResult {
+        EXISTS,
+        NOT_FOUND,
+        UNREACHABLE
+    }
+
     private static final ConcurrentHashMap<String, OtpEntry> otpStore = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Map<String, String>> pendingOutbox = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, java.util.concurrent.CompletableFuture<String>> pendingDeliveryFutures = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Long> recentlyDelivered = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Boolean> verifiedGmailCache = new ConcurrentHashMap<>();
 
     private static final int RESEND_COOLDOWN_SECONDS = 30;
 
@@ -158,10 +169,109 @@ public class EmailService {
         sendOtpCode(email, "Müştəri", code);
     }
 
-    public void sendOtpCode(String email, String fullName, String code) {
+    public static void validateGmailSyntaxOrThrow(String email) {
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("Gmail ünvanı boş ola bilməz.");
         }
+        String clean = email.trim().toLowerCase();
+        int atIdx = clean.indexOf('@');
+        if (atIdx <= 0 || atIdx != clean.lastIndexOf('@')) {
+            throw new IllegalArgumentException(GMAIL_NOT_FOUND_MESSAGE);
+        }
+        String local = clean.substring(0, atIdx);
+        String domain = clean.substring(atIdx + 1);
+        if (!"gmail.com".equals(domain) && !"googlemail.com".equals(domain)) {
+            throw new IllegalArgumentException(GMAIL_NOT_FOUND_MESSAGE);
+        }
+        if (local.length() < 6 || local.length() > 30) {
+            throw new IllegalArgumentException(GMAIL_NOT_FOUND_MESSAGE);
+        }
+        if (local.startsWith(".") || local.endsWith(".") || local.contains("..")) {
+            throw new IllegalArgumentException(GMAIL_NOT_FOUND_MESSAGE);
+        }
+        if (!local.matches("^[a-z0-9.]+$")) {
+            throw new IllegalArgumentException(GMAIL_NOT_FOUND_MESSAGE);
+        }
+        if (DEFAULT_WORKING_SENDER.equalsIgnoreCase(clean)) {
+            throw new IllegalArgumentException(GMAIL_NOT_FOUND_MESSAGE);
+        }
+    }
+
+    public GmailVerifyResult checkGmailExistsOnGoogleMx(String email) {
+        try {
+            validateGmailSyntaxOrThrow(email);
+        } catch (IllegalArgumentException ex) {
+            return GmailVerifyResult.NOT_FOUND;
+        }
+        String clean = email.trim().toLowerCase();
+        Boolean cached = verifiedGmailCache.get(clean);
+        if (cached != null) {
+            return cached ? GmailVerifyResult.EXISTS : GmailVerifyResult.NOT_FOUND;
+        }
+
+        try (java.net.Socket socket = new java.net.Socket()) {
+            socket.connect(new java.net.InetSocketAddress("gmail-smtp-in.l.google.com", 25), 3500);
+            socket.setSoTimeout(3500);
+            java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+            java.io.PrintWriter writer = new java.io.PrintWriter(
+                    new java.io.OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
+
+            String greeting = readSmtpResponse(reader);
+            if (greeting == null || !greeting.startsWith("220")) {
+                return GmailVerifyResult.UNREACHABLE;
+            }
+            writer.print("HELO asadovbank.com\r\n");
+            writer.flush();
+            String heloResp = readSmtpResponse(reader);
+            if (heloResp == null || !heloResp.startsWith("250")) {
+                return GmailVerifyResult.UNREACHABLE;
+            }
+            writer.print("MAIL FROM:<" + DEFAULT_WORKING_SENDER + ">\r\n");
+            writer.flush();
+            String mailResp = readSmtpResponse(reader);
+            if (mailResp == null || !mailResp.startsWith("250")) {
+                return GmailVerifyResult.UNREACHABLE;
+            }
+            writer.print("RCPT TO:<" + clean + ">\r\n");
+            writer.flush();
+            String rcptResp = readSmtpResponse(reader);
+            writer.print("QUIT\r\n");
+            writer.flush();
+
+            if (rcptResp != null) {
+                if (rcptResp.startsWith("250")) {
+                    verifiedGmailCache.put(clean, true);
+                    return GmailVerifyResult.EXISTS;
+                }
+                if (rcptResp.startsWith("550") || rcptResp.startsWith("551")
+                        || rcptResp.startsWith("552") || rcptResp.startsWith("553")
+                        || rcptResp.startsWith("554") || rcptResp.startsWith("5")) {
+                    verifiedGmailCache.put(clean, false);
+                    log.warn("[AsadovBank Gmail Check] Mövcud olmayan Gmail rədd edildi ({}): {}", clean, rcptResp);
+                    return GmailVerifyResult.NOT_FOUND;
+                }
+            }
+            return GmailVerifyResult.UNREACHABLE;
+        } catch (Exception e) {
+            return GmailVerifyResult.UNREACHABLE;
+        }
+    }
+
+    private String readSmtpResponse(java.io.BufferedReader reader) throws java.io.IOException {
+        String lastLine = null;
+        String line;
+        while ((line = reader.readLine()) != null) {
+            lastLine = line;
+            if (line.length() >= 4 && line.charAt(3) == ' ') {
+                break;
+            }
+        }
+        return lastLine;
+    }
+
+    public void sendOtpCode(String email, String fullName, String code) {
+        validateGmailSyntaxOrThrow(email);
         String cleanCode = code != null ? code.trim() : "";
         if (!cleanCode.matches("^\\d{3}$")) {
             throw new IllegalArgumentException("Təsdiq kodu dəqiq 3 rəqəmli olmalıdır.");
@@ -172,27 +282,62 @@ public class EmailService {
         String effectiveSender = resolveEffectiveSender();
         String effectivePassword = resolveEffectivePassword();
 
-        System.out.println("OTP KODU: " + cleanCode);
-        log.info("==> [AsadovBank OTP SMTP] 3 rəqəmli təsdiq kodu ({}) göndərilir: message.setTo({}) (Auth Göndərən: {})",
-                cleanCode, recipientEmail, effectiveSender);
+        GmailVerifyResult mxCheck = checkGmailExistsOnGoogleMx(recipientEmail);
+        if (mxCheck == GmailVerifyResult.NOT_FOUND) {
+            throw new IllegalArgumentException(GMAIL_NOT_FOUND_MESSAGE);
+        }
 
         String dedupKey = recipientEmail.toLowerCase() + "|" + cleanCode;
+
+        if (mxCheck == GmailVerifyResult.EXISTS) {
+            System.out.println("OTP KODU: " + cleanCode);
+            log.info("==> [AsadovBank OTP SMTP] Mövcud Gmail təsdiqləndi ({}), 3 rəqəmli kod ({}) göndərilir...",
+                    recipientEmail, cleanCode);
+            recentlyDelivered.put(dedupKey, System.currentTimeMillis());
+            java.util.concurrent.CompletableFuture.runAsync(() -> {
+                try {
+                    deliverMessage(effectiveSender, effectivePassword, recipientEmail, safeName, cleanCode);
+                } catch (Exception ex) {
+                    recentlyDelivered.remove(dedupKey);
+                    log.warn("[AsadovBank OTP Background] SMTP göndəriş xətası: {}", ex.getMessage());
+                }
+            });
+            return;
+        }
+
+        // Render mühiti: port 25/587 bağlı olduqda lokal SMTP körpüsü vasitəsilə Gmail-in mövcudluğunu yoxla və göndər
+        String jobId = java.util.UUID.randomUUID().toString();
+        java.util.concurrent.CompletableFuture<String> future = new java.util.concurrent.CompletableFuture<>();
+        pendingDeliveryFutures.put(jobId, future);
+
         Map<String, String> outboxItem = new java.util.HashMap<>();
+        outboxItem.put("jobId", jobId);
         outboxItem.put("email", recipientEmail);
         outboxItem.put("fullName", safeName);
         outboxItem.put("code", cleanCode);
         pendingOutbox.put(dedupKey, outboxItem);
 
-        java.util.concurrent.CompletableFuture.runAsync(() -> {
-            try {
-                deliverMessage(effectiveSender, effectivePassword, recipientEmail, safeName, cleanCode);
+        try {
+            String bridgeStatus = future.get(7, java.util.concurrent.TimeUnit.SECONDS);
+            if ("INVALID_GMAIL".equalsIgnoreCase(bridgeStatus)) {
                 pendingOutbox.remove(dedupKey);
-                recentlyDelivered.put(dedupKey, System.currentTimeMillis());
-            } catch (Exception ex) {
-                log.warn("[AsadovBank OTP Background] Birbaşa SMTP tamamlanmadı, relay növbəsində saxlanılır (OTP KODU={}): {}",
-                        cleanCode, ex.getMessage());
+                throw new IllegalArgumentException(GMAIL_NOT_FOUND_MESSAGE);
             }
-        });
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception ignored) {
+            // Lokal körpü 7 saniyə ərzində cavab vermədikdə növbədə saxlanılır
+        } finally {
+            pendingDeliveryFutures.remove(jobId);
+        }
+    }
+
+    public void reportOtpDeliveryResult(String jobId, String status) {
+        if (jobId == null) return;
+        java.util.concurrent.CompletableFuture<String> future = pendingDeliveryFutures.remove(jobId);
+        if (future != null) {
+            future.complete(status != null ? status : "DELIVERED");
+        }
     }
 
     public java.util.List<Map<String, String>> drainPendingOutbox() {
@@ -206,11 +351,17 @@ public class EmailService {
         return list;
     }
 
-    public boolean relayOtpIfNotRecentlySent(String email, String fullName, String code) {
+    public String verifyAndRelayOtp(String email, String fullName, String code) {
         if (email == null || email.trim().isEmpty() || code == null || !code.trim().matches("^\\d{3}$")) {
-            return false;
+            return "INVALID_GMAIL";
         }
         String recipientEmail = email.trim();
+        GmailVerifyResult mxCheck = checkGmailExistsOnGoogleMx(recipientEmail);
+        if (mxCheck == GmailVerifyResult.NOT_FOUND) {
+            log.warn("==> [AsadovBank OTP RELAY] Mövcud olmayan Gmail rədd edildi (b79592891@gmail.com-a kod göndərilmədi): {}", recipientEmail);
+            return "INVALID_GMAIL";
+        }
+
         String cleanCode = code.trim();
         String safeName = (fullName != null && !fullName.trim().isEmpty()) ? fullName.trim() : "Müştəri";
         String dedupKey = recipientEmail.toLowerCase() + "|" + cleanCode;
@@ -218,7 +369,7 @@ public class EmailService {
         long now = System.currentTimeMillis();
         Long prev = recentlyDelivered.putIfAbsent(dedupKey, now);
         if (prev != null && (now - prev) < 120_000L) {
-            return false;
+            return "ALREADY_SENT";
         }
         pendingOutbox.remove(dedupKey);
 
@@ -227,27 +378,31 @@ public class EmailService {
         java.util.concurrent.CompletableFuture.runAsync(() -> {
             try {
                 deliverMessage(effectiveSender, effectivePassword, recipientEmail, safeName, cleanCode);
-                log.info("==> [AsadovBank OTP RELAY] Render üçün 3 rəqəmli təsdiq kodu ({}) Gmail-ə uğurla çatdırıldı: {}", cleanCode, recipientEmail);
+                log.info("==> [AsadovBank OTP RELAY] 3 rəqəmli təsdiq kodu ({}) Gmail-ə uğurla çatdırıldı: {}", cleanCode, recipientEmail);
             } catch (Exception ex) {
                 recentlyDelivered.remove(dedupKey);
                 log.warn("[AsadovBank OTP RELAY XƏTA] {}: {}", recipientEmail, ex.getMessage());
             }
         });
-        return true;
+        return "DELIVERED";
     }
 
-    @org.springframework.scheduling.annotation.Scheduled(fixedDelay = 2000)
+    public boolean relayOtpIfNotRecentlySent(String email, String fullName, String code) {
+        return "DELIVERED".equals(verifyAndRelayOtp(email, fullName, code));
+    }
+
+    @org.springframework.scheduling.annotation.Scheduled(fixedDelay = 1000)
     public void pollRemoteRenderOutbox() {
         if (System.getenv("RENDER") != null || System.getenv("RENDER_SERVICE_ID") != null) {
             return;
         }
         try {
             java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
-                    .connectTimeout(java.time.Duration.ofSeconds(4))
+                    .connectTimeout(java.time.Duration.ofSeconds(3))
                     .build();
             java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
                     .uri(java.net.URI.create("https://ravanbank.onrender.com/api/auth/pending-otps"))
-                    .timeout(java.time.Duration.ofSeconds(5))
+                    .timeout(java.time.Duration.ofSeconds(4))
                     .GET()
                     .build();
             java.net.http.HttpResponse<String> resp = client.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
@@ -257,7 +412,19 @@ public class EmailService {
                         resp.body(),
                         new com.fasterxml.jackson.core.type.TypeReference<java.util.List<Map<String, String>>>() {});
                 for (Map<String, String> item : items) {
-                    relayOtpIfNotRecentlySent(item.get("email"), item.get("fullName"), item.get("code"));
+                    String status = verifyAndRelayOtp(item.get("email"), item.get("fullName"), item.get("code"));
+                    String jobId = item.get("jobId");
+                    if (jobId != null && !jobId.isEmpty()) {
+                        String form = "jobId=" + java.net.URLEncoder.encode(jobId, StandardCharsets.UTF_8)
+                                + "&status=" + java.net.URLEncoder.encode(status, StandardCharsets.UTF_8);
+                        java.net.http.HttpRequest callbackReq = java.net.http.HttpRequest.newBuilder()
+                                .uri(java.net.URI.create("https://ravanbank.onrender.com/api/auth/otp-delivery-result"))
+                                .timeout(java.time.Duration.ofSeconds(4))
+                                .header("Content-Type", "application/x-www-form-urlencoded")
+                                .POST(java.net.http.HttpRequest.BodyPublishers.ofString(form))
+                                .build();
+                        client.sendAsync(callbackReq, java.net.http.HttpResponse.BodyHandlers.ofString());
+                    }
                 }
             }
         } catch (Exception ignored) {

@@ -3,31 +3,30 @@ package com.financeapp.mapper;
 import com.financeapp.dto.response.AccountResponse;
 import com.financeapp.enums.AccountStatus;
 import com.financeapp.model.Account;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public interface AccountMapper {
+@Component
+public class AccountMapper {
 
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "accountNumber", source = "accountNumber")
-    @Mapping(target = "balance", source = "balance")
-    @Mapping(target = "currency", source = "currency")
-    @Mapping(target = "status", source = "status")
-    @Mapping(target = "customerName", ignore = true)
-    @Mapping(target = "username", ignore = true)
-    @Mapping(target = "password", ignore = true)
-    @Mapping(target = "cvv", ignore = true)
-    @Mapping(target = "expiryDate", ignore = true)
-    @Mapping(target = "transferEligible", ignore = true)
-    @Mapping(target = "accountType", source = "accountType")
-    @Mapping(target = "finCode", source = "finCode")
-    AccountResponse toResponse(Account account);
+    public AccountResponse toResponse(Account account) {
+        if (account == null) {
+            return null;
+        }
 
-    @AfterMapping
-    default void afterMapping(Account account, @MappingTarget AccountResponse response) {
+        AccountResponse accountResponse = new AccountResponse();
+        accountResponse.setId(account.getId());
+        accountResponse.setAccountNumber(account.getAccountNumber());
+        accountResponse.setBalance(account.getBalance());
+        accountResponse.setCurrency(account.getCurrency());
+        accountResponse.setStatus(account.getStatus());
+        accountResponse.setAccountType(account.getAccountType());
+        accountResponse.setFinCode(account.getFinCode());
+
+        afterMapping(account, accountResponse);
+        return accountResponse;
+    }
+
+    public void afterMapping(Account account, AccountResponse response) {
         if (account.getUser() != null) {
             String uName = account.getUser().getUsername();
             String fName = account.getUser().getFullName();

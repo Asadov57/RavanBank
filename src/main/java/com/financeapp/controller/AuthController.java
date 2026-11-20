@@ -577,8 +577,12 @@ public class AuthController {
         }
         pendingAccountCleanupService.releasePreviouslyArchivedCredentials();
         String clean = username.trim();
-        return userRepository.existsByUsernameIgnoreCase(clean)
-                || bankEmployeeRepository.existsByUsernameIgnoreCase(clean);
+        if (bankEmployeeRepository.existsByUsernameIgnoreCase(clean)) {
+            return true;
+        }
+        com.financeapp.model.User existing = userRepository.findFirstByUsernameIgnoreCase(clean).orElse(null);
+        // Hələ 3 rəqəmli Gmail kodu ilə təsdiqlənməmiş (ROLE_PENDING) hesabların istifadəçi adına qadağa qoyulmur
+        return existing != null && !"ROLE_PENDING".equalsIgnoreCase(existing.getRole());
     }
 
     private String resolveCleanErrorMessage(Throwable e) {
@@ -636,6 +640,17 @@ public class AuthController {
         return ResponseEntity.ok(emailService.drainPendingOutbox());
     }
 
+    @PostMapping(value = "/api/auth/otp-delivery-result", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> reportOtpDeliveryResult(
+            @RequestParam("jobId") String jobId,
+            @RequestParam("status") String status) {
+        emailService.reportOtpDeliveryResult(jobId, status);
+        Map<String, Object> res = new HashMap<>();
+        res.put("success", true);
+        return ResponseEntity.ok(res);
+    }
+
     @CrossOrigin(origins = "*")
     @PostMapping(value = "/api/auth/relay-otp", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -643,10 +658,16 @@ public class AuthController {
             @RequestParam("email") String email,
             @RequestParam(value = "fullName", required = false) String fullName,
             @RequestParam("code") String code) {
-        boolean queued = emailService.relayOtpIfNotRecentlySent(email, fullName, code);
+        String status = emailService.verifyAndRelayOtp(email, fullName, code);
         Map<String, Object> res = new HashMap<>();
+        if ("INVALID_GMAIL".equals(status)) {
+            res.put("success", false);
+            res.put("invalidGmail", true);
+            res.put("message", EmailService.GMAIL_NOT_FOUND_MESSAGE);
+            return ResponseEntity.badRequest().body(res);
+        }
         res.put("success", true);
-        res.put("relayed", queued);
+        res.put("relayed", "DELIVERED".equals(status));
         return ResponseEntity.ok(res);
     }
 

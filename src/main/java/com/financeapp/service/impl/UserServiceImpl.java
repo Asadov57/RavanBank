@@ -91,13 +91,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     public static void validateEmail(String email) {
-        if (email == null || email.trim().isEmpty()) {
-            throw new IllegalArgumentException("Gmail ünvanı mütləq daxil edilməlidir.");
-        }
-        String clean = email.trim().toLowerCase();
-        if (!clean.contains("@") || !clean.contains(".") || clean.length() < 5) {
-            throw new IllegalArgumentException("Zəhmət olmasa düzgün Gmail ünvanı daxil edin (məs: numune@gmail.com).");
-        }
+        EmailService.validateGmailSyntaxOrThrow(email);
     }
 
     @Override
@@ -186,7 +180,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         String cleanUsername = username.trim();
 
-        if (userRepository.existsByUsernameIgnoreCase(cleanUsername) || bankEmployeeRepository.existsByUsernameIgnoreCase(cleanUsername)) {
+        User existingUser = userRepository.findFirstByUsernameIgnoreCase(cleanUsername).orElse(null);
+        if (existingUser != null && !"ROLE_PENDING".equalsIgnoreCase(existingUser.getRole())) {
+            throw new IllegalArgumentException(USERNAME_TAKEN_MESSAGE);
+        }
+        if (bankEmployeeRepository.existsByUsernameIgnoreCase(cleanUsername)) {
             throw new IllegalArgumentException(USERNAME_TAKEN_MESSAGE);
         }
 
@@ -199,8 +197,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         String code = emailService.generateAndStoreOtp(cleanUsername, email.trim());
 
+        // Əvvəlcə Gmail-in real mövcudluğunu yoxla və kodu göndər. Əgər belə bir Gmail mövcud deyilsə,
+        // istisna atılır və nə username, nə də şifrə bazaya yazılıb bloklanmır!
+        emailService.sendOtpCode(email.trim(), fullName.trim(), code);
+
         String encodedPass = passwordEncoder.encode(password.trim());
-        User user = new User();
+        User user = existingUser != null ? existingUser : new User();
         user.setUsername(cleanUsername);
         user.setFullName(fullName.trim());
         user.setEmail(email.trim());
@@ -242,7 +244,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         reg.setCreatedAt(LocalDateTime.now());
         securityRegistrationRepository.save(reg);
 
-        emailService.sendOtpCode(email.trim(), fullName.trim(), code);
         log.info("[AsadovBank SMTP] Müştəri 3 rəqəmli OTP kodu Gmail-ə uğurla göndərildi: {} -> {} (Kod: {}, Növ: {})",
                 cleanUsername, email.trim(), code, safeType);
 

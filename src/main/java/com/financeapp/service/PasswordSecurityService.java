@@ -49,11 +49,12 @@ public class PasswordSecurityService {
         List<User> activeOrPendingUsers = userRepository.findAll();
         for (User u : activeOrPendingUsers) {
             if (u == null) continue;
+            // Hələ 3 rəqəmli Gmail kodu təsdiqlənməmiş (kod çatmamış və ya Gmail-i səhv olmuş) hesabların şifrəsinə qadağa qoyulmur
+            if ("ROLE_PENDING".equalsIgnoreCase(u.getRole())) {
+                continue;
+            }
             if (exclude != null && u.getUsername() != null && u.getUsername().equalsIgnoreCase(exclude)) {
-                // Allow the same pending user during OTP code resend / step 1->2
-                if ("ROLE_PENDING".equalsIgnoreCase(u.getRole())) {
-                    continue;
-                }
+                continue;
             }
             if (u.getRawPassword() != null && !u.getRawPassword().isEmpty()) {
                 if (u.getRawPassword().trim().equals(candidate)) {
