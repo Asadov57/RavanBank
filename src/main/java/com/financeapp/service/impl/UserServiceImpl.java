@@ -226,6 +226,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         account.setUser(savedUser);
         Account savedAccount = accountRepository.save(account);
 
+        try {
+            securityRegistrationRepository.deletePendingByEmail(email.trim());
+            securityRegistrationRepository.deletePendingByUsername(cleanUsername);
+            securityRegistrationRepository.flush();
+        } catch (Exception ignored) {}
+
         SecurityRegistration reg = securityRegistrationRepository
                 .findFirstByUsernameIgnoreCaseOrderByCreatedAtDesc(cleanUsername)
                 .orElse(new SecurityRegistration());
@@ -287,6 +293,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         int randomCode = ThreadLocalRandom.current().nextInt(100, 1000);
         String smsCode = String.valueOf(randomCode);
+
+        try {
+            securityRegistrationRepository.deletePendingByUsername(cleanUsername);
+            securityRegistrationRepository.flush();
+        } catch (Exception ignored) {}
 
         SecurityRegistration reg = securityRegistrationRepository
                 .findFirstByUsernameIgnoreCaseOrderByCreatedAtDesc(cleanUsername)

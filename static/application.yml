@@ -44,9 +44,9 @@ spring:
           ssl:
             trust: smtp.gmail.com
             protocols: TLSv1.2 TLSv1.3
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
 
   autoconfigure:
     exclude:

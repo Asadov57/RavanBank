@@ -46,6 +46,7 @@ public class EmailService {
     private static final int RESEND_COOLDOWN_SECONDS = 30;
 
     private final JavaMailSender defaultMailSender;
+    private final com.financeapp.repository.OtpVerificationRepository otpVerificationRepository;
 
     @Value("${spring.mail.username:b79592891@gmail.com}")
     private String gmailUsername;
@@ -53,8 +54,10 @@ public class EmailService {
     @Value("${spring.mail.password:bneksgwaelkzbslg}")
     private String gmailPassword;
 
-    public EmailService(@Autowired(required = false) JavaMailSender defaultMailSender) {
+    public EmailService(@Autowired(required = false) JavaMailSender defaultMailSender,
+                        @Autowired(required = false) com.financeapp.repository.OtpVerificationRepository otpVerificationRepository) {
         this.defaultMailSender = defaultMailSender;
+        this.otpVerificationRepository = otpVerificationRepository;
     }
 
     public static class OtpEntry {
@@ -98,36 +101,91 @@ public class EmailService {
         return cleanPass;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public String generateAndStoreOtp(String username, String email) {
         String code = generateThreeDigitOtp();
-        if (username != null && !username.trim().isEmpty()) {
-            otpStore.put(username.trim().toLowerCase(), new OtpEntry(code, email != null ? email.trim() : ""));
+        String cleanUser = (username != null && !username.trim().isEmpty()) ? username.trim() : null;
+        String cleanEmail = (email != null && !email.trim().isEmpty()) ? email.trim() : "";
+
+        if (cleanUser != null) {
+            otpStore.remove(cleanUser.toLowerCase());
+            otpStore.put(cleanUser.toLowerCase(), new OtpEntry(code, cleanEmail));
         }
-        if (email != null && !email.trim().isEmpty()) {
-            otpStore.put(email.trim().toLowerCase(), new OtpEntry(code, email.trim()));
+        if (!cleanEmail.isEmpty()) {
+            otpStore.remove(cleanEmail.toLowerCase());
+            otpStore.put(cleanEmail.toLowerCase(), new OtpEntry(code, cleanEmail));
         }
+
+        if (otpVerificationRepository != null) {
+            try {
+                if (!cleanEmail.isEmpty()) {
+                    otpVerificationRepository.deleteAllByEmail(cleanEmail);
+                }
+                if (cleanUser != null) {
+                    otpVerificationRepository.deleteAllByUsername(cleanUser);
+                }
+                otpVerificationRepository.flush();
+
+                com.financeapp.model.OtpVerification otp = new com.financeapp.model.OtpVerification(
+                        cleanEmail.isEmpty() ? (cleanUser != null ? cleanUser : "N/A") : cleanEmail,
+                        cleanUser,
+                        code,
+                        java.time.LocalDateTime.now().plusMinutes(5)
+                );
+                otpVerificationRepository.saveAndFlush(otp);
+            } catch (Exception e) {
+                log.warn("[AsadovBank OTP DB] Köhnə OTP silinməsi/yazılması xəbərdarlığı: {}", e.getMessage());
+            }
+        }
+
         System.out.println("OTP KODU: " + code);
-        log.info("[AsadovBank OTP] 3 rəqəmli kod yaradıldı: username={}, email={}, OTP KODU={}", username, email, code);
+        log.info("[AsadovBank OTP] 3 rəqəmli kod yaradıldı (köhnə kodlar təmizləndi): username={}, email={}, OTP KODU={}", username, email, code);
         return code;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public boolean verifyOtp(String identifier, String enteredCode) {
         if (identifier == null || enteredCode == null) {
             return false;
         }
         String key = identifier.trim().toLowerCase();
+        String trimmedCode = enteredCode.trim();
         OtpEntry entry = otpStore.get(key);
-        if (entry == null) {
-            return false;
+        if (entry != null) {
+            entry.incrementAttempts();
+            if (entry.getAttempts() > 10) {
+                otpStore.remove(key);
+                throw new RuntimeException("Çox sayda uğursuz cəhd. Zəhmət olmasa yenidən qeydiyyatdan keçin.");
+            }
+            if (entry.getCode().equals(trimmedCode)) {
+                otpStore.remove(key);
+                if (otpVerificationRepository != null) {
+                    try {
+                        otpVerificationRepository.deleteAllByUsername(key);
+                        otpVerificationRepository.deleteAllByEmail(key);
+                    } catch (Exception ignored) {}
+                }
+                return true;
+            }
         }
-        entry.incrementAttempts();
-        if (entry.getAttempts() > 10) {
-            otpStore.remove(key);
-            throw new RuntimeException("Çox sayda uğursuz cəhd. Zəhmət olmasa yenidən qeydiyyatdan keçin.");
-        }
-        if (entry.getCode().equals(enteredCode.trim())) {
-            otpStore.remove(key);
-            return true;
+
+        if (otpVerificationRepository != null) {
+            try {
+                java.util.Optional<com.financeapp.model.OtpVerification> dbOtp =
+                        otpVerificationRepository.findFirstByUsernameIgnoreCaseOrderByCreatedAtDesc(key)
+                                .or(() -> otpVerificationRepository.findFirstByEmailIgnoreCaseOrderByCreatedAtDesc(key));
+                if (dbOtp.isPresent()) {
+                    com.financeapp.model.OtpVerification ov = dbOtp.get();
+                    if (ov.getCode() != null && ov.getCode().trim().equals(trimmedCode)
+                            && (ov.getExpiresAt() == null || ov.getExpiresAt().isAfter(java.time.LocalDateTime.now()))) {
+                        otpVerificationRepository.deleteAllByEmail(ov.getEmail());
+                        if (ov.getUsername() != null) {
+                            otpVerificationRepository.deleteAllByUsername(ov.getUsername());
+                        }
+                        return true;
+                    }
+                }
+            } catch (Exception ignored) {}
         }
         return false;
     }
@@ -148,15 +206,13 @@ public class EmailService {
         return getResendCooldownRemaining(identifier) <= 0;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public String prepareOtpCode(String email) {
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("E-poçt ünvanı boş ola bilməz.");
         }
         String cleanEmail = email.trim();
-        String code = generateThreeDigitOtp();
-        otpStore.put(cleanEmail.toLowerCase(), new OtpEntry(code, cleanEmail));
-        System.out.println("OTP KODU: " + code);
-        return code;
+        return generateAndStoreOtp(null, cleanEmail);
     }
 
     public String sendOtpCode(String email) {
@@ -449,34 +505,45 @@ public class EmailService {
                                 String safeName,
                                 String cleanCode) {
         Exception primaryException = null;
-        String subject = "Qeydiyyat təsdiq kodu: " + cleanCode;
+        String subject = "Təsdiq Kodu: " + cleanCode;
         String plainText = buildPlainText(safeName, cleanCode);
         String htmlText = buildHtmlText(safeName, cleanCode);
 
-        try {
-            JavaMailSender primarySender = defaultMailSender != null
-                    ? defaultMailSender
-                    : createSmtpStarttlsSender(587, effectiveSender, effectivePassword);
-            sendViaSender(primarySender, effectiveSender, recipientEmail, subject, plainText, htmlText);
-            log.info("==> [AsadovBank SMTP] 3 rəqəmli təsdiq kodu ({}) uğurla çatdırıldı (Port 587): message.setTo({})", cleanCode, recipientEmail);
-            return;
-        } catch (Exception e) {
-            primaryException = e;
-            log.error("[AsadovBank SMTP XƏTA - Port 587] {}: {}", e.getClass().getSimpleName(), e.getMessage(), e);
-            e.printStackTrace();
-            log.warn("[AsadovBank SMTP] Port 465 (SMTPS) ilə təkrar yoxlanılır...");
-        }
+        int maxRetries = 3;
+        int attempt = 0;
 
-        try {
-            JavaMailSenderImpl smtpsSender = createSmtpsSender(465, effectiveSender, effectivePassword);
-            sendViaSender(smtpsSender, effectiveSender, recipientEmail, subject, plainText, htmlText);
-            log.info("==> [AsadovBank SMTP] 3 rəqəmli təsdiq kodu ({}) uğurla çatdırıldı (Port 465 SMTPS): message.setTo({})", cleanCode, recipientEmail);
-            return;
-        } catch (Exception e) {
-            log.error("[AsadovBank SMTP XƏTA - Port 465] {}: {}", e.getClass().getSimpleName(), e.getMessage(), e);
-            e.printStackTrace();
-            if (primaryException == null) {
-                primaryException = e;
+        while (attempt < maxRetries) {
+            try {
+                JavaMailSender primarySender = defaultMailSender != null
+                        ? defaultMailSender
+                        : createSmtpStarttlsSender(587, effectiveSender, effectivePassword);
+                sendViaSender(primarySender, effectiveSender, recipientEmail, subject, plainText, htmlText);
+                log.info("==> [AsadovBank SMTP] 3 rəqəmli təsdiq kodu ({}) uğurla çatdırıldı (Port 587, cəhd {}): message.setTo({})",
+                        cleanCode, attempt + 1, recipientEmail);
+                return;
+            } catch (Exception e587) {
+                primaryException = e587;
+                log.warn("[AsadovBank SMTP - Port 587 cəhd {}/{}] {}: {}", attempt + 1, maxRetries, e587.getClass().getSimpleName(), e587.getMessage());
+
+                try {
+                    JavaMailSenderImpl smtpsSender = createSmtpsSender(465, effectiveSender, effectivePassword);
+                    sendViaSender(smtpsSender, effectiveSender, recipientEmail, subject, plainText, htmlText);
+                    log.info("==> [AsadovBank SMTP] 3 rəqəmli təsdiq kodu ({}) uğurla çatdırıldı (Port 465 SMTPS, cəhd {}): message.setTo({})",
+                            cleanCode, attempt + 1, recipientEmail);
+                    return;
+                } catch (Exception e465) {
+                    log.warn("[AsadovBank SMTP - Port 465 cəhd {}/{}] {}: {}", attempt + 1, maxRetries, e465.getClass().getSimpleName(), e465.getMessage());
+                }
+            }
+
+            attempt++;
+            if (attempt < maxRetries) {
+                try {
+                    Thread.sleep(2000L * attempt);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
             }
         }
 
@@ -504,12 +571,12 @@ public class EmailService {
                                String htmlText) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, StandardCharsets.UTF_8.name());
-            helper.setFrom(new InternetAddress(effectiveSender, "AsadovBank Portal", StandardCharsets.UTF_8.name()));
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, StandardCharsets.UTF_8.name());
+            helper.setFrom(new InternetAddress(effectiveSender, "AsadovBank Təhlükəsizlik", StandardCharsets.UTF_8.name()));
             helper.setReplyTo(effectiveSender);
             helper.setTo(recipientEmail);
             helper.setSubject(subject);
-            helper.setText(plainText, false);
+            helper.setText(plainText, htmlText);
             helper.setSentDate(new Date());
             mailSender.send(mimeMessage);
         } catch (RuntimeException e) {
@@ -567,9 +634,9 @@ public class EmailService {
         props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
         props.put("mail.smtp.ssl.checkserveridentity", "false");
         props.put("mail.smtp.ssl.protocols", "TLSv1.2 TLSv1.3");
-        props.put("mail.smtp.connectiontimeout", "5000");
-        props.put("mail.smtp.timeout", "5000");
-        props.put("mail.smtp.writetimeout", "5000");
+        props.put("mail.smtp.connectiontimeout", "10000");
+        props.put("mail.smtp.timeout", "10000");
+        props.put("mail.smtp.writetimeout", "10000");
         return sender;
     }
 
@@ -595,9 +662,9 @@ public class EmailService {
         props.put("mail.smtps.ssl.trust", "smtp.gmail.com");
         props.put("mail.smtps.ssl.checkserveridentity", "false");
         props.put("mail.smtps.ssl.protocols", "TLSv1.2 TLSv1.3");
-        props.put("mail.smtp.connectiontimeout", "5000");
-        props.put("mail.smtp.timeout", "5000");
-        props.put("mail.smtp.writetimeout", "5000");
+        props.put("mail.smtp.connectiontimeout", "10000");
+        props.put("mail.smtp.timeout", "10000");
+        props.put("mail.smtp.writetimeout", "10000");
         return sender;
     }
 }
